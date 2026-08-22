@@ -70,24 +70,15 @@ function parseVmess(uri) {
   try {
     const obj = JSON.parse(b64decode(uri.slice(8)));
     if (!obj.add || !obj.port || !obj.id) return null;
-    const parts = [
+    // Match the previously verified Dropbox TanZou Surge list exactly.
+    return [
       `${safeName(obj.ps)} = vmess`,
       obj.add,
       obj.port,
       `username=${obj.id}`,
       'vmess-aead=true',
       'encrypt-method=chacha20-ietf-poly1305'
-    ];
-    if (String(obj.tls || '').toLowerCase() === 'tls') parts.push('tls=true');
-    const sni = obj.sni || obj.host;
-    if (sni && obj.tls) parts.push(`sni=${sni}`);
-    if (String(obj.net || '').toLowerCase() === 'ws') {
-      parts.push('ws=true');
-      if (obj.path) parts.push(`ws-path=${quote(obj.path)}`);
-      if (obj.host) parts.push(`ws-headers=Host:${obj.host}`);
-    }
-    parts.push('udp-relay=true');
-    return parts.join(', ');
+    ].join(', ');
   } catch { return null; }
 }
 
@@ -106,8 +97,18 @@ export async function handleTanzouSubscription(request, env = process.env) {
   const url = new URL(request.url);
   const configuredKey = String(env.TANZOU_ACCESS_KEY || '');
   const suppliedKey = String(url.searchParams.get('key') || '');
-  if (!configuredKey || suppliedKey !== configuredKey) {
-    return new Response('Unauthorized', { status: 401, headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store' } });
+
+  if (!configuredKey) {
+    return new Response('TANZOU_ACCESS_KEY is not configured', {
+      status: 503,
+      headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store' }
+    });
+  }
+  if (suppliedKey !== configuredKey) {
+    return new Response('TANZOU_ACCESS_KEY mismatch', {
+      status: 401,
+      headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store' }
+    });
   }
 
   const upstreamUrl = String(env.TANZOU_SUB_URL || '').trim();
@@ -144,7 +145,8 @@ export async function handleTanzouSubscription(request, env = process.env) {
 
     const headers = {
       'Content-Type': 'text/plain; charset=utf-8',
-      'Cache-Control': 'no-store'
+      'Cache-Control': 'no-store',
+      'X-TanZou-Nodes': String(lines.length)
     };
     const userInfo = upstream.headers.get('subscription-userinfo');
     if (userInfo) headers['subscription-userinfo'] = userInfo;
