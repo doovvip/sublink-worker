@@ -20,6 +20,12 @@ function parseHostPort(server) {
   return { host: m[1] || m[3], port: m[2] || m[4] };
 }
 
+function normalizeVmessMethod(method) {
+  const value = String(method || '').trim().toLowerCase();
+  if (!value || value === 'chacha20-poly1305') return 'chacha20-ietf-poly1305';
+  return value;
+}
+
 function parseSS(uri) {
   try {
     const raw = uri.slice(5);
@@ -80,7 +86,6 @@ function parseTrojan(uri) {
 
 function parseVmess(uri) {
   try {
-    // Format A: standard V2Ray vmess://<base64 JSON>
     let raw = uri.slice(8);
     let fragment = '';
     const hashIndex = raw.indexOf('#');
@@ -110,7 +115,6 @@ function parseVmess(uri) {
       }
     } catch {}
 
-    // Format B: Shadowrocket vmess://base64(method:uuid@host:port)?remarks=...
     const at = decoded.lastIndexOf('@');
     if (at < 1) return null;
     const credential = decoded.slice(0, at);
@@ -118,7 +122,7 @@ function parseVmess(uri) {
     if (!hp) return null;
     const colon = credential.indexOf(':');
     if (colon < 1) return null;
-    const method = credential.slice(0, colon).trim() || 'chacha20-ietf-poly1305';
+    const method = normalizeVmessMethod(credential.slice(0, colon));
     const uuid = credential.slice(colon + 1).trim();
     if (!uuid) return null;
 
@@ -190,8 +194,6 @@ export async function handleTanzouSubscription(request, env = process.env) {
 
     const source = normalizeSubscription(rawText);
     const lines = [];
-
-    // Extract URI nodes globally so subscriptions work with or without line breaks.
     const uriNodes = source.match(/(?:vmess|trojan|ss):\/\/[^\s]+/gi) || [];
     for (const node of uriNodes) {
       let converted = null;
@@ -201,7 +203,6 @@ export async function handleTanzouSubscription(request, env = process.env) {
       if (converted) lines.push(converted);
     }
 
-    // Also preserve already-converted Surge proxy lines if upstream ever returns them.
     for (const rawLine of source.split(/\r?\n/)) {
       const line = rawLine.trim();
       if (/^[^=]+\s*=\s*(ss|vmess|trojan),/i.test(line)) lines.push(line);
