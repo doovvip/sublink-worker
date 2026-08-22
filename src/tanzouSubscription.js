@@ -14,6 +14,12 @@ function quote(value) {
   return /[\",]/.test(s) ? `\"${s.replace(/\"/g, '\\\"')}\"` : s;
 }
 
+function parseHostPort(server) {
+  const m = String(server || '').match(/^\[([^\]]+)\]:(\d+)$|^([^:]+):(\d+)$/);
+  if (!m) return null;
+  return { host: m[1] || m[3], port: m[2] || m[4] };
+}
+
 function parseSS(uri) {
   try {
     const raw = uri.slice(5);
@@ -27,20 +33,26 @@ function parseSS(uri) {
     if (body.includes('@')) {
       const at = body.lastIndexOf('@');
       const user = body.slice(0, at);
-      const server = body.slice(at + 1);
+      const hp = parseHostPort(body.slice(at + 1));
+      if (!hp) return null;
       const cred = user.includes(':') ? user : b64decode(user);
       const colon = cred.indexOf(':');
       if (colon < 1) return null;
       method = cred.slice(0, colon);
       password = cred.slice(colon + 1);
-      const m = server.match(/^\[([^\]]+)\]:(\d+)$|^([^:]+):(\d+)$/);
-      if (!m) return null;
-      host = m[1] || m[3]; port = m[2] || m[4];
+      host = hp.host; port = hp.port;
     } else {
       const decoded = b64decode(body);
-      const m = decoded.match(/^([^:]+):([^@]+)@\[([^\]]+)\]:(\d+)$|^([^:]+):([^@]+)@([^:]+):(\d+)$/);
-      if (!m) return null;
-      method = m[1] || m[5]; password = m[2] || m[6]; host = m[3] || m[7]; port = m[4] || m[8];
+      const at = decoded.lastIndexOf('@');
+      if (at < 1) return null;
+      const cred = decoded.slice(0, at);
+      const hp = parseHostPort(decoded.slice(at + 1));
+      if (!hp) return null;
+      const colon = cred.indexOf(':');
+      if (colon < 1) return null;
+      method = cred.slice(0, colon);
+      password = cred.slice(colon + 1);
+      host = hp.host; port = hp.port;
     }
 
     const parts = [`${safeName(hash)} = ss`, host, port, `encrypt-method=${method}`, `password=${quote(password)}`, 'udp-relay=true'];
@@ -68,15 +80,57 @@ function parseTrojan(uri) {
 
 function parseVmess(uri) {
   try {
-    const obj = JSON.parse(b64decode(uri.slice(8)));
-    if (!obj.add || !obj.port || !obj.id) return null;
+    // Format A: standard V2Ray vmess://<base64 JSON>
+    let raw = uri.slice(8);
+    let fragment = '';
+    const hashIndex = raw.indexOf('#');
+    if (hashIndex >= 0) {
+      fragment = raw.slice(hashIndex + 1);
+      raw = raw.slice(0, hashIndex);
+    }
+    let query = '';
+    const queryIndex = raw.indexOf('?');
+    if (queryIndex >= 0) {
+      query = raw.slice(queryIndex + 1);
+      raw = raw.slice(0, queryIndex);
+    }
+
+    const decoded = b64decode(raw).trim();
+    try {
+      const obj = JSON.parse(decoded);
+      if (obj.add && obj.port && obj.id) {
+        return [
+          `${safeName(obj.ps || fragment)} = vmess`,
+          obj.add,
+          obj.port,
+          `username=${obj.id}`,
+          'vmess-aead=true',
+          'encrypt-method=chacha20-ietf-poly1305'
+        ].join(', ');
+      }
+    } catch {}
+
+    // Format B: Shadowrocket vmess://base64(method:uuid@host:port)?remarks=...
+    const at = decoded.lastIndexOf('@');
+    if (at < 1) return null;
+    const credential = decoded.slice(0, at);
+    const hp = parseHostPort(decoded.slice(at + 1));
+    if (!hp) return null;
+    const colon = credential.indexOf(':');
+    if (colon < 1) return null;
+    const method = credential.slice(0, colon).trim() || 'chacha20-ietf-poly1305';
+    const uuid = credential.slice(colon + 1).trim();
+    if (!uuid) return null;
+
+    const params = new URLSearchParams(query);
+    const name = params.get('remarks') || params.get('remark') || params.get('name') || fragment || 'TanZou';
     return [
-      `${safeName(obj.ps)} = vmess`,
-      obj.add,
-      obj.port,
-      `username=${obj.id}`,
+      `${safeName(name)} = vmess`,
+      hp.host,
+      hp.port,
+      `username=${uuid}`,
       'vmess-aead=true',
-      'encrypt-method=chacha20-ietf-poly1305'
+      `encrypt-method=${method}`
     ].join(', ');
   } catch { return null; }
 }
@@ -94,33 +148,17 @@ function normalizeSubscription(text) {
 
 function safeFormatDiagnostics(rawText, contentType) {
   const raw = String(rawText || '').trim();
-  let percentDecoded = '';
   let b64 = '';
-  try { percentDecoded = decodeURIComponent(raw); } catch {}
   try { b64 = b64decode(raw).trim(); } catch {}
-  const candidates = [raw, percentDecoded, b64].filter(Boolean);
-  const count = (re) => candidates.map(x => (x.match(re) || []).length).reduce((a, b) => Math.max(a, b), 0);
-  const startsJson = candidates.some(x => /^[\[{]/.test(x));
-  const hasYamlProxies = candidates.some(x => /(^|\n)\s*proxies\s*:/i.test(x));
-  const hasSurgeLines = candidates.some(x => /(^|\n)[^\n=]+\s*=\s*(vmess|ss|trojan),/i.test(x));
   return {
     contentType: contentType || '',
     rawLength: raw.length,
-    lineCount: raw ? raw.split(/\r?\n/).length : 0,
     appearsBase64: /^[A-Za-z0-9+/_=\r\n-]+$/.test(raw) && raw.length > 32,
     base64DecodedLength: b64.length,
-    percentDecodedChanged: !!percentDecoded && percentDecoded !== raw,
-    startsJson,
-    hasYamlProxies,
-    hasSurgeLines,
-    vmessCount: count(/vmess:\/\//gi),
-    ssCount: count(/ss:\/\//gi),
-    trojanCount: count(/trojan:\/\//gi),
-    shadowsocksCount: count(/shadowsocks:\/\//gi),
-    httpCount: count(/https?:\/\//gi),
-    hasVmessKeyword: candidates.some(x => /\bvmess\b/i.test(x)),
-    hasServerKeyword: candidates.some(x => /\b(server|add|address)\b/i.test(x)),
-    hasUuidLike: candidates.some(x => /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i.test(x))
+    decodedLineCount: b64 ? b64.split(/\r?\n/).length : 0,
+    vmessCount: (b64.match(/vmess:\/\//gi) || []).length,
+    trojanCount: (b64.match(/trojan:\/\//gi) || []).length,
+    hasUuidLikeOutsideNodePayload: /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i.test(b64)
   };
 }
 
@@ -129,30 +167,15 @@ export async function handleTanzouSubscription(request, env = process.env) {
   const configuredKey = String(env.TANZOU_ACCESS_KEY || '');
   const suppliedKey = String(url.searchParams.get('key') || '');
 
-  if (!configuredKey) {
-    return new Response('TANZOU_ACCESS_KEY is not configured', {
-      status: 503,
-      headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store' }
-    });
-  }
-  if (suppliedKey !== configuredKey) {
-    return new Response('TANZOU_ACCESS_KEY mismatch', {
-      status: 401,
-      headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store' }
-    });
-  }
+  if (!configuredKey) return new Response('TANZOU_ACCESS_KEY is not configured', { status: 503, headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store' } });
+  if (suppliedKey !== configuredKey) return new Response('TANZOU_ACCESS_KEY mismatch', { status: 401, headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store' } });
 
   const upstreamUrl = String(env.TANZOU_SUB_URL || '').trim();
-  if (!upstreamUrl) {
-    return new Response('TANZOU_SUB_URL is not configured', { status: 503, headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store' } });
-  }
+  if (!upstreamUrl) return new Response('TANZOU_SUB_URL is not configured', { status: 503, headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store' } });
 
   try {
     const upstream = await fetch(upstreamUrl, {
-      headers: {
-        'User-Agent': 'Shadowrocket/2.2.63',
-        'Accept': 'text/plain,*/*'
-      },
+      headers: { 'User-Agent': 'Shadowrocket/2.2.63', 'Accept': 'text/plain,*/*' },
       redirect: 'follow'
     });
     if (!upstream.ok) throw new Error(`upstream ${upstream.status}`);
@@ -167,29 +190,34 @@ export async function handleTanzouSubscription(request, env = process.env) {
 
     const source = normalizeSubscription(rawText);
     const lines = [];
-    for (const rawLine of source.split(/\r?\n/)) {
-      const line = rawLine.trim();
-      if (!line || line.startsWith('#')) continue;
+
+    // Extract URI nodes globally so subscriptions work with or without line breaks.
+    const uriNodes = source.match(/(?:vmess|trojan|ss):\/\/[^\s]+/gi) || [];
+    for (const node of uriNodes) {
       let converted = null;
-      if (line.startsWith('ss://')) converted = parseSS(line);
-      else if (line.startsWith('trojan://')) converted = parseTrojan(line);
-      else if (line.startsWith('vmess://')) converted = parseVmess(line);
-      else if (/^[^=]+\s*=\s*(ss|vmess|trojan),/i.test(line)) converted = line;
+      if (/^vmess:\/\//i.test(node)) converted = parseVmess(node);
+      else if (/^trojan:\/\//i.test(node)) converted = parseTrojan(node);
+      else if (/^ss:\/\//i.test(node)) converted = parseSS(node);
       if (converted) lines.push(converted);
     }
 
-    if (!lines.length) {
-      return new Response('No supported TanZou nodes found', { status: 422, headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store' } });
+    // Also preserve already-converted Surge proxy lines if upstream ever returns them.
+    for (const rawLine of source.split(/\r?\n/)) {
+      const line = rawLine.trim();
+      if (/^[^=]+\s*=\s*(ss|vmess|trojan),/i.test(line)) lines.push(line);
     }
+
+    const unique = [...new Set(lines)];
+    if (!unique.length) return new Response('No supported TanZou nodes found', { status: 422, headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store' } });
 
     const headers = {
       'Content-Type': 'text/plain; charset=utf-8',
       'Cache-Control': 'no-store',
-      'X-TanZou-Nodes': String(lines.length)
+      'X-TanZou-Nodes': String(unique.length)
     };
     const userInfo = upstream.headers.get('subscription-userinfo');
     if (userInfo) headers['subscription-userinfo'] = userInfo;
-    return new Response(`${lines.join('\n')}\n`, { status: 200, headers });
+    return new Response(`${unique.join('\n')}\n`, { status: 200, headers });
   } catch (error) {
     return new Response(`TanZou conversion failed: ${error?.message || String(error)}`, {
       status: 502,
