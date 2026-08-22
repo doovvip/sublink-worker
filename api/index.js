@@ -1,6 +1,7 @@
 import { createRequire } from 'module';
 import { Readable } from 'stream';
 import { createVercelRuntime } from '../src/runtime/vercel.js';
+import { handleSurgeModule, handleSurgeModuleCenter } from '../src/surgeModules.js';
 import 'hono/jsx/jsx-runtime';
 
 const runtime = createVercelRuntime(process.env);
@@ -37,9 +38,27 @@ export const config = {
 
 export default async function handler(req, res) {
     try {
-        const app = await appPromise;
         const request = await toRequest(req);
-        const response = await app.fetch(request);
+        const url = new URL(request.url);
+
+        let response;
+        if (url.pathname === '/health') {
+            response = new Response('OK', {
+                status: 200,
+                headers: {
+                    'Content-Type': 'text/plain; charset=utf-8',
+                    'Cache-Control': 'no-store'
+                }
+            });
+        } else if (url.pathname === '/surge-modules') {
+            response = handleSurgeModuleCenter(request);
+        } else if (url.pathname === '/surge-module') {
+            response = await handleSurgeModule(request);
+        } else {
+            const app = await appPromise;
+            response = await app.fetch(request);
+        }
+
         await sendResponse(res, response);
     } catch (error) {
         console.error('Vercel handler error', error);
