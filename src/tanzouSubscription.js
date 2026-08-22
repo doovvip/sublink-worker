@@ -70,7 +70,6 @@ function parseVmess(uri) {
   try {
     const obj = JSON.parse(b64decode(uri.slice(8)));
     if (!obj.add || !obj.port || !obj.id) return null;
-    // Match the previously verified Dropbox TanZou Surge list exactly.
     return [
       `${safeName(obj.ps)} = vmess`,
       obj.add,
@@ -91,6 +90,38 @@ function normalizeSubscription(text) {
     } catch {}
   }
   return source;
+}
+
+function safeFormatDiagnostics(rawText, contentType) {
+  const raw = String(rawText || '').trim();
+  let percentDecoded = '';
+  let b64 = '';
+  try { percentDecoded = decodeURIComponent(raw); } catch {}
+  try { b64 = b64decode(raw).trim(); } catch {}
+  const candidates = [raw, percentDecoded, b64].filter(Boolean);
+  const count = (re) => candidates.map(x => (x.match(re) || []).length).reduce((a, b) => Math.max(a, b), 0);
+  const startsJson = candidates.some(x => /^[\[{]/.test(x));
+  const hasYamlProxies = candidates.some(x => /(^|\n)\s*proxies\s*:/i.test(x));
+  const hasSurgeLines = candidates.some(x => /(^|\n)[^\n=]+\s*=\s*(vmess|ss|trojan),/i.test(x));
+  return {
+    contentType: contentType || '',
+    rawLength: raw.length,
+    lineCount: raw ? raw.split(/\r?\n/).length : 0,
+    appearsBase64: /^[A-Za-z0-9+/_=\r\n-]+$/.test(raw) && raw.length > 32,
+    base64DecodedLength: b64.length,
+    percentDecodedChanged: !!percentDecoded && percentDecoded !== raw,
+    startsJson,
+    hasYamlProxies,
+    hasSurgeLines,
+    vmessCount: count(/vmess:\/\//gi),
+    ssCount: count(/ss:\/\//gi),
+    trojanCount: count(/trojan:\/\//gi),
+    shadowsocksCount: count(/shadowsocks:\/\//gi),
+    httpCount: count(/https?:\/\//gi),
+    hasVmessKeyword: candidates.some(x => /\bvmess\b/i.test(x)),
+    hasServerKeyword: candidates.some(x => /\b(server|add|address)\b/i.test(x)),
+    hasUuidLike: candidates.some(x => /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i.test(x))
+  };
 }
 
 export async function handleTanzouSubscription(request, env = process.env) {
@@ -126,7 +157,15 @@ export async function handleTanzouSubscription(request, env = process.env) {
     });
     if (!upstream.ok) throw new Error(`upstream ${upstream.status}`);
 
-    const source = normalizeSubscription(await upstream.text());
+    const rawText = await upstream.text();
+    if (url.searchParams.get('debug') === 'format') {
+      return new Response(JSON.stringify(safeFormatDiagnostics(rawText, upstream.headers.get('content-type')), null, 2), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' }
+      });
+    }
+
+    const source = normalizeSubscription(rawText);
     const lines = [];
     for (const rawLine of source.split(/\r?\n/)) {
       const line = rawLine.trim();
