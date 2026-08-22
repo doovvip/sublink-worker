@@ -11,7 +11,7 @@ function safeName(value, fallback = 'TanZou') {
 
 function quote(value) {
   const s = String(value ?? '');
-  return /[",]/.test(s) ? `\"${s.replace(/\"/g, '\\\"')}\"` : s;
+  return /[\",]/.test(s) ? `\"${s.replace(/\"/g, '\\\"')}\"` : s;
 }
 
 function parseSS(uri) {
@@ -70,7 +70,14 @@ function parseVmess(uri) {
   try {
     const obj = JSON.parse(b64decode(uri.slice(8)));
     if (!obj.add || !obj.port || !obj.id) return null;
-    const parts = [`${safeName(obj.ps)} = vmess`, obj.add, obj.port, `username=${obj.id}`, 'vmess-aead=true'];
+    const parts = [
+      `${safeName(obj.ps)} = vmess`,
+      obj.add,
+      obj.port,
+      `username=${obj.id}`,
+      'vmess-aead=true',
+      'encrypt-method=chacha20-ietf-poly1305'
+    ];
     if (String(obj.tls || '').toLowerCase() === 'tls') parts.push('tls=true');
     const sni = obj.sni || obj.host;
     if (sni && obj.tls) parts.push(`sni=${sni}`);
