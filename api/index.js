@@ -60,6 +60,9 @@ export default async function handler(req, res) {
             response = await handleTanzouSubscription(request, process.env);
         } else if (url.pathname === '/all') {
             response = await handleUnifiedSubscription(request, process.env);
+            if (response.ok) {
+                response.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=86400');
+            }
         } else {
             const app = await appPromise;
             response = await app.fetch(request);
