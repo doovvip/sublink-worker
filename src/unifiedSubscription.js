@@ -33,6 +33,35 @@ function normalizeSource(text) {
   return source;
 }
 
+function boolish(value) {
+  const v = String(value ?? '').trim().toLowerCase();
+  return v === '1' || v === 'true' || v === 'tls' || v === 'yes';
+}
+
+function normalizeVmessCipher(value) {
+  const v = String(value || '').trim().toLowerCase();
+  if (v === 'chacha20-poly1305') return 'chacha20-ietf-poly1305';
+  if (v === 'chacha20-ietf-poly1305' || v === 'aes-128-gcm') return v;
+  return '';
+}
+
+function appendWsTls(parts, options = {}) {
+  const ws = !!options.ws;
+  const tls = !!options.tls;
+  if (ws) {
+    parts.push('ws=true');
+    const path = String(options.path || '/').trim() || '/';
+    parts.push(`ws-path=${path.startsWith('/') ? path : `/${path}`}`);
+    if (options.host) parts.push(`ws-headers=Host:${String(options.host).trim()}`);
+  }
+  if (tls) {
+    parts.push('tls=true');
+    if (options.sni) parts.push(`sni=${String(options.sni).trim()}`);
+    if (options.skipCertVerify) parts.push('skip-cert-verify=true');
+  }
+}
+
+// Generic VMess parser retained for Airport C compatibility.
 function parseVmess(uri) {
   try {
     let raw = uri.slice(8);
@@ -74,6 +103,90 @@ function parseVmess(uri) {
   } catch { return null; }
 }
 
+// Airport B has a mix of legacy and AEAD VMess plus WS/TLS nodes.
+// Preserve the source alterId/transport fields instead of forcing AEAD=true.
+function parseVmessB(uri) {
+  try {
+    let raw = uri.slice(8);
+    let fragment = '';
+    const hashIndex = raw.indexOf('#');
+    if (hashIndex >= 0) {
+      fragment = raw.slice(hashIndex + 1);
+      raw = raw.slice(0, hashIndex);
+    }
+    let query = '';
+    const queryIndex = raw.indexOf('?');
+    if (queryIndex >= 0) {
+      query = raw.slice(queryIndex + 1);
+      raw = raw.slice(0, queryIndex);
+    }
+
+    const decoded = b64decode(raw).trim();
+    try {
+      const obj = JSON.parse(decoded);
+      if (obj.add && obj.port && obj.id) {
+        const aid = Number.parseInt(String(obj.aid ?? obj.alterId ?? '0'), 10);
+        const isAead = !Number.isFinite(aid) || aid === 0;
+        const parts = [
+          `${safeName(obj.ps || fragment)} = vmess`,
+          obj.add,
+          obj.port,
+          `username=${obj.id}`,
+          `vmess-aead=${isAead ? 'true' : 'false'}`
+        ];
+        const cipher = normalizeVmessCipher(obj.scy || obj.cipher);
+        if (cipher) parts.push(`encrypt-method=${cipher}`);
+
+        const net = String(obj.net || obj.network || '').toLowerCase();
+        const tls = boolish(obj.tls) || String(obj.security || '').toLowerCase() === 'tls';
+        appendWsTls(parts, {
+          ws: net === 'ws' || net === 'websocket',
+          tls,
+          path: obj.path,
+          host: obj.host,
+          sni: obj.sni || obj.serverName,
+          skipCertVerify: boolish(obj.allowInsecure) || boolish(obj.skipCertVerify)
+        });
+        return parts.join(', ');
+      }
+    } catch {}
+
+    const at = decoded.lastIndexOf('@');
+    if (at < 1) return null;
+    const credential = decoded.slice(0, at);
+    const hp = parseHostPort(decoded.slice(at + 1));
+    if (!hp) return null;
+    const colon = credential.indexOf(':');
+    if (colon < 1) return null;
+    const rawMethod = credential.slice(0, colon).trim();
+    const uuid = credential.slice(colon + 1).trim();
+    if (!uuid) return null;
+
+    const params = new URLSearchParams(query);
+    const name = params.get('remarks') || params.get('remark') || params.get('name') || fragment || 'Node';
+    const aid = Number.parseInt(params.get('alterId') || params.get('aid') || '0', 10);
+    const isAead = !Number.isFinite(aid) || aid === 0;
+    const parts = [
+      `${safeName(name)} = vmess`, hp.host, hp.port,
+      `username=${uuid}`,
+      `vmess-aead=${isAead ? 'true' : 'false'}`
+    ];
+    const cipher = normalizeVmessCipher(params.get('scy') || params.get('cipher') || rawMethod);
+    if (cipher) parts.push(`encrypt-method=${cipher}`);
+
+    const obfs = String(params.get('obfs') || params.get('net') || params.get('network') || '').toLowerCase();
+    appendWsTls(parts, {
+      ws: obfs === 'websocket' || obfs === 'ws',
+      tls: boolish(params.get('tls')) || String(params.get('security') || '').toLowerCase() === 'tls',
+      path: params.get('path') || params.get('wsPath'),
+      host: params.get('obfsParam') || params.get('host'),
+      sni: params.get('peer') || params.get('sni') || params.get('serverName'),
+      skipCertVerify: boolish(params.get('allowInsecure')) || boolish(params.get('skip-cert-verify'))
+    });
+    return parts.join(', ');
+  } catch { return null; }
+}
+
 function parseTrojan(uri) {
   try {
     const u = new URL(uri);
@@ -82,6 +195,14 @@ function parseTrojan(uri) {
     if (sni) parts.push(`sni=${sni}`);
     const allow = u.searchParams.get('allowInsecure') || u.searchParams.get('allow_insecure');
     if (allow === '1' || allow === 'true') parts.push('skip-cert-verify=true');
+    const type = String(u.searchParams.get('type') || u.searchParams.get('network') || '').toLowerCase();
+    if (type === 'ws' || type === 'websocket') {
+      parts.push('ws=true');
+      const path = u.searchParams.get('path') || '/';
+      parts.push(`ws-path=${path.startsWith('/') ? path : `/${path}`}`);
+      const host = u.searchParams.get('host');
+      if (host) parts.push(`ws-headers=Host:${host}`);
+    }
     parts.push('udp-relay=true');
     return parts.join(', ');
   } catch { return null; }
@@ -141,6 +262,24 @@ function convertGeneric(text) {
   return [...new Set(lines)];
 }
 
+function convertAirportB(text) {
+  const source = normalizeSource(text);
+  const lines = [];
+  for (const rawLine of source.split(/\r?\n/)) {
+    const line = rawLine.trim();
+    if (/^[^=]+\s*=\s*(ss|vmess|trojan|http|https|socks5),/i.test(line)) lines.push(line);
+  }
+  const uriNodes = source.match(/(?:vmess|trojan|ss):\/\/[^\s]+/gi) || [];
+  for (const node of uriNodes) {
+    let converted = null;
+    if (/^vmess:\/\//i.test(node)) converted = parseVmessB(node);
+    else if (/^trojan:\/\//i.test(node)) converted = parseTrojan(node);
+    else if (/^ss:\/\//i.test(node)) converted = parseSS(node);
+    if (converted) lines.push(converted);
+  }
+  return [...new Set(lines)];
+}
+
 function addPrefix(lines, prefix) {
   return lines.map((line) => line.replace(/^\s*([^=]+?)\s*=\s*/, (_, name) => `${prefix} ${name.trim()} = `));
 }
@@ -180,7 +319,7 @@ export async function handleUnifiedSubscription(request, env = process.env) {
     if (!aResponse.ok) throw new Error(`TanZou ${aResponse.status}`);
 
     const aLines = addPrefix((await aResponse.text()).split(/\r?\n/).map((x) => x.trim()).filter(Boolean), 'A');
-    const bLines = addPrefix(convertGeneric(bSource.text), 'B');
+    const bLines = addPrefix(convertAirportB(bSource.text), 'B');
     const cLines = addPrefix(convertGeneric(cSource.text), 'C');
     if (!aLines.length || !bLines.length || !cLines.length) {
       throw new Error(`node parse failed A=${aLines.length} B=${bLines.length} C=${cLines.length}`);
