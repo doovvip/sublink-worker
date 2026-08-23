@@ -3,6 +3,7 @@ import { Readable } from 'stream';
 import { createVercelRuntime } from '../src/runtime/vercel.js';
 import { handleSurgeModule, handleSurgeModuleCenter } from '../src/surgeModules.js';
 import { handleTanzouSubscription } from '../src/tanzouSubscription.js';
+import { handleUnifiedSubscription } from '../src/unifiedSubscription.js';
 import 'hono/jsx/jsx-runtime';
 
 const runtime = createVercelRuntime(process.env);
@@ -57,6 +58,8 @@ export default async function handler(req, res) {
             response = await handleSurgeModule(request);
         } else if (url.pathname === '/tanzou') {
             response = await handleTanzouSubscription(request, process.env);
+        } else if (url.pathname === '/all') {
+            response = await handleUnifiedSubscription(request, process.env);
         } else {
             const app = await appPromise;
             response = await app.fetch(request);
