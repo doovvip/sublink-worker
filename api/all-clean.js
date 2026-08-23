@@ -57,10 +57,34 @@ function cleanAirportB(lines) {
   };
 }
 
+function cleanAirportA(lines) {
+  const kept = [];
+  const seen = new Set();
+  let rawCount = 0;
+
+  for (const line of lines) {
+    if (!/^A\s+/i.test(line)) {
+      kept.push(line);
+      continue;
+    }
+
+    rawCount += 1;
+    const key = canonicalProxy(line);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    kept.push(line);
+  }
+
+  return {
+    lines: kept,
+    rawCount,
+    cleanCount: seen.size
+  };
+}
+
 export default async function handler(req, res) {
   try {
     const url = new URL(getRequestUrl(req));
-    // handleUnifiedSubscription only cares about origin and key, so expose it as /all internally.
     const upstreamUrl = new URL('/all', url.origin);
     const key = url.searchParams.get('key');
     if (key) upstreamUrl.searchParams.set('key', key);
@@ -75,25 +99,29 @@ export default async function handler(req, res) {
 
     const text = await response.text();
     const sourceLines = text.split(/\r?\n/).map((x) => x.trim()).filter(Boolean);
-    const cleaned = cleanAirportB(sourceLines);
-    const aCount = cleaned.lines.filter((x) => /^A\s+/i.test(x)).length;
-    const bCount = cleaned.lines.filter((x) => /^B\s+/i.test(x)).length;
-    const cCount = cleaned.lines.filter((x) => /^C\s+/i.test(x)).length;
+    const cleanedB = cleanAirportB(sourceLines);
+    const cleanedA = cleanAirportA(cleanedB.lines);
+    const finalLines = cleanedA.lines;
+
+    const aCount = finalLines.filter((x) => /^A\s+/i.test(x)).length;
+    const bCount = finalLines.filter((x) => /^B\s+/i.test(x)).length;
+    const cCount = finalLines.filter((x) => /^C\s+/i.test(x)).length;
 
     res.statusCode = 200;
     res.setHeader('Content-Type', 'text/plain; charset=utf-8');
     res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=86400');
+    res.setHeader('X-Airport-A-Raw-Nodes', String(cleanedA.rawCount));
     res.setHeader('X-Airport-A-Nodes', String(aCount));
-    res.setHeader('X-Airport-B-Raw-Nodes', String(cleaned.rawCount));
+    res.setHeader('X-Airport-B-Raw-Nodes', String(cleanedB.rawCount));
     res.setHeader('X-Airport-B-Nodes', String(bCount));
     res.setHeader('X-Airport-C-Nodes', String(cCount));
-    res.setHeader('X-Airport-Total-Nodes', String(cleaned.lines.length));
+    res.setHeader('X-Airport-Total-Nodes', String(finalLines.length));
     const userInfo = response.headers.get('subscription-userinfo');
     if (userInfo) res.setHeader('subscription-userinfo', userInfo);
-    res.end(`${cleaned.lines.join('\n')}\n`);
+    res.end(`${finalLines.join('\n')}\n`);
   } catch (error) {
     res.statusCode = 500;
     res.setHeader('Content-Type', 'text/plain; charset=utf-8');
-    res.end(`Airport B cleaner failed: ${error?.message || String(error)}`);
+    res.end(`Airport cleaner failed: ${error?.message || String(error)}`);
   }
 }
