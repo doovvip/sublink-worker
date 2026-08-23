@@ -166,6 +166,13 @@ function safeFormatDiagnostics(rawText, contentType) {
   };
 }
 
+function isUsableSurgeNode(line) {
+  const value = String(line || '');
+  if (/\b(?:127\.0\.0\.1|0\.0\.0\.0|localhost)\b/i.test(value)) return false;
+  if (/防失联|防失聯|tanzfabu\.com/i.test(value)) return false;
+  return true;
+}
+
 export async function handleTanzouSubscription(request, env = process.env) {
   const url = new URL(request.url);
   const configuredKey = String(env.TANZOU_ACCESS_KEY || '');
@@ -208,7 +215,7 @@ export async function handleTanzouSubscription(request, env = process.env) {
       if (/^[^=]+\s*=\s*(ss|vmess|trojan),/i.test(line)) lines.push(line);
     }
 
-    const unique = [...new Set(lines)];
+    const unique = [...new Set(lines)].filter(isUsableSurgeNode);
     if (!unique.length) return new Response('No supported TanZou nodes found', { status: 422, headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store' } });
 
     const headers = {
