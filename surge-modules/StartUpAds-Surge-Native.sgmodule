@@ -1,5 +1,5 @@
 #!name=墨鱼去开屏2.0去广告@ddgksf2013
-#!desc=Surge 原生稳定基线｜恢复到已实机确认可用版本｜无 QX 模拟、无脚本运行层
+#!desc=Surge 原生优化候选 V3｜保留已跑通基线｜补回墨鱼旧版 AnyThink 广告中介 + 美图秀秀广告域 + 喜马拉雅精准开屏链路
 #!author=ddgksf2013 / Surge native optimization
 #!category=去广告
 #!system=ios
@@ -31,6 +31,11 @@
 # ============================================================
 
 [URL Rewrite]
+# ===== 喜马拉雅：精准开屏/实时广告接口 =====
+# 只挂常见 mobile 三主机，不使用 *.ximalaya.com 全域 MITM。
+^https?:\/\/(?:mobile|mobilehera|mobwsa)\.ximalaya\.com\/api\/v\d+\/adRealTime(?:\/|\?|$) - reject
+^https?:\/\/(?:mobile|mobilehera|mobwsa)\.ximalaya\.com\/ting\/(?:preload|loading|feed|home)(?:\/|\?|$) - reject
+
 # ===== 百度网盘 =====
 ^https?:\/\/pan\.baidu\.com\/(?:act\/v\d+\/(?:bchannel|welfare)\/list|rest\/2\.0\/pcs\/ad) - reject-200
 
@@ -73,4 +78,4 @@
 ^https:\/\/pan\.baidu\.com\/(?:act\/api\/activityentry|buy\/ad\/conf\?.*type=splashMode) data-type=text data="{}" status-code=200 header="Content-Type:application/json"
 
 [MITM]
-hostname = %APPEND% pan.baidu.com, api-sams.walmartmobile.cn, guide-acs.m.taobao.com, api.m.jd.com, bdsp-x.jd.com, dsp-x.jd.com, peisongapi.meituan.com, img.meituan.net, s3plus.meituan.net, flowplus.meituan.net, p*.meituan.net, acs.m.goofish.com, api.pinduoduo.com, api.yangkeduo.com, cn-acs.m.cainiao.com, iyes.youku.com, acs.m.taobao.com, ccsp-egmas.sf-express.com, shopic.sf-express.com
+hostname = %APPEND% pan.baidu.com, api-sams.walmartmobile.cn, guide-acs.m.taobao.com, api.m.jd.com, bdsp-x.jd.com, dsp-x.jd.com, peisongapi.meituan.com, img.meituan.net, s3plus.meituan.net, flowplus.meituan.net, p*.meituan.net, acs.m.goofish.com, api.pinduoduo.com, api.yangkeduo.com, cn-acs.m.cainiao.com, iyes.youku.com, acs.m.taobao.com, ccsp-egmas.sf-express.com, shopic.sf-express.com, mobile.ximalaya.com, mobilehera.ximalaya.com, mobwsa.ximalaya.com
