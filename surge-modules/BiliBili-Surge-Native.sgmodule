@@ -1,9 +1,17 @@
 #!name=哔哩哔哩去广告
-#!desc=Surge 原生优化候选｜保留现跑通的完整入口、UI 净化、墨鱼 JSON 净化与 Proto 去广告｜减少重复脚本入口与 MITM 范围
+#!desc=哔哩哔哩母版｜Surge 原生优化稳定基线｜已实机跑通：完整入口、UI 净化、开屏/推荐/直播/搜索/动态/Proto 去广告正常
 #!author=ddgksf2013, BiliUniverse / Surge native optimization
 #!category=去广告
 #!arguments=Home.Switch:true,Home.Tab:"直播tab,推荐tab,hottopic,bangumi,anime,film,koreavtw",Home.Tab_default:"推荐tab",Home.Top_left:"mine",Home.Top:"消息Top",Bottom:"home,dynamic,ogv,会员购Bottom,我的Bottom",Region.Switch:true,Mine.Switch:true,Mine.iPad.Switch:true,Storage:"Argument",LogLevel:"WARN"
 #!system=ios
+
+# ============================================================
+# 母版规则
+# ============================================================
+# 本文件为“哔哩哔哩母版 / 正式基线”。
+# 后续所有优化、实验、兼容修改均从本文件派生；未经实机验证不反向覆盖母版。
+# 当前母版已由用户实机确认跑通。
+# ============================================================
 
 # ============================================================
 # 设计思路
