@@ -82,7 +82,7 @@ let method = $request['method'];
 if ($request.url.indexOf('/mobi.s') !== -1) {
     let body = $response['body'];
     const musicKey = $['getval']('Kw_MusicKey');
-    let PlayUrl = 'https://mobi.kuwo.cn/mobi.s?f=web&source=kwplayer_ar_5.1.0.0_B_jiakong_vh.apk&type=convert_url_with_sign&br=2000kflac&rid='
+    let PlayUrl = 'https://mobi.kuwo.cn/mobi.s?f=web&source=kwplayercar_ar_6.0.0.9_B_jiakong_vh.apk&from=PC&type=convert_url_with_sign&br=320kmp3&rid='
     !(async () => {
         if (musicKey) {
             await $.http
