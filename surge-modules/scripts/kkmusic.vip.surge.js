@@ -73,7 +73,7 @@ hostname = *.kuwo.cn, *.lrts.me
 ***********************************/
 
 
-const version = 'V16-Surge-PlayFix-1.0';
+const version = 'V16-Surge-PlayFix-1.1';
 
 const $ = new Env('kuwo')
 
@@ -128,33 +128,49 @@ if ($request.url.indexOf('/mobi.s') !== -1) {
     const bodyRid = extractRidFromBody(originalBody);
     const musicKey = urlRid || bodyRid || storedRid;
 
-    const PLAY_SOURCES = [
-        'https://mobi.kuwo.cn/mobi.s?f=web&source=kwplayercar_ar_6.0.0.9_B_jiakong_vh.apk&from=PC&type=convert_url_with_sign&rid=',
-        'https://mobi.kuwo.cn/mobi.s?f=web&source=kwplayerhd_ar_4.3.0.8_tianbao_T1A_qirui.apk&type=convert_url_with_sign&rid='
-    ];
-
+    // 与当前仍可工作的官方车载接口保持一致：
+    // source + 动态 C_APK_guanwang user + okhttp UA。
     const qualities = ['320kmp3', '128kmp3'];
 
-    const requestPlayBody = async (base, rid, br) => {
-        const url = base + encodeURIComponent(rid) + '&br=' + br;
-        log('取源请求 rid=' + rid + ' br=' + br + ' source=' + (base.includes('kwplayercar') ? 'car6' : 'tianbao4'));
+    const makeUser = () => {
+        const now = Date.now().toString();
+        const rnd = Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
+        return 'C_APK_guanwang_' + now + rnd;
+    };
+
+    const requestPlayBody = async (rid, br) => {
+        const params = [
+            'f=web',
+            'source=' + encodeURIComponent('kwplayercar_ar_6.0.0.9_B_jiakong_vh.apk'),
+            'from=PC',
+            'type=convert_url_with_sign',
+            'br=' + encodeURIComponent(br),
+            'rid=' + encodeURIComponent(rid),
+            'user=' + encodeURIComponent(makeUser())
+        ].join('&');
+        const url = 'https://mobi.kuwo.cn/mobi.s?' + params;
+        log('取源请求 rid=' + rid + ' br=' + br + ' source=kwplayercar6');
         const response = await $.http.get({
             url,
             headers: {
-                'User-Agent': 'Mozilla/5.0',
-                'Accept': 'application/json, text/plain, */*'
+                'User-Agent': 'okhttp/3.10.0',
+                'Accept': '*/*'
             }
         });
+        const status = response && (response.statusCode || response.status);
+        log('取源HTTP=' + status);
         return response && response.body ? String(response.body) : '';
     };
 
     const inspectPlayBody = (raw) => {
-        const result = {ok: false, url: '', format: '', raw: String(raw || '')};
+        const result = {ok: false, url: '', format: '', code: '', ekey: '', raw: String(raw || '')};
         if (!result.raw) return result;
 
         let candidate = '';
         try {
             const obj = JSON.parse(result.raw);
+            result.code = String(obj?.code ?? '');
+            result.ekey = String(obj?.data?.ekey ?? '');
             candidate = String(
                 obj?.data?.url ||
                 obj?.url ||
@@ -162,6 +178,8 @@ if ($request.url.indexOf('/mobi.s') !== -1) {
                 obj?.data?.audioUrl ||
                 ''
             );
+            result.format = String(obj?.data?.format || '').toLowerCase();
+            if (result.code && result.code !== '200') return result;
         } catch (_) {
             const m = result.raw.match(/https?:\/\/[^\s"'<>]+/i);
             candidate = m ? m[0] : '';
@@ -170,16 +188,19 @@ if ($request.url.indexOf('/mobi.s') !== -1) {
         if (!/^https?:\/\//i.test(candidate)) return result;
 
         const lower = candidate.toLowerCase();
-        const encrypted = /\.(?:mgg|mflac|mggl|mogg|mmp4|mgg9|mflac9|mgg1|mflac1)(?:\?|$)/i.test(lower);
-        if (encrypted) {
+        const encryptedByURL = /\.(?:mgg|mflac|mggl|mogg|mmp4|mgg9|mflac9|mgg1|mflac1)(?:\?|$)/i.test(lower);
+        const encryptedByFormat = /^(?:mgg|mflac|mggl|mogg|mmp4)/i.test(result.format);
+        if (encryptedByURL || encryptedByFormat || result.ekey) {
             result.format = 'encrypted';
             return result;
         }
 
         result.ok = true;
         result.url = candidate;
-        result.format = /\.flac(?:\?|$)/i.test(lower) ? 'flac' :
-                        /\.mp3(?:\?|$)/i.test(lower) ? 'mp3' : 'direct';
+        if (!result.format) {
+            result.format = /\.flac(?:\?|$)/i.test(lower) ? 'flac' :
+                            /\.mp3(?:\?|$)/i.test(lower) ? 'mp3' : 'direct';
+        }
         return result;
     };
 
@@ -192,21 +213,18 @@ if ($request.url.indexOf('/mobi.s') !== -1) {
 
         log('RID=' + musicKey + ' 来源=' + (urlRid ? 'request-url' : bodyRid ? 'response-body' : 'store'));
 
-        for (const base of PLAY_SOURCES) {
-            for (const br of qualities) {
-                try {
-                    const candidateBody = await requestPlayBody(base, musicKey, br);
-                    const check = inspectPlayBody(candidateBody);
-                    log('取源结果 br=' + br + ' ok=' + check.ok + ' format=' + (check.format || 'unknown'));
-                    if (check.ok) {
-                        // 只有确认拿到可直接播放的 HTTP(S) 音频地址时才替换响应。
-                        $['setdata'](musicKey, 'Kw_LastGoodRid');
-                        $done({body: candidateBody});
-                        return;
-                    }
-                } catch (e) {
-                    log('取源异常 br=' + br + ' error=' + e);
+        for (const br of qualities) {
+            try {
+                const candidateBody = await requestPlayBody(musicKey, br);
+                const check = inspectPlayBody(candidateBody);
+                log('取源结果 br=' + br + ' code=' + (check.code || '-') + ' ok=' + check.ok + ' format=' + (check.format || 'unknown'));
+                if (check.ok) {
+                    $['setdata'](musicKey, 'Kw_LastGoodRid');
+                    $done({body: candidateBody});
+                    return;
                 }
+            } catch (e) {
+                log('取源异常 br=' + br + ' error=' + e);
             }
         }
 
