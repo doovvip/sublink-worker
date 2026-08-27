@@ -99,16 +99,7 @@ if ($request.url.indexOf('/mobi.s') !== -1) {
     };
     !(async () => {
         if (musicKey) {
-            try {
-                const flacBody = await getPlayBody('flac');
-                if (isDirectPlayable(flacBody)) {
-                    body = flacBody;
-                } else {
-                    body = await getPlayBody('320kmp3');
-                }
-            } catch (_) {
-                body = await getPlayBody('320kmp3');
-            }
+            body = await getPlayBody('2000kflac');
         } else {
             $.msg('获取歌曲ID错误,歌曲解锁失败!!!')
         }
