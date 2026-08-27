@@ -1,0 +1,40 @@
+#!name=酷我音乐会员解锁@ddgksf2013
+#!desc=Surge 模拟 Quantumult X 环境稳定精简版：保留已跑通的QX兼容、VIP/播放/净化逻辑，仅关闭调试开销。
+#!system=ios
+
+[Map Local]
+^https?:\/\/.*kuwo\.cn\/star\/upload\/95\/25\/1764662243747_\.png data-type=text data=" " status-code=200
+^https?:\/\/.*kuwo\.cn\/star\/upload\/25\/9\/1763524573099_\.png data-type=text data=" " status-code=200
+^https?:\/\/.*kuwo\.cn\/openapi\/v\d+\/operate\/text data-type=text data=" " status-code=200
+^https?:\/\/.*kuwo\.cn\/openapi\/v\d+\/operate\/downTab\/info data-type=text data=" " status-code=200
+^https?:\/\/.*kuwo\.cn\/apps\/global-free-popup data-type=text data=" " status-code=200
+^https?:\/\/vip1\.kuwo\.cn\/vip\/activity\/kwMemberDay data-type=text data=" " status-code=200
+^https?:\/\/mc\.tencentmusic\.com\/sdk\/ad data-type=text data=" " status-code=200
+^https?:\/\/.*kuwo\.cn\/AdSystem data-type=text data=" " status-code=200
+^https?:\/\/.*kuwo\.cn\/openapi\/v1\/user\/freemium\/global\/text data-type=text data=" " status-code=200
+^https?:\/\/hotword\.kuwo\.cn\/hotword\.s data-type=text data=" " status-code=200
+^https?:\/\/vip1\.kuwo\.cn\/vip_adv\/ data-type=text data=" " status-code=200
+^https?:\/\/vip1\.kuwo\.cn\/vip\/v\d+\/sysinfo data-type=text data=" " status-code=200
+^https?:\/\/wapi\.kuwo\.cn\/openapi\/v1\/app\/pasterAdvert data-type=text data=" " status-code=200
+^https?:\/\/mobilead\.kuwo\.cn\/ data-type=text data=" " status-code=200
+^https?:\/\/.*kuwo\.cn\/star\/upload\/64\/73\/1724231349487_\.M data-type=text data=" " status-code=200
+^https?:\/\/rich\.kuwo\.cn\/AdService data-type=text data=" " status-code=200
+
+[Script]
+kkmusic.vip.01 = type=http-response,pattern=^https?:\/\/searchrecterm\.kuwo\.cn\/recterm\.s,requires-body=true,max-size=-1,timeout=60,engine=webview,script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/kkmusic.vip.surge-qxenv.js
+kkmusic.vip.02 = type=http-response,pattern=^https?:\/\/appi\.kuwo\.cn\/kuwopay\/vip-tab\/page\/cells,requires-body=true,max-size=-1,timeout=60,engine=webview,script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/kkmusic.vip.surge-qxenv.js
+kkmusic.vip.03 = type=http-response,pattern=^https?:\/\/appi\.kuwo\.cn\/kuwopay\/vip-tab\/setting,requires-body=true,max-size=-1,timeout=60,engine=webview,script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/kkmusic.vip.surge-qxenv.js
+kkmusic.vip.04 = type=http-response,pattern=^https?:\/\/musicpay\.kuwo\.cn\/music\.pay\?newver,requires-body=true,max-size=-1,timeout=60,engine=webview,script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/kkmusic.vip.surge-qxenv.js
+kkmusic.vip.05 = type=http-response,pattern=^https?:\/\/[a-z0-9A-Z]+\.(kuwo|lrts)\.(cn|me)\/a\.p,requires-body=true,max-size=-1,timeout=60,engine=webview,script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/kkmusic.vip.surge-qxenv.js
+kkmusic.vip.06 = type=http-response,pattern=^https?:\/\/[a-z0-9A-Z]+\.kuwo\.cn\/audi\.tion,requires-body=true,max-size=-1,timeout=60,engine=webview,script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/kkmusic.vip.surge-qxenv.js
+kkmusic.vip.07 = type=http-response,pattern=^https?:\/\/.*\.kuwo\.cn\/v2\/api\/pay\/vip\/extraVipStatus,requires-body=true,max-size=-1,timeout=60,engine=webview,script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/kkmusic.vip.surge-qxenv.js
+kkmusic.vip.08 = type=http-response,pattern=^https?:\/\/vip1\.kuwo\.cn\/vip\/enc\/user\/vip\?op=ui,requires-body=true,max-size=-1,timeout=60,engine=webview,script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/kkmusic.vip.surge-qxenv.js
+kkmusic.vip.09 = type=http-response,pattern=^https?:\/\/vip1\.kuwo\.cn\/vip\/v2\/userbase\/vip\?op=get,requires-body=true,max-size=-1,timeout=60,engine=webview,script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/kkmusic.vip.surge-qxenv.js
+kkmusic.vip.10 = type=http-response,pattern=^https?:\/\/vip1\.kuwo\.cn\/vip\/v2\/user\/vip\?(uid|op=ui),requires-body=true,max-size=-1,timeout=60,engine=webview,script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/kkmusic.vip.surge-qxenv.js
+kkmusic.vip.11 = type=http-response,pattern=^https?:\/\/vip1\.kuwo\.cn\/vip\/v2\/theme,requires-body=true,max-size=-1,timeout=60,engine=webview,script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/kkmusic.vip.surge-qxenv.js
+kkmusic.vip.12 = type=http-request,pattern=^https?:\/\/musicpay\.kuwo\.cn\/music\.pay\?ui,timeout=60,engine=webview,script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/kkmusic.vip.surge-qxenv.js
+kkmusic.vip.13 = type=http-response,pattern=^https?:\/\/appi\.kuwo\.cn\/kuwopay\/personal\/cells,requires-body=true,max-size=-1,timeout=60,engine=webview,script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/kkmusic.vip.surge-qxenv.js
+kkmusic.vip.14 = type=http-response,pattern=^https?:\/\/[a-z0-9A-Z]+\.kuwo\.cn\/mobi\.s\?f=kwxs,requires-body=true,max-size=-1,timeout=60,engine=webview,script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/kkmusic.vip.surge-qxenv.js
+
+[MITM]
+hostname = %APPEND% *.kuwo.cn, *.lrts.me, mc.tencentmusic.com, h5s.kuwo.cn
