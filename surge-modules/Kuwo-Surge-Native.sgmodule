@@ -20,6 +20,7 @@
 
 
 [Map Local]
+# 酷我开屏：兼容新版 pasterAdvert / startup config
 ^https?:\/\/.*kuwo\.cn\/star\/upload\/95\/25\/1764662243747_\.png data-type=text data=" " status-code=200
 ^https?:\/\/.*kuwo\.cn\/star\/upload\/25\/9\/1763524573099_\.png data-type=text data=" " status-code=200
 ^https?:\/\/.*kuwo\.cn\/openapi\/v\d+\/operate\/text data-type=text data=" " status-code=200
@@ -32,7 +33,7 @@
 ^https?:\/\/hotword\.kuwo\.cn\/hotword\.s data-type=text data=" " status-code=200
 ^https?:\/\/vip1\.kuwo\.cn\/vip_adv\/ data-type=text data=" " status-code=200
 ^https?:\/\/vip1\.kuwo\.cn\/vip\/v\d+\/sysinfo data-type=text data=" " status-code=200
-^https?:\/\/wapi\.kuwo\.cn\/openapi\/v1\/app\/pasterAdvert data-type=text data=" " status-code=200
+^https?:\/\/wapi\.kuwo\.cn\/openapi\/v\d+\/app\/(?:pasterAdvert(?:\/config)?|startup\/config) data-type=text data=" " status-code=200
 ^https?:\/\/mobilead\.kuwo\.cn\/ data-type=text data=" " status-code=200
 ^https?:\/\/.*kuwo\.cn\/star\/upload\/64\/73\/1724231349487_\.M data-type=text data=" " status-code=200
 ^https?:\/\/rich\.kuwo\.cn\/AdService data-type=text data=" " status-code=200
