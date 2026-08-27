@@ -1,5 +1,5 @@
 #!name=墨鱼去开屏2.0去广告@ddgksf2013｜实验V7
-#!desc=实验 V7｜美图/V380 Pro 已实机通过｜喜马拉雅按实机请求补穿山甲 B 域 + qchannel 广告/跟踪域
+#!desc=实验 V7｜V380 Pro 已通过｜喜马拉雅按实机请求补 Pangle-B 新域 + 好友Banner/营销弹窗｜美图保持已通过
 #!author=ddgksf2013 / Surge native optimization
 #!category=去广告
 #!system=ios
@@ -8,7 +8,7 @@
 # 实验 V7 / 不覆盖稳定母版
 # ============================================================
 # 基线：StartUpAds-Surge-Native.sgmodule（已实机跑通）。
-# 美图秀秀、V380 Pro 已实机确认通过；V7 只针对喜马拉雅当前实机请求继续补漏。
+# 美图秀秀、V380 Pro 已实机确认通过；V7 只继续处理喜马拉雅。
 # 验证通过前不晋升、不覆盖稳定母版。
 #
 # V380 Pro：
@@ -65,20 +65,11 @@
 # ============================================================
 
 [Rule]
-# ===== 喜马拉雅：V7 实机请求补漏 =====
-# 已确认现有规则正在生效：
-# - adse.ximalaya.com/adx/ad -> REJECT
-# - adse.ximalaya.com/ting/preload -> Map Local
-# - sdk.e.qq.com / tangram.e.qq.com / gdti* -> REJECT
-#
-# 仍然放行且高度可疑的广告链路：
-# 1) api-access.pangolin-sdk-toutiao-b.com
-#    该主机属于穿山甲 iOS 广告获取接口 /api/ad/union/sdk/get_ads。
-# 2) qchannel01.cn / qchannel03.cn
-#    多套广告规则库将其列为广告/跟踪域，且本次启动时有实际请求。
+# ===== 喜马拉雅：实机漏网广告平台 =====
+# 01:17 实机请求中 api-access.pangolin-sdk-toutiao-b.com 仍为 DIRECT，
+# 同一时刻 GDT 与 adse.ximalaya.com 已被成功 REJECT、ting/preload 已命中 Map Local。
+# 这条是当前最明确的漏网广告链路。
 DOMAIN-SUFFIX,pangolin-sdk-toutiao-b.com,REJECT
-DOMAIN-SUFFIX,qchannel01.cn,REJECT
-DOMAIN-SUFFIX,qchannel03.cn,REJECT
 
 # ===== V380 Pro：实机最近请求命中的广告链路 =====
 # Pangle 已被当前规则成功 REJECT，说明 Surge 模块已正常生效。
@@ -186,6 +177,10 @@ DOMAIN-SUFFIX,adweb.ximalaya.com,REJECT
 DOMAIN-SUFFIX,linkeye.ximalaya.com,REJECT
 
 [URL Rewrite]
+# ===== 喜马拉雅：实机/成熟规则补充 =====
+^https?:\/\/passport\.ximalaya\.com\/friendship-mobile\/v1\/findFriendsBanner\/show(?:\/|\?|$) - reject
+^https?:\/\/mobile\.ximalaya\.com\/business-sale-promotion-guide-mobile-web\/popup\/info(?:\/|\?|$) - reject
+
 # ===== 喜马拉雅：阻断 HTTPDNS 绕过 =====
 ^https?:\/\/(?:gslbali|gslbtx)\.ximalaya\.com\/linkeye-cloud\/httpdns\/ - reject
 ^https?:\/\/[^\/]+\.ximalaya\.com\/linkeye-cloud\/checkIP(?:\/|\?|$) - reject
@@ -248,5 +243,7 @@ DOMAIN-SUFFIX,linkeye.ximalaya.com,REJECT
 # 百度网盘：两个接口都要求返回空 JSON，合并为一个原生 Map Local
 ^https:\/\/pan\.baidu\.com\/(?:act\/api\/activityentry|buy\/ad\/conf\?.*type=splashMode) data-type=text data="{}" status-code=200 header="Content-Type:application/json"
 
+# qchannel01/qchannel03 属于 QuestMobile 统计链路，当前不作为广告创意源处理。
+# imagev2.xmcdn.com 是喜马拉雅通用图片 CDN，不能整域封锁，否则会误伤封面/图片。
 [MITM]
-hostname = %APPEND% pan.baidu.com, api-sams.walmartmobile.cn, guide-acs.m.taobao.com, api.m.jd.com, bdsp-x.jd.com, dsp-x.jd.com, peisongapi.meituan.com, img.meituan.net, s3plus.meituan.net, flowplus.meituan.net, p*.meituan.net, acs.m.goofish.com, api.pinduoduo.com, api.yangkeduo.com, cn-acs.m.cainiao.com, iyes.youku.com, acs.m.taobao.com, ccsp-egmas.sf-express.com, shopic.sf-express.com, mea.meitudata.com, *.ximalaya.com, ad.nvdvr.cn
+hostname = %APPEND% pan.baidu.com, api-sams.walmartmobile.cn, guide-acs.m.taobao.com, api.m.jd.com, bdsp-x.jd.com, dsp-x.jd.com, peisongapi.meituan.com, img.meituan.net, s3plus.meituan.net, flowplus.meituan.net, p*.meituan.net, acs.m.goofish.com, api.pinduoduo.com, api.yangkeduo.com, cn-acs.m.cainiao.com, iyes.youku.com, acs.m.taobao.com, ccsp-egmas.sf-express.com, shopic.sf-express.com, mea.meitudata.com, *.ximalaya.com, ad.nvdvr.cn, passport.ximalaya.com, mobile.ximalaya.com
