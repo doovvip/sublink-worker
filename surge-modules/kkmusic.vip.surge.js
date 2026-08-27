@@ -1,7 +1,7 @@
 /*
- * 酷我音乐会员解锁@ddgksf2013 - Surge 原版基线
+ * 酷我音乐会员解锁 - Surge 原版基线
  * 业务逻辑：ddgksf2013 kkmusic.vip.js
- * 正式基线：已实机跑通；原 QX Env 已替换为 Surge 原生 API；保留播放、缓存、VIP、广告净化完整逻辑。
+ * 正式原版：已实机跑通；原 QX Env 已替换为 Surge 原生 API；保留播放、缓存、VIP、广告净化完整逻辑。
  * 不注入 $task / $prefs / $notify。
  */
 /***********************************
