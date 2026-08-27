@@ -82,16 +82,33 @@ let method = $request['method'];
 if ($request.url.indexOf('/mobi.s') !== -1) {
     let body = $response['body'];
     const musicKey = $['getval']('Kw_MusicKey');
-    let PlayUrl = 'https://mobi.kuwo.cn/mobi.s?f=web&source=kwplayercar_ar_6.0.0.9_B_jiakong_vh.apk&from=PC&type=convert_url_with_sign&br=320kmp3&rid='
+    const PlayBase = 'https://mobi.kuwo.cn/mobi.s?f=web&source=kwplayercar_ar_6.0.0.9_B_jiakong_vh.apk&from=PC&type=convert_url_with_sign&rid='
+    const getPlayBody = async (br) => {
+        const response = await $.http.get({url: PlayBase + musicKey + '&br=' + br});
+        return response.body;
+    };
+    const isDirectPlayable = (raw) => {
+        try {
+            const obj = JSON.parse(raw);
+            const u = String(obj?.data?.url || '').toLowerCase();
+            if (!u) return false;
+            return !/\.(mgg|mflac|mggl|mogg|mmp4|mgg9|mflac9|mgg1|mflac1)(\?|$)/.test(u);
+        } catch (_) {
+            return false;
+        }
+    };
     !(async () => {
         if (musicKey) {
-            await $.http
-                .get({
-                    url: PlayUrl + musicKey
-                })
-                .then((response) => {
-                    body = response.body
-                })
+            try {
+                const flacBody = await getPlayBody('flac');
+                if (isDirectPlayable(flacBody)) {
+                    body = flacBody;
+                } else {
+                    body = await getPlayBody('320kmp3');
+                }
+            } catch (_) {
+                body = await getPlayBody('320kmp3');
+            }
         } else {
             $.msg('获取歌曲ID错误,歌曲解锁失败!!!')
         }
