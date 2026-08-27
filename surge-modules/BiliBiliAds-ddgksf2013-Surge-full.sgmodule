@@ -1,0 +1,59 @@
+#!name=哔哩哔哩去广告@ddgksf2013
+#!desc=完整整合稳定版｜墨鱼全面净化 + BiliUniverse Enhanced 最全首页/港澳台/动画/韩综/节目入口 + Proto 去广告｜修复脚本404
+#!author=ddgksf2013, BiliUniverse / Surge conversion by OpenAI
+#!category=去广告
+#!arguments=Home.Switch:true,Home.Tab:"直播tab,推荐tab,hottopic,bangumi,anime,film,koreavtw",Home.Tab_default:"推荐tab",Home.Top_left:"mine",Home.Top:"消息Top",Bottom:"home,dynamic,ogv,会员购Bottom,我的Bottom",Region.Switch:true,Mine.Switch:true,Mine.iPad.Switch:true,Storage:"Argument",LogLevel:"WARN"
+#!system=ios
+
+[URL Rewrite]
+# Version / 测试项
+^https?:\/\/bilibili\.2025\.04\.02\/c136 - reject-200
+
+# 播放页
+^https?:\/\/api\.bilibili\.com\/pgc\/activity\/deliver\/material\/receive - reject-dict
+^https?:\/\/api\.bilibili\.com\/x\/vip\/ads\/material\/report - reject-dict
+^https:\/\/api\.bilibili\.com\/pgc\/season\/player\/cards - reject-dict
+^https?:\/\/api\.bilibili\.com\/pgc\/season\/player\/ogv\/cards - reject-dict
+
+# 开屏
+^https:\/\/app\.bilibili\.com\/x\/v2\/splash\/show - reject-dict
+
+# 漫画
+^https?:\/\/manga\.bilibili\.com\/twirp\/comic\.v\d\.Comic\/(Flash|ListFlash|GetActivityTab) - reject-dict
+
+# 搜索默认词
+^https?:\/\/app\.bilibili\.com\/x\/v\d\/search\/defaultwords - reject-dict
+^https?:\/\/(app\.bilibili\.com|grpc\.biliapi\.net)\/bilibili\.app\.interface\.v1\.Search\/Default - reject-200
+
+
+[Script]
+# ===== BiliJson 播放页 =====
+BiliBili_视频播放下方商品推广 = type=http-response, pattern=^https?:\/\/api\.bili(api|bili)\.(net|com)\/pgc\/season\/app\/related\/recommend\?, requires-body=true, script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/scripts/bilibili.ads.js, timeout=20
+
+# ===== BiliJson 直播间 =====
+BiliBili_直播间商品广告浮窗 = type=http-response, pattern=^https?:\/\/api\.live\.bilibili\.com\/xlive\/e-commerce-interface\/v\d\/ecommerce-user\/get_shopping_info\?, requires-body=true, script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/scripts/bilibili.ads.js, timeout=20
+BiliBili_直播去广告 = type=http-response, pattern=^https?:\/\/api\.live\.bilibili\.com\/xlive\/app-room\/v1\/index\/getInfoByRoom, requires-body=true, script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/scripts/bilibili.ads.js, timeout=20
+BiliBili_直播页顶部轮播图 = type=http-response, pattern=^https?:\/\/api\.live\.bilibili\.com\/xlive\/app-interface\/v2\/index\/feed, requires-body=true, script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/scripts/bilibili.ads.js, timeout=20
+
+# ===== BiliJson 开屏/推荐/页面 =====
+BiliBili_开屏预加载 = type=http-response, pattern=^https:\/\/app\.bilibili\.com\/x\/v2\/splash\/list, requires-body=true, script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/scripts/bilibili.ads.js, timeout=20
+BiliBili_1080P高码率与4K旧版 = type=http-response, pattern=^https?:\/\/app\.bilibili\.com\/x\/v2\/account\/myinfo\?, requires-body=true, script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/scripts/bilibili.ads.js, timeout=20
+BiliBili_推荐去广告 = type=http-response, pattern=^https?:\/\/app\.bilibili\.com\/x\/v2\/feed\/index, requires-body=true, script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/scripts/bilibili.ads.js, timeout=20
+BiliBili_追番去广告 = type=http-response, pattern=^https?:\/\/api\.(bilibili|biliapi)\.(com|net)\/pgc\/page\/bangumi, requires-body=true, script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/scripts/bilibili.ads.js, timeout=20
+BiliBili_观影页面去广告 = type=http-response, pattern=^https?:\/\/api\.(bilibili|biliapi)\.(com|net)\/pgc\/page\/cinema\/tab\?, requires-body=true, script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/scripts/bilibili.ads.js, timeout=20
+BiliBili_首页右上活动 = type=http-response, pattern=^https?:\/\/app\.bilibili\.com\/x\/resource\/top\/activity, requires-body=true, script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/scripts/bilibili.ads.js, timeout=20
+BiliBili_热搜发现 = type=http-response, pattern=^https:\/\/app\.bilibili\.com\/x\/v2\/search\/square, requires-body=true, script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/scripts/bilibili.ads.js, timeout=20
+
+
+# ===== 墨鱼旧版 Tab（非 /v2，由 Enhanced 独占 /v2） =====
+bilibili.ads.10 = type=http-response, pattern=^https?:\/\/app\.bilibili\.com\/x\/resource\/show\/tab(?:\?.*)?$, requires-body=true, max-size=-1, timeout=60, script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/scripts/bilibili.ads.js
+
+# ===== BiliUniverse Enhanced：完整入口 / UI 净化 =====
+BiliBili_搜索去广告_Proto = type=http-response, pattern=^https?:\/\/(grpc\.biliapi\.net|app\.bilibili\.com)\/bilibili\.polymer\.app\.search\.v1\.Search\/SearchAll$, requires-body=true, binary-body-mode=true, script-path=https://github.com/BiliUniverse/ADBlock/releases/download/v0.6.19/response.bundle.js, timeout=20
+BiliBili_交互弹幕与会员弹幕_Proto = type=http-response, pattern=^https?:\/\/(app\.bilibili\.com|grpc\.biliapi\.net)\/bilibili\.community\.service\.dm\.v1\.DM\/(DmView|DmSegMobile), requires-body=true, binary-body-mode=true, script-path=https://github.com/BiliUniverse/ADBlock/releases/download/v0.6.19/response.bundle.js, timeout=20
+BiliBili_青少年弹窗_Proto = type=http-response, pattern=^https:\/\/(grpc\.biliapi\.net|app\.bilibili\.com)\/bilibili\.app\.interface\.v1\.Teenagers\/ModeStatus, requires-body=true, binary-body-mode=true, script-path=https://github.com/BiliUniverse/ADBlock/releases/download/v0.6.19/response.bundle.js, timeout=20
+BiliBili_UP主推荐广告_Proto = type=http-response, pattern=^https?:\/\/(app\.bilibili\.com|grpc\.biliapi\.net)\/bilibili\.app\.(view|viewunite)\.v1\.View\/(View|TFInfo)$, requires-body=true, binary-body-mode=true, script-path=https://github.com/BiliUniverse/ADBlock/releases/download/v0.6.19/response.bundle.js, timeout=20
+BiliBili_动态综合与视频页_Proto = type=http-response, pattern=^https?:\/\/(app\.bilibili\.com|grpc\.biliapi\.net)\/bilibili\.app\.dynamic\.v2\.Dynamic\/Dyn(All|Video)$, requires-body=true, binary-body-mode=true, script-path=https://github.com/BiliUniverse/ADBlock/releases/download/v0.6.19/response.bundle.js, timeout=20
+
+[MITM]
+hostname = %APPEND% app.bilibili.com, app.biliapi.net, api.bilibili.com, api.live.bilibili.com, manga.bilibili.com, grpc.biliapi.net, *.bilibili.com, *.bilibili.*, *.biliapi.net, *.biliapi.com
