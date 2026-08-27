@@ -55,7 +55,7 @@
 #    http://ad.nvdvr.cn/ad/index.php?...  （V380 系列自有广告接口）
 # 2. 公开静态分析还列出广告/内容主机：
 #    ad.nvdvr.cn / adwscdn.av380.net / promotionad.nvcam.net / adstatistics.av380.net
-# 3. 2026 隐私政策明确 iOS 仍接入穿山甲、快手联盟、腾讯优量汇等广告 SDK。
+# 3. 2026 隐私政策明确 iOS 仍接入穿山甲、快手联盟、腾讯优量汇、Taku、BeiZi/AdScope、极准瑞量、百度联盟等广告 SDK。
 # 4. 因此 V5 同时拦“自有广告接口 + iOS 实际广告平台”，但不碰 av380.net/nvcam.net 的设备连接、云录像、登录等核心主机。
 #
 # 喜马拉雅：
@@ -101,6 +101,33 @@ DOMAIN-SUFFIX,ugdtimg.com,REJECT
 # Taku / TopOn 兼容层
 DOMAIN-SUFFIX,toponadss.com,REJECT
 DOMAIN-SUFFIX,motowoo.com,REJECT
+
+# 极准瑞量（V380 Pro 2026 隐私政策明确列出）
+DOMAIN-SUFFIX,hzjizhun.cn,REJECT
+DOMAIN-SUFFIX,hzjizhun.com,REJECT
+
+# BeiZi / AdScope（V380 Pro 2026 隐私政策明确列出）
+DOMAIN-SUFFIX,beizi.biz,REJECT
+DOMAIN-SUFFIX,beizi.info,REJECT
+DOMAIN-SUFFIX,beizi.online,REJECT
+DOMAIN-SUFFIX,ad-scope.com.cn,REJECT
+DOMAIN-SUFFIX,adn-plus.com.cn,REJECT
+DOMAIN-SUFFIX,adhub.com.cn,REJECT
+DOMAIN-SUFFIX,adnplus.com.cn,REJECT
+DOMAIN-SUFFIX,adscope.com.cn,REJECT
+DOMAIN-SUFFIX,adscope.cn,REJECT
+DOMAIN-SUFFIX,adscope.xyz,REJECT
+
+# 百度联盟（V380 Pro 2026 隐私政策明确列出）
+DOMAIN,afd.baidu.com,REJECT
+DOMAIN,als.baidu.com,REJECT
+DOMAIN,mobads-logs.baidu.com,REJECT
+DOMAIN,mobads-pre-config.cdn.bcebos.com,REJECT
+DOMAIN,mobads.baidu.com,REJECT
+DOMAIN,nadvideo2.baidu.com,REJECT
+DOMAIN,wn.pos.baidu.com,REJECT
+DOMAIN-SUFFIX,union.baidu.cn,REJECT
+DOMAIN-SUFFIX,union.baidu.com,REJECT
 
 # ===== V380 Pro：旧墨鱼 AnyThink/TopOn 通用广告中介 =====
 DOMAIN-SUFFIX,anythinktech.com,REJECT
