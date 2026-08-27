@@ -1,13 +1,20 @@
 #!name=墨鱼去开屏2.0去广告@ddgksf2013
-#!desc=Surge 原生优化候选 V2｜现跑通基线 + 美图秀秀开屏 + 喜马拉雅开屏广告域名｜V380 Pro 待精准抓包
+#!desc=Surge 原生稳定基线｜恢复到已实机确认可用版本｜无 QX 模拟、无脚本运行层
 #!author=ddgksf2013 / Surge native optimization
 #!category=去广告
 #!system=ios
 
 # ============================================================
+# 母版状态
+# ============================================================
+# 本文件恢复为用户已实机确认可用的稳定版本。
+# 美图秀秀 / 喜马拉雅 / V380 Pro 的新增规则不进入本母版，后续只在实验版验证。
+# ============================================================
+
+# ============================================================
 # 设计思路
 # ============================================================
-# 1. 本模块只做“通用开屏/弹窗广告”处理；B站、酷我继续独立。喜马拉雅这里只处理开屏广告域名，不接管深度 UI/播放净化。
+# 1. 本模块只做“通用开屏/弹窗广告”处理，不接管 B站、酷我、喜马拉雅。
 # 2. 不模拟 Quantumult X，不使用 $task / $prefs / $notify，不运行任何 JS。
 # 3. 能用 Surge 原生 URL Rewrite 直接拒绝的，直接拒绝。
 # 4. 只有必须返回固定 JSON 的接口才使用 Map Local。
@@ -16,26 +23,12 @@
 # 7. 当前跑通版保留为回滚基线；本候选版实机确认后再晋升为母版。
 #
 # 优化点：
-# - URL Rewrite：20 条 -> 18 条（新增美图秀秀精准开屏）
+# - URL Rewrite：20 条 -> 17 条
 # - Map Local：2 条 -> 1 条
 # - Script：0 条（保持 0）
 # - QX 兼容层：0
-# - B站/酷我重叠：0；喜马拉雅仅保留开屏广告域名层，不接管深度净化
-# V380 Pro：暂不加入第三方广告 SDK 的全局域名封锁。
-# 原因：公开资料只能确认其包含多家广告 SDK，无法确认你当前 iOS 版本实际开屏请求。
-# 为避免误伤摄像头登录、云视频和设备连接，必须按你手机实际请求做精准规则。
+# - B站/酷我/喜马拉雅重叠：0
 # ============================================================
-
-[Rule]
-# ===== 喜马拉雅：仅开屏/广告域名层 =====
-# 采用 Surge 原生域名拒绝，不做 HTTPS 解密；比把 QX 通配重写硬搬过来更轻。
-DOMAIN,adsehera.ximalaya.com,REJECT
-DOMAIN,adse.wsa.ximalaya.com,REJECT
-DOMAIN,adbehavior.ximalaya.com,REJECT
-DOMAIN,adbehavior.wsa.ximalaya.com,REJECT
-DOMAIN-SUFFIX,ad.ximalaya.com,REJECT
-DOMAIN-SUFFIX,adse.ximalaya.com,REJECT
-DOMAIN-SUFFIX,adse-v2.ximalaya.com,REJECT
 
 [URL Rewrite]
 # ===== 百度网盘 =====
@@ -70,10 +63,6 @@ DOMAIN-SUFFIX,adse-v2.ximalaya.com,REJECT
 # ===== 飞猪（备用） =====
 ^https:\/\/acs\.m\.taobao\.com\/gw\/mtop\.fliggy\.crm\.screen\.(?:allresource|availablesplashstrategies) - reject-200
 
-# ===== 美图秀秀 =====
-# 精准开屏接口；不加载会员解锁脚本，只处理开屏广告。
-^https?:\/\/mea\.meitudata\.com\/kaiping - reject
-
 # ===== 顺丰（备用） =====
 ^https?:\/\/ccsp-egmas\.sf-express\.com\/cx-app-base\/base\/app\/appVersion\/detectionUpgrade - reject-200
 ^https:\/\/ccsp-egmas\.sf-express\.com\/cx-app-base\/base\/app\/ad\/queryAdImages - reject-200
@@ -84,4 +73,4 @@ DOMAIN-SUFFIX,adse-v2.ximalaya.com,REJECT
 ^https:\/\/pan\.baidu\.com\/(?:act\/api\/activityentry|buy\/ad\/conf\?.*type=splashMode) data-type=text data="{}" status-code=200 header="Content-Type:application/json"
 
 [MITM]
-hostname = %APPEND% pan.baidu.com, api-sams.walmartmobile.cn, guide-acs.m.taobao.com, api.m.jd.com, bdsp-x.jd.com, dsp-x.jd.com, peisongapi.meituan.com, img.meituan.net, s3plus.meituan.net, flowplus.meituan.net, p*.meituan.net, acs.m.goofish.com, api.pinduoduo.com, api.yangkeduo.com, cn-acs.m.cainiao.com, iyes.youku.com, acs.m.taobao.com, ccsp-egmas.sf-express.com, shopic.sf-express.com, mea.meitudata.com
+hostname = %APPEND% pan.baidu.com, api-sams.walmartmobile.cn, guide-acs.m.taobao.com, api.m.jd.com, bdsp-x.jd.com, dsp-x.jd.com, peisongapi.meituan.com, img.meituan.net, s3plus.meituan.net, flowplus.meituan.net, p*.meituan.net, acs.m.goofish.com, api.pinduoduo.com, api.yangkeduo.com, cn-acs.m.cainiao.com, iyes.youku.com, acs.m.taobao.com, ccsp-egmas.sf-express.com, shopic.sf-express.com
