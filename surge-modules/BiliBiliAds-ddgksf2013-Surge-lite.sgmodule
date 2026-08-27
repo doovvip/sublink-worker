@@ -24,6 +24,9 @@
 ^https?:\/\/app\.bilibili\.com\/x\/v\d\/search\/defaultwords - reject-dict
 ^https?:\/\/(app\.bilibili\.com|grpc\.biliapi\.net)\/bilibili\.app\.interface\.v1\.Search\/Default - reject-200
 
+# Proto DefaultWord
+^https?:\/\/(app\.bilibili\.com|grpc\.biliapi\.net)\/bilibili\.app\.interface\.v1\.Search\/Default - reject
+
 [Script]
 # ===== BiliJson 播放页 =====
 BiliBili_视频播放下方商品推广 = type=http-response, pattern=^https?:\/\/api\.bili(api|bili)\.(net|com)\/pgc\/season\/app\/related\/recommend\?, requires-body=true, script-path=https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/bilibili_json.js, timeout=20
@@ -50,4 +53,4 @@ BiliBili_UP主推荐广告_Proto = type=http-response, pattern=^https?:\/\/(app\
 BiliBili_动态综合与视频页_Proto = type=http-response, pattern=^https?:\/\/(app\.bilibili\.com|grpc\.biliapi\.net)\/bilibili\.app\.dynamic\.v2\.Dynamic\/Dyn(All|Video)$, requires-body=true, binary-body-mode=true, script-path=https://github.com/BiliUniverse/ADBlock/releases/download/v0.6.19/response.bundle.js, timeout=20
 
 [MITM]
-hostname = %APPEND% app.bilibili.com, api.bilibili.com, api.bilibili.net, api.biliapi.com, api.biliapi.net, api.live.bilibili.com, manga.bilibili.com, grpc.biliapi.net
+hostname = %APPEND% app.bilibili.com, api.bilibili.com, api.live.bilibili.com, manga.bilibili.com, grpc.biliapi.net, *.bilibili.com, *.biliapi.net, *.biliapi.com
