@@ -99,7 +99,12 @@ if ($request.url.indexOf('/mobi.s') !== -1) {
     };
     !(async () => {
         if (musicKey) {
-            body = await getPlayBody('2000kflac');
+            // Surge稳定音源策略：优先 320k MP3，避免新版酷我返回
+            // mflac/mgg 等客户端无法直接播放的加密无损格式。
+            body = await getPlayBody('320kmp3');
+            if (!isDirectPlayable(body)) {
+                body = await getPlayBody('128kmp3');
+            }
         } else {
             $.msg('获取歌曲ID错误,歌曲解锁失败!!!')
         }
