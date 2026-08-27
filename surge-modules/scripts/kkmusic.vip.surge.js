@@ -73,44 +73,149 @@ hostname = *.kuwo.cn, *.lrts.me
 ***********************************/
 
 
-const version = 'V1.0.14';
+const version = 'V16-Surge-PlayFix-1.0';
 
 const $ = new Env('kuwo')
 
 let method = $request['method'];
 
 if ($request.url.indexOf('/mobi.s') !== -1) {
-    let body = $response['body'];
-    const musicKey = $['getval']('Kw_MusicKey');
-    const PlayBase = 'https://mobi.kuwo.cn/mobi.s?f=web&source=kwplayercar_ar_6.0.0.9_B_jiakong_vh.apk&from=PC&type=convert_url_with_sign&rid='
-    const getPlayBody = async (br) => {
-        const response = await $.http.get({url: PlayBase + musicKey + '&br=' + br});
-        return response.body;
+    const originalBody = $response && $response['body'] ? $response['body'] : '';
+    const requestUrl = $request && $request.url ? $request.url : '';
+
+    const log = (msg) => console.log('[Kuwo/V16] ' + msg);
+
+    const normalizeRid = (value) => {
+        if (value === undefined || value === null) return '';
+        const raw = String(value).trim();
+        const m = raw.match(/(?:MUSIC_)?(\d+)/i);
+        return m ? m[1] : '';
     };
-    const isDirectPlayable = (raw) => {
-        try {
-            const obj = JSON.parse(raw);
-            const u = String(obj?.data?.url || '').toLowerCase();
-            if (!u) return false;
-            return !/\.(mgg|mflac|mggl|mogg|mmp4|mgg9|mflac9|mgg1|mflac1)(\?|$)/.test(u);
-        } catch (_) {
-            return false;
+
+    const extractRidFromUrl = (url) => {
+        const patterns = [
+            /[?&]rid=(?:MUSIC_)?(\d+)/i,
+            /[?&]musicId=(?:MUSIC_)?(\d+)/i,
+            /[?&]musicid=(?:MUSIC_)?(\d+)/i,
+            /[?&]mid=(?:MUSIC_)?(\d+)/i,
+            /[?&]id=(?:MUSIC_)?(\d+)/i
+        ];
+        for (const re of patterns) {
+            const m = String(url || '').match(re);
+            if (m) return normalizeRid(m[1]);
         }
+        return '';
     };
-    !(async () => {
-        if (musicKey) {
-            // Surge稳定音源策略：优先 320k MP3，避免新版酷我返回
-            // mflac/mgg 等客户端无法直接播放的加密无损格式。
-            body = await getPlayBody('320kmp3');
-            if (!isDirectPlayable(body)) {
-                body = await getPlayBody('128kmp3');
+
+    const extractRidFromBody = (body) => {
+        const text = String(body || '');
+        const patterns = [
+            /"rid"\s*:\s*"?(?:MUSIC_)?(\d+)/i,
+            /"musicrid"\s*:\s*"?(?:MUSIC_)?(\d+)/i,
+            /"musicId"\s*:\s*"?(?:MUSIC_)?(\d+)/i,
+            /"id"\s*:\s*"?(?:MUSIC_)?(\d+)/i,
+            /(?:^|[&\n])rid=(?:MUSIC_)?(\d+)/i
+        ];
+        for (const re of patterns) {
+            const m = text.match(re);
+            if (m) return normalizeRid(m[1]);
+        }
+        return '';
+    };
+
+    const storedRid = normalizeRid($['getval']('Kw_MusicKey'));
+    const urlRid = extractRidFromUrl(requestUrl);
+    const bodyRid = extractRidFromBody(originalBody);
+    const musicKey = urlRid || bodyRid || storedRid;
+
+    const PLAY_SOURCES = [
+        'https://mobi.kuwo.cn/mobi.s?f=web&source=kwplayercar_ar_6.0.0.9_B_jiakong_vh.apk&from=PC&type=convert_url_with_sign&rid=',
+        'https://mobi.kuwo.cn/mobi.s?f=web&source=kwplayerhd_ar_4.3.0.8_tianbao_T1A_qirui.apk&type=convert_url_with_sign&rid='
+    ];
+
+    const qualities = ['320kmp3', '128kmp3'];
+
+    const requestPlayBody = async (base, rid, br) => {
+        const url = base + encodeURIComponent(rid) + '&br=' + br;
+        log('取源请求 rid=' + rid + ' br=' + br + ' source=' + (base.includes('kwplayercar') ? 'car6' : 'tianbao4'));
+        const response = await $.http.get({
+            url,
+            headers: {
+                'User-Agent': 'Mozilla/5.0',
+                'Accept': 'application/json, text/plain, */*'
             }
-        } else {
-            $.msg('获取歌曲ID错误,歌曲解锁失败!!!')
+        });
+        return response && response.body ? String(response.body) : '';
+    };
+
+    const inspectPlayBody = (raw) => {
+        const result = {ok: false, url: '', format: '', raw: String(raw || '')};
+        if (!result.raw) return result;
+
+        let candidate = '';
+        try {
+            const obj = JSON.parse(result.raw);
+            candidate = String(
+                obj?.data?.url ||
+                obj?.url ||
+                obj?.data?.audioHttpsUrl ||
+                obj?.data?.audioUrl ||
+                ''
+            );
+        } catch (_) {
+            const m = result.raw.match(/https?:\/\/[^\s"'<>]+/i);
+            candidate = m ? m[0] : '';
         }
-        $['setdata']('', 'Kw_MusicKey');
-        $['done']({'body': body});
-    })().catch(error => console['log']('error: ' + error));
+
+        if (!/^https?:\/\//i.test(candidate)) return result;
+
+        const lower = candidate.toLowerCase();
+        const encrypted = /\.(?:mgg|mflac|mggl|mogg|mmp4|mgg9|mflac9|mgg1|mflac1)(?:\?|$)/i.test(lower);
+        if (encrypted) {
+            result.format = 'encrypted';
+            return result;
+        }
+
+        result.ok = true;
+        result.url = candidate;
+        result.format = /\.flac(?:\?|$)/i.test(lower) ? 'flac' :
+                        /\.mp3(?:\?|$)/i.test(lower) ? 'mp3' : 'direct';
+        return result;
+    };
+
+    !(async () => {
+        if (!musicKey) {
+            log('未解析到 RID，保留酷我原始响应');
+            $done({body: originalBody});
+            return;
+        }
+
+        log('RID=' + musicKey + ' 来源=' + (urlRid ? 'request-url' : bodyRid ? 'response-body' : 'store'));
+
+        for (const base of PLAY_SOURCES) {
+            for (const br of qualities) {
+                try {
+                    const candidateBody = await requestPlayBody(base, musicKey, br);
+                    const check = inspectPlayBody(candidateBody);
+                    log('取源结果 br=' + br + ' ok=' + check.ok + ' format=' + (check.format || 'unknown'));
+                    if (check.ok) {
+                        // 只有确认拿到可直接播放的 HTTP(S) 音频地址时才替换响应。
+                        $['setdata'](musicKey, 'Kw_LastGoodRid');
+                        $done({body: candidateBody});
+                        return;
+                    }
+                } catch (e) {
+                    log('取源异常 br=' + br + ' error=' + e);
+                }
+            }
+        }
+
+        log('所有备用源均失败，保留酷我原始响应');
+        $done({body: originalBody});
+    })().catch(error => {
+        log('播放处理异常，回退原始响应: ' + error);
+        $done({body: originalBody});
+    });
 }
 if (/a\.p/.test($request['url'])) {
     let body = $response['body'];
