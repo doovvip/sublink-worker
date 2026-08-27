@@ -24,8 +24,6 @@
 ^https?:\/\/app\.bilibili\.com\/x\/v\d\/search\/defaultwords - reject-dict
 ^https?:\/\/(app\.bilibili\.com|grpc\.biliapi\.net)\/bilibili\.app\.interface\.v1\.Search\/Default - reject-200
 
-# Proto DefaultWord
-^https?:\/\/(app\.bilibili\.com|grpc\.biliapi\.net)\/bilibili\.app\.interface\.v1\.Search\/Default - reject
 
 [Script]
 # ===== BiliJson 播放页 =====
