@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Instrument HisPrice checksum runtime
+      - name: Execute exact HisPrice request
         run: |
           mkdir -p /tmp/hp debug
           curl -fsSL -A 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X)' -c /tmp/hp/cookies.txt 'https://www.hisprice.com/his.php?hisurl=https%3A%2F%2Fdetail.tmall.com%2Fitem.htm%3Fid%3D957929114177' -o /tmp/hp/page.html
@@ -18,6 +18,8 @@ jobs:
           cat >/tmp/hp/probe.mjs <<'JS'
           import fs from 'fs';
           import vm from 'vm';
+          const itemUrl='https://detail.tmall.com/item.htm?id=957929114177';
+          const pageUrl='https://www.hisprice.com/his.php?hisurl='+encodeURIComponent(itemUrl);
           const html=fs.readFileSync('/tmp/hp/page.html','utf8');
           const gs=fs.readFileSync('/tmp/hp/gs.js','utf8');
           const hidden={};
@@ -28,37 +30,39 @@ jobs:
             if(id) hidden['#'+id]=value;
             if(name) hidden['#'+name]=hidden['#'+name]||value;
           }
-          const cookieLines=fs.readFileSync('/tmp/hp/cookies.txt','utf8').split(/\r?\n/).filter(x=>x&&!x.startsWith('#'));
           const cookieMap={};
-          for(const x of cookieLines){const p=x.split('\t');if(p.length>=7)cookieMap[p[5]]=p[6];}
-          const trace=[];
-          const fallback='0123456789abcdef0123456789abcdef';
-          function jq(sel){
-            const key=String(sel); trace.push({kind:'selector',key});
-            return {val(v){if(arguments.length){hidden[key]=String(v);trace.push({kind:'setVal',key,value:String(v)});return this;}const value=hidden[key]??fallback;trace.push({kind:'val',key,value});return value;},text(){return hidden[key]??fallback;},html(){return this;},show(){return this;},hide(){return this;},append(){return this;},attr(){return '';},width(){return 390;},height(){return 100;},offset(){return {left:0,top:0};},on(){return this;},bind(){return this;},css(){return this;},remove(){return this;},each(){return this;},click(){return this;},hover(){return this;}};
-          }
-          jq.ajax=(o={})=>{trace.push({kind:'ajax',url:String(o.url||''),type:String(o.type||''),data:o.data||null});return {};};
+          for(const x of fs.readFileSync('/tmp/hp/cookies.txt','utf8').split(/\r?\n/).filter(x=>x&&!x.startsWith('#'))){const p=x.split('\t');if(p.length>=7)cookieMap[p[5]]=p[6];}
+          const trace=[]; let captured=null;
+          function jq(sel){const key=String(sel);return {val(v){if(arguments.length){hidden[key]=String(v);return this;}return hidden[key]??'';},text(){return hidden[key]??'';},html(){return this;},show(){return this;},hide(){return this;},append(){return this;},attr(){return '';},width(){return 390;},height(){return 100;},offset(){return {left:0,top:0};},on(){return this;},bind(){return this;},css(){return this;},remove(){return this;},each(){return this;},click(){return this;},hover(){return this;}};}
+          jq.ajax=(o={})=>{captured={url:String(o.url||''),type:String(o.type||''),data:o.data||null,dataType:o.dataType||null};trace.push({kind:'ajax',...captured});return {};};
           jq.get=jq.post=jq.getJSON=(...args)=>{trace.push({kind:'jqCall',args:args.map(x=>typeof x==='string'?x:'[obj]')});return {};};
           jq.plot=()=>({getData:()=>[],pointOffset:()=>({left:0,top:0}),width:()=>300,height:()=>200});
           const noop=()=>{};
-          const getCookie=(name)=>{const value=cookieMap[String(name)]??fallback;trace.push({kind:'getCookie',name:String(name),value});return value;};
+          const getCookie=(name)=>{const value=cookieMap[String(name)]??'';trace.push({kind:'getCookie',name:String(name),value});return value;};
           const setCookie=(name,value,...rest)=>{cookieMap[String(name)]=String(value);trace.push({kind:'setCookie',name:String(name),value:String(value),rest:rest.map(String)});return true;};
-          const doc={get cookie(){return Object.entries(cookieMap).map(([k,v])=>`${k}=${v}`).join('; ');},set cookie(v){trace.push({kind:'documentCookieSet',value:String(v)});const p=String(v).split(';')[0].split('=');if(p[0])cookieMap[p[0].trim()]=(p.slice(1).join('=')||'').trim();},body:{appendChild:noop},documentElement:{scrollWidth:390},createElement:()=>({style:{}}),getElementById:(id)=>({value:hidden['#'+id]??fallback,style:{}}),querySelector:()=>null};
+          const doc={get cookie(){return Object.entries(cookieMap).map(([k,v])=>`${k}=${v}`).join('; ');},set cookie(v){const p=String(v).split(';')[0].split('=');if(p[0])cookieMap[p[0].trim()]=(p.slice(1).join('=')||'').trim();},body:{appendChild:noop},documentElement:{scrollWidth:390},createElement:()=>({style:{}}),getElementById:(id)=>({value:hidden['#'+id]??'',style:{}}),querySelector:()=>null};
           const ua='Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148';
-          const sandbox={console:{log:(...a)=>trace.push({kind:'console',args:a.map(String)}),warn:noop,error:noop},$:jq,jQuery:jq,getCookie,setCookie,document:doc,navigator:{userAgent:ua,appVersion:ua},location:{href:'https://www.hisprice.com/his.php?hisurl=https%3A%2F%2Fdetail.tmall.com%2Fitem.htm%3Fid%3D957929114177',search:'?hisurl=https%3A%2F%2Fdetail.tmall.com%2Fitem.htm%3Fid%3D957929114177',host:'www.hisprice.com'},localStorage:{},sessionStorage:{},alert:noop,open:noop,Image:function(){},XMLHttpRequest:function(){},setTimeout:(fn)=>0,clearTimeout:noop,setInterval:(fn)=>0,clearInterval:noop,atob:s=>Buffer.from(s,'base64').toString('binary'),btoa:s=>Buffer.from(s,'binary').toString('base64'),pako:{inflate:(v)=>v,ungzip:(v)=>v}};
-          sandbox.window=sandbox;
-          vm.createContext(sandbox);
-          let loadError=''; try{vm.runInContext(gs,sandbox,{filename:'gs.js',timeout:5000});}catch(e){loadError=String(e?.stack||e).slice(0,2500);}
-          const ts=Date.now(); let result=null,kError='',preinitError='';
-          try{result=typeof sandbox.k==='function'?sandbox.k(ts):null;}catch(e){kError=String(e?.stack||e).slice(0,2500);}
-          try{if(typeof sandbox.preinit==='function')sandbox.preinit('https://detail.tmall.com/item.htm?id=957929114177');}catch(e){preinitError=String(e?.stack||e).slice(0,2500);}
-          fs.writeFileSync('debug/hisprice-k-runtime.json',JSON.stringify({hidden,cookies:cookieMap,timestamp:ts,result,kType:typeof sandbox.k,preinitType:typeof sandbox.preinit,loadError,kError,preinitError,trace:trace.slice(-500)},null,2));
+          const sandbox={console:{log:noop,warn:noop,error:noop},$:jq,jQuery:jq,getCookie,setCookie,document:doc,navigator:{userAgent:ua,appVersion:ua},location:{href:pageUrl,search:new URL(pageUrl).search,host:'www.hisprice.com'},localStorage:{},sessionStorage:{},alert:noop,open:noop,Image:function(){},XMLHttpRequest:function(){},setTimeout:(fn)=>0,clearTimeout:noop,setInterval:(fn)=>0,clearInterval:noop,atob:s=>Buffer.from(s,'base64').toString('binary'),btoa:s=>Buffer.from(s,'binary').toString('base64'),pako:{inflate:(v)=>v,ungzip:(v)=>v}};
+          sandbox.window=sandbox; vm.createContext(sandbox);
+          let loadError='',preinitError='';
+          try{vm.runInContext(gs,sandbox,{filename:'gs.js',timeout:5000});}catch(e){loadError=String(e?.stack||e).slice(0,2500);}
+          try{if(typeof sandbox.preinit==='function')sandbox.preinit(itemUrl);}catch(e){preinitError=String(e?.stack||e).slice(0,2500);}
+          let api=null;
+          if(captured?.url){
+            const target=new URL(captured.url,'https://www.hisprice.com').href;
+            const body=new URLSearchParams(captured.data||{});
+            const cookie=Object.entries(cookieMap).map(([k,v])=>`${k}=${v}`).join('; ');
+            const r=await fetch(target,{method:'POST',headers:{'user-agent':ua,'referer':pageUrl,'origin':'https://www.hisprice.com','content-type':'application/x-www-form-urlencoded; charset=UTF-8','x-requested-with':'XMLHttpRequest',...(cookie?{'cookie':cookie}:{})},body});
+            const text=await r.text();
+            api={target,status:r.status,contentType:r.headers.get('content-type')||'',length:text.length,text:text.slice(0,50000)};
+          }
+          fs.writeFileSync('debug/hisprice-exact-response.json',JSON.stringify({hidden,cookies:cookieMap,captured,loadError,preinitError,trace:trace.slice(-300),api},null,2));
           JS
           node /tmp/hp/probe.mjs
-      - name: Commit checksum capture
+      - name: Commit exact response
         run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add debug/hisprice-k-runtime.json
-          git diff --cached --quiet || git commit -m 'chore: capture HisPrice checksum runtime [skip ci]'
+          git add debug/hisprice-exact-response.json
+          git diff --cached --quiet || git commit -m 'chore: capture HisPrice exact response [skip ci]'
           git push
