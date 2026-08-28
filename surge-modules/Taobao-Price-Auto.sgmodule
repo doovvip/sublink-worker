@@ -1,0 +1,22 @@
+#!name=淘宝历史比价｜自动版
+#!desc=无需快捷指令｜进入淘宝商品页后自动识别商品ID并提供历史价格入口｜候选测试版
+#!author=doovvip
+#!category=购物
+#!system=ios
+#!version=1.0.0
+#!date=2026-08-28
+
+# 设计目标：
+# 1. 不再拦截 AMDC
+# 2. 不再阻断淘宝 QUIC
+# 3. 不依赖旧 trade-acs getdetail
+# 4. 利用当前已确认可见的 acs.m.taobao.com MTop 请求识别 itemId
+# 5. 识别后弹出“淘宝历史比价”通知，点击直接打开慢慢买该商品历史价格
+#
+# 测试本模块时，请关闭 Taobao-Price-Debug 和旧淘宝历史比价模块，避免互相干扰。
+
+[Script]
+淘宝自动识别商品 = type=http-request, pattern=^https?:\/\/acs\.m\.taobao\.com\/gw\/mtop\.taobao\..+, requires-body=true, max-size=-1, timeout=15, script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/scripts/taobao_price_auto.surge.js, script-update-interval=86400
+
+[MITM]
+hostname = %APPEND% acs.m.taobao.com
