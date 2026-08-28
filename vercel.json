@@ -1,10 +1,7 @@
 {
   "version": 2,
+  "ignoreCommand": "git diff --quiet HEAD^ HEAD -- . ':(exclude).github/**' ':(exclude)debug/**' ':(exclude)deploy-trigger-*.txt' ':(exclude)deploy-taobao-price-web.txt'",
   "rewrites": [
-    {
-      "source": "/api/hisprice-probe",
-      "destination": "/api/hisprice-probe"
-    },
     {
       "source": "/(.*)",
       "destination": "/api/index"
