@@ -1,0 +1,19 @@
+#!name=淘宝历史查价｜分享版
+#!desc=新版稳定方案｜不劫持淘宝内部接口｜配合 iOS 快捷指令从分享菜单查历史价
+#!author=doovvip
+#!category=购物
+#!system=ios
+#!version=1.0.0
+#!date=2026-08-28
+
+# 设计说明：
+# 1. 不再依赖 trade-acs/getdetail、AMDC、raw IP 或 QUIC。
+# 2. 不需要 MITM，不修改淘宝网络，不影响淘宝正常使用。
+# 3. 建议从淘宝商品页 -> 分享 -> 快捷指令，把分享文本/URL作为参数传给 Surge 脚本。
+# 4. 脚本会解析 tb.cn / m.tb.cn 等短链并标准化商品链接，然后打开慢慢买官方移动查价页。
+
+[Script]
+淘宝历史查价 = type=generic, timeout=15, script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/scripts/taobao_price_share.surge.js, script-update-interval=86400
+
+[Panel]
+淘宝历史查价 = title="淘宝历史查价", content="新版稳定模式：从淘宝分享商品链接后运行快捷指令", style=info, script-name=淘宝历史查价
