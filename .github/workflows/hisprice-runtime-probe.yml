@@ -12,9 +12,9 @@ jobs:
       - uses: actions/checkout@v4
       - name: Capture HisPrice with real browser
         run: |
-          mkdir -p debug /tmp/hp
+          mkdir -p debug
           npm install --no-save playwright-core@1.55.0 >/dev/null 2>&1
-          cat >/tmp/hp/browser.mjs <<'JS'
+          cat >hisprice-browser-probe.mjs <<'JS'
           import fs from 'fs';
           import { chromium } from 'playwright-core';
           import { execSync } from 'child_process';
@@ -47,7 +47,8 @@ jobs:
           await browser.close();
           fs.writeFileSync('debug/hisprice-browser-network.json',JSON.stringify(out,null,2));
           JS
-          node /tmp/hp/browser.mjs
+          node hisprice-browser-probe.mjs
+          rm -f hisprice-browser-probe.mjs
       - name: Commit browser capture
         run: |
           git config user.name github-actions[bot]
