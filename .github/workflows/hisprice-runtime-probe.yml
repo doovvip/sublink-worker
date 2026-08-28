@@ -10,45 +10,48 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Locate HisPrice cookie helpers
+      - name: Capture HisPrice with real browser
         run: |
-          mkdir -p /tmp/hp debug
-          PAGE='https://www.hisprice.com/his.php?hisurl=https%3A%2F%2Fdetail.tmall.com%2Fitem.htm%3Fid%3D957929114177'
-          curl -fsSL -A 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X)' "$PAGE" -o /tmp/hp/page.html
-          python - <<'PY'
-          import re,json,urllib.parse,urllib.request,pathlib
-          page=pathlib.Path('/tmp/hp/page.html').read_text(errors='ignore')
-          srcs=[]
-          for m in re.finditer(r'<script\b[^>]*src=["\']([^"\']+)["\']',page,re.I):
-              u=urllib.parse.urljoin('https://www.hisprice.com/',m.group(1))
-              if urllib.parse.urlparse(u).netloc.endswith('hisprice.com'): srcs.append(u)
-          srcs=list(dict.fromkeys(srcs))
-          needles=['function getCookie','getCookie=','function setCookie','setCookie=','shot','JM_SESSION_X','UMID']
-          out={'scripts':srcs,'hits':[]}
-          headers={'User-Agent':'Mozilla/5.0','Referer':'https://www.hisprice.com/'}
-          for u in srcs:
-              try:
-                  req=urllib.request.Request(u,headers=headers); s=urllib.request.urlopen(req,timeout=15).read().decode('utf-8','ignore')
-              except Exception as e:
-                  out['hits'].append({'url':u,'error':str(e)}); continue
-              matches=[]
-              low=s.lower()
-              for key in needles:
-                  pos=0
-                  while True:
-                      i=low.find(key.lower(),pos)
-                      if i<0: break
-                      matches.append({'key':key,'at':i,'excerpt':re.sub(r'\s+',' ',s[max(0,i-700):min(len(s),i+1400)])})
-                      pos=i+len(key)
-                      if len(matches)>=30: break
-                  if len(matches)>=30: break
-              if matches: out['hits'].append({'url':u,'length':len(s),'matches':matches})
-          pathlib.Path('debug/hisprice-cookie-helpers.json').write_text(json.dumps(out,ensure_ascii=False,indent=2))
-          PY
-      - name: Commit helper capture
+          mkdir -p debug /tmp/hp
+          npm install --no-save playwright-core@1.55.0 >/dev/null 2>&1
+          cat >/tmp/hp/browser.mjs <<'JS'
+          import fs from 'fs';
+          import { chromium } from 'playwright-core';
+          import { execSync } from 'child_process';
+          const candidates=['/usr/bin/google-chrome','/usr/bin/google-chrome-stable','/usr/bin/chromium','/usr/bin/chromium-browser'];
+          let exe=candidates.find(p=>fs.existsSync(p));
+          if(!exe){try{exe=execSync('which google-chrome || which chromium || true').toString().trim();}catch{}}
+          if(!exe) throw new Error('No system Chromium found');
+          const out={exe,requests:[],responses:[],console:[],cookies:[],page:{}};
+          const browser=await chromium.launch({headless:true,executablePath:exe,args:['--no-sandbox','--disable-dev-shm-usage']});
+          const context=await browser.newContext({
+            userAgent:'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Version/18.0 Mobile/15E148 Safari/604.1',
+            viewport:{width:390,height:844},
+            locale:'zh-CN'
+          });
+          const page=await context.newPage();
+          page.on('console',m=>{if(out.console.length<100)out.console.push({type:m.type(),text:m.text().slice(0,1000)});});
+          page.on('request',r=>{if(r.url().includes('hisprice.com')){const e={url:r.url(),method:r.method()};if(r.url().includes('/dm/')){e.postData=r.postData();e.headers=r.headers();}out.requests.push(e);}});
+          page.on('response',async r=>{if(r.url().includes('/dm/')){let text='';try{text=(await r.text()).slice(0,80000);}catch{}out.responses.push({url:r.url(),status:r.status(),headers:r.headers(),text});}});
+          const item='https://detail.tmall.com/item.htm?id=957929114177';
+          const url='https://www.hisprice.com/his.php?hisurl='+encodeURIComponent(item);
+          try{
+            const resp=await page.goto(url,{waitUntil:'domcontentloaded',timeout:45000});
+            out.page.status=resp?.status()||0;
+            out.page.url=page.url();
+            await page.waitForTimeout(12000);
+            out.page.title=await page.title();
+            out.page.body=(await page.locator('body').innerText().catch(()=>'' )).slice(0,10000);
+          }catch(e){out.page.error=String(e?.stack||e).slice(0,3000);}
+          out.cookies=await context.cookies();
+          await browser.close();
+          fs.writeFileSync('debug/hisprice-browser-network.json',JSON.stringify(out,null,2));
+          JS
+          node /tmp/hp/browser.mjs
+      - name: Commit browser capture
         run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add debug/hisprice-cookie-helpers.json
-          git diff --cached --quiet || git commit -m 'chore: capture HisPrice cookie helpers [skip ci]'
+          git add debug/hisprice-browser-network.json
+          git diff --cached --quiet || git commit -m 'chore: capture HisPrice browser network [skip ci]'
           git push
