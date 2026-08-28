@@ -1,4 +1,4 @@
-name: HisPrice Runtime Probe
+name: Bijiago Runtime Probe
 on:
   push:
     paths:
@@ -10,49 +10,34 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Capture HisPrice with real browser
+      - name: Query Bijiago history API
         run: |
           mkdir -p debug
-          npm install --no-save playwright-core@1.55.0 >/dev/null 2>&1
-          cat >hisprice-browser-probe.mjs <<'JS'
+          cat >bijiago-probe.mjs <<'JS'
           import fs from 'fs';
-          import { chromium } from 'playwright-core';
-          import { execSync } from 'child_process';
-          const candidates=['/usr/bin/google-chrome','/usr/bin/google-chrome-stable','/usr/bin/chromium','/usr/bin/chromium-browser'];
-          let exe=candidates.find(p=>fs.existsSync(p));
-          if(!exe){try{exe=execSync('which google-chrome || which chromium || true').toString().trim();}catch{}}
-          if(!exe) throw new Error('No system Chromium found');
-          const out={exe,requests:[],responses:[],console:[],cookies:[],page:{}};
-          const browser=await chromium.launch({headless:true,executablePath:exe,args:['--no-sandbox','--disable-dev-shm-usage']});
-          const context=await browser.newContext({
-            userAgent:'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Version/18.0 Mobile/15E148 Safari/604.1',
-            viewport:{width:390,height:844},
-            locale:'zh-CN'
-          });
-          const page=await context.newPage();
-          page.on('console',m=>{if(out.console.length<100)out.console.push({type:m.type(),text:m.text().slice(0,1000)});});
-          page.on('request',r=>{if(r.url().includes('hisprice.com')){const e={url:r.url(),method:r.method()};if(r.url().includes('/dm/')){e.postData=r.postData();e.headers=r.headers();}out.requests.push(e);}});
-          page.on('response',async r=>{if(r.url().includes('/dm/')){let text='';try{text=(await r.text()).slice(0,80000);}catch{}out.responses.push({url:r.url(),status:r.status(),headers:r.headers(),text});}});
           const item='https://detail.tmall.com/item.htm?id=957929114177';
-          const url='https://www.hisprice.com/his.php?hisurl='+encodeURIComponent(item);
-          try{
-            const resp=await page.goto(url,{waitUntil:'domcontentloaded',timeout:45000});
-            out.page.status=resp?.status()||0;
-            out.page.url=page.url();
-            await page.waitForTimeout(12000);
-            out.page.title=await page.title();
-            out.page.body=(await page.locator('body').innerText().catch(()=>'' )).slice(0,10000);
-          }catch(e){out.page.error=String(e?.stack||e).slice(0,3000);}
-          out.cookies=await context.cookies();
-          await browser.close();
-          fs.writeFileSync('debug/hisprice-browser-network.json',JSON.stringify(out,null,2));
+          const ua='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36';
+          const cookieUrl=`https://browser.bijiago.com/extension?ac=bdextPermanent&format=json&version=${Date.now()}`;
+          const c=await fetch(cookieUrl,{headers:{'user-agent':ua}});
+          const rawCookie=c.headers.get('set-cookie')||'';
+          const parts=[];
+          for(const name of ['gwdang_permanent_id','gwdang_permanent_cpt']){
+            const m=rawCookie.match(new RegExp(`${name}=([^;,\\s]+)`,'i'));if(m)parts.push(`${name}=${m[1]}`);
+          }
+          const api=`https://browser.bijiago.com/extension/price_towards?url=${encodeURIComponent(item)}&format=jsonp&union=union_bijiago&from_device=bijiago&version=${Date.now()}`;
+          const r=await fetch(api,{headers:{'user-agent':ua,'referer':item,'cookie':parts.join('; ')}});
+          const text=await r.text();
+          let parsed=null;
+          try{parsed=JSON.parse(text)}catch{const a=text.indexOf('{'),b=text.lastIndexOf('}');if(a>=0&&b>a){try{parsed=JSON.parse(text.slice(a,b+1))}catch{}}}
+          const compact={cookieStatus:c.status,priceStatus:r.status,cookieNames:parts.map(x=>x.split('=')[0]),length:text.length,text:text.slice(0,60000),parsed};
+          fs.writeFileSync('debug/bijiago-runtime.json',JSON.stringify(compact,null,2));
           JS
-          node hisprice-browser-probe.mjs
-          rm -f hisprice-browser-probe.mjs
-      - name: Commit browser capture
+          node bijiago-probe.mjs
+          rm -f bijiago-probe.mjs
+      - name: Commit capture
         run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add debug/hisprice-browser-network.json
-          git diff --cached --quiet || git commit -m 'chore: capture HisPrice browser network [skip ci]'
+          git add debug/bijiago-runtime.json
+          git diff --cached --quiet || git commit -m 'chore: capture Bijiago response [skip ci]'
           git push
