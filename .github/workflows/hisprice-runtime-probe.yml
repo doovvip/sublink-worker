@@ -24,7 +24,7 @@ jobs:
           const logs=[];
           const values={
             '#taoInfoUrl':'https://detail.tmall.com/item.htm?id=957929114177',
-            '#reqid':'probe-reqid', '#mtm':'1', '#checkCodeId':'', '#uid':'probe-uid'
+            '#reqid':'REQID32CHARS0123456789ABCDEFGH', '#mtm':'1234567890', '#checkCodeId':'CHECKCODE32CHARS0123456789ABCDEF', '#uid':'probe-uid'
           };
           function jq(sel){
             return {
@@ -42,10 +42,11 @@ jobs:
           jq.plot=()=>({getData:()=>[],pointOffset:()=>({left:0,top:0}),width:()=>300,height:()=>200});
           const noop=()=>{};
           const docObj={body:{appendChild:noop},documentElement:{scrollWidth:390},createElement:()=>({}),getElementById:()=>({}),cookie:''};
+          const ua='Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148';
           const sandbox={console:{log:noop,warn:noop,error:noop},$:jq,jQuery:jq};
           sandbox.window=sandbox;
           sandbox.document=new Proxy(docObj,{get:(t,p)=>p in t?t[p]:noop,set:(t,p,v)=>(t[p]=v,true)});
-          sandbox.navigator={userAgent:'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148'};
+          sandbox.navigator={userAgent:ua,appVersion:ua};
           sandbox.location={href:'https://www.hisprice.com/his.php?hisurl=https%3A%2F%2Fdetail.tmall.com%2Fitem.htm%3Fid%3D957929114177',search:''};
           sandbox.localStorage={};
           sandbox.setTimeout=(fn)=>0;sandbox.clearTimeout=noop;sandbox.setInterval=(fn)=>0;sandbox.clearInterval=noop;
