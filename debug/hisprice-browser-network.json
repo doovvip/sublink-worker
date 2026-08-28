@@ -1,0 +1,187 @@
+{
+  "exe": "/usr/bin/google-chrome",
+  "requests": [
+    {
+      "url": "https://www.hisprice.com/his.php?hisurl=https%3A%2F%2Fdetail.tmall.com%2Fitem.htm%3Fid%3D957929114177",
+      "method": "GET"
+    },
+    {
+      "url": "https://www.hisprice.com/chart.css?d=5",
+      "method": "GET"
+    },
+    {
+      "url": "https://www.hisprice.com/cpt/css/tac.css",
+      "method": "GET"
+    },
+    {
+      "url": "https://www.hisprice.com/codejs/jquery.flot.min.js?d=1",
+      "method": "GET"
+    },
+    {
+      "url": "https://www.hisprice.com/codejs/excanvas.min.js?d=1",
+      "method": "GET"
+    },
+    {
+      "url": "https://www.hisprice.com/cpt/js/tac.min.js?d=1",
+      "method": "GET"
+    },
+    {
+      "url": "https://www.hisprice.com/codejs/v.js?r=1787934640",
+      "method": "GET"
+    },
+    {
+      "url": "https://www.hisprice.com/codejs/chart18.js?t=19",
+      "method": "GET"
+    },
+    {
+      "url": "https://www.hisprice.com/codejs/gs_n1.js?t=1",
+      "method": "GET"
+    },
+    {
+      "url": "https://www.hisprice.com/dm/ck.php?ud=VYXZQPYVDKGRKCCLBZM_HN_1787934640&mtm=1787934640",
+      "method": "POST",
+      "postData": null,
+      "headers": {
+        "sec-ch-ua-platform": "\"iOS\"",
+        "referer": "https://www.hisprice.com/his.php?hisurl=https%3A%2F%2Fdetail.tmall.com%2Fitem.htm%3Fid%3D957929114177",
+        "accept-language": "zh-CN",
+        "sec-ch-ua": "\"Not=A?Brand\";v=\"99\", \"Google Chrome\";v=\"151\", \"Chromium\";v=\"151\"",
+        "sec-ch-ua-mobile": "?0",
+        "x-requested-with": "XMLHttpRequest",
+        "user-agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Version/18.0 Mobile/15E148 Safari/604.1",
+        "accept": "application/json, text/javascript, */*; q=0.01"
+      }
+    },
+    {
+      "url": "https://www.hisprice.com/mck/checkgen?dtype=gen&tyb=bv&&qc=2e9d4be40f2f8988ad11cbae3a78d43c&uid=VYXZQPYVDKGRKCCLBZM_HN_1787934640&mtm=1787934640",
+      "method": "POST"
+    },
+    {
+      "url": "https://www.hisprice.com/cpt/images/logo.png",
+      "method": "GET"
+    },
+    {
+      "url": "https://www.hisprice.com/cpt/images/loading.gif",
+      "method": "GET"
+    },
+    {
+      "url": "https://www.hisprice.com/cpt/images/icon.png",
+      "method": "GET"
+    },
+    {
+      "url": "https://www.hisprice.com/fb/wf/?di=VYXZQPYVDKGRKCCLBZM_HN_1787934640&zw=a3895f64a96ced6225c5ac1dbf5d0ad3&fp=a8819d933ff8aee7c87c43a9c6893aec&fo=c16de36a5b78d018bdd2286b3e270879&rec=d2eb11ba125c29bf8c74c1199e8321ae&wbg=3fc33398f5e5f672a096c51714022fb7&sc=7s844t390pq&yd=H4sIAAAAAAAAA61SwYrbMBT8lXcSMXgdaZO4LkWHxcmG0k0aSDftbZGtZ1tEtowsJ1kf+u2VNwT2XCKQmHka5g3SazV/UU1/gUsSv8VzUrQdn31NHmNyLvnamFIjfG/yCCZXEvx92q5fVjcawqHXR9EAi2YRhcn+rAq3r4REC0s8qRx9rc8GtCaACb1Qv1K6XAVBCJ+10qoT2oC4ruW0ELrDj4MImfErqvJ3PieyfucsJm3Jd8tnOCg8ow13xjqR+aBLk/c1Ng6eja2FC0XbapULp0wzbWURjtvhxd1IWllTI9zNSvX1Xcw2KremM4WDlSzvk+83Zj+Ug6xX2j2oZvT8fzNylpwRr8ol35hBaS1Gxrfouly0/ttK73a7mi7GyVC7yjT4DdLdK1wx/NwDS94oaHVE2Ih8LPwJ4Ml3x2veaUwXEYvYAg5ouzEOS7zZxmRK45QtVmyewF4UwiovnUeMtNY4vsb8aD5gl/FHSmeU0S/khNJ+HmkifcbGOBAnofT4EMTVA3/9lRItmpIP1UO6JYXp1IA8/gfIN6d+KQMAAA==&t=1787934642143",
+      "method": "GET"
+    },
+    {
+      "url": "https://ts.mmbizgo.com/mt.php?szid=175628&action_name=%E5%95%86%E5%93%81%E5%8E%86%E5%8F%B2%E4%BB%B7%E6%A0%BC%E6%9F%A5%E8%AF%A2&idsite=4&rec=1&r=595361&h=16&m=30&s=42&url=https%3A%2F%2Fwww.hisprice.com%2Fhis.php%3Fhisurl%3Dhttps%3A%2F%2Fdetail.tmall.com%2Fitem.htm%3Fid%3D957929114177&_id=86b75fab75399b1d&_idn=1&_refts=0&send_image=0&pdf=1&qt=0&realp=0&wma=0&fla=0&java=0&ag=0&cookie=1&res=390x844&pv_id=0VM9lc&pf_net=42&pf_srv=343&pf_tfr=3&pf_dm1=684&pf_dm2=705&pf_onl=0",
+      "method": "POST"
+    }
+  ],
+  "responses": [
+    {
+      "url": "https://www.hisprice.com/dm/ck.php?ud=VYXZQPYVDKGRKCCLBZM_HN_1787934640&mtm=1787934640",
+      "status": 200,
+      "headers": {
+        "transfer-encoding": "chunked",
+        "content-encoding": "gzip",
+        "connection": "keep-alive",
+        "date": "Fri, 28 Aug 2026 16:30:41 GMT",
+        "content-type": "text/html",
+        "vary": "Accept-Encoding",
+        "server": "nginx",
+        "x-powered-by": "PHP/5.5.34"
+      },
+      "text": "\n\n{}"
+    }
+  ],
+  "console": [
+    {
+      "type": "warning",
+      "text": "[]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader flag to opt in to lower security guarantees for trusted content."
+    },
+    {
+      "type": "warning",
+      "text": "[]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader flag to opt in to lower security guarantees for trusted content."
+    },
+    {
+      "type": "warning",
+      "text": "[.WebGL-0x2b340010ee00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+    },
+    {
+      "type": "warning",
+      "text": "[]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader flag to opt in to lower security guarantees for trusted content."
+    },
+    {
+      "type": "warning",
+      "text": "[]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader flag to opt in to lower security guarantees for trusted content."
+    }
+  ],
+  "cookies": [
+    {
+      "name": "UMID",
+      "value": "VYXZQPYVDKGRKCCLBZM_HN_1787934640",
+      "domain": "www.hisprice.com",
+      "path": "/",
+      "expires": 1822494640.521591,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "JM_SESSION_X",
+      "value": "1",
+      "domain": ".hisprice.com",
+      "path": "/",
+      "expires": 1788539440.523358,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "zwg",
+      "value": "a3895f64a96ced6225c5ac1dbf5d0ad3",
+      "domain": "www.hisprice.com",
+      "path": "/",
+      "expires": 1789144242,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "shot",
+      "value": "zw%3Da3895f64a96ced6225c5ac1dbf5d0ad3%26fp%3Da8819d933ff8aee7c87c43a9c6893aec%26fo%3Dc16de36a5b78d018bdd2286b3e270879%26rec%3Dd2eb11ba125c29bf8c74c1199e8321ae",
+      "domain": "www.hisprice.com",
+      "path": "/",
+      "expires": 1789144242,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "_pk_id.4.ed40",
+      "value": "86b75fab75399b1d.1787934643.",
+      "domain": "www.hisprice.com",
+      "path": "/",
+      "expires": 1821889843,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "_pk_ses.4.ed40",
+      "value": "1",
+      "domain": "www.hisprice.com",
+      "path": "/",
+      "expires": 1787936442,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    }
+  ],
+  "page": {
+    "status": 200,
+    "url": "https://www.hisprice.com/his.php?hisurl=https%3A%2F%2Fdetail.tmall.com%2Fitem.htm%3Fid%3D957929114177",
+    "title": "商品历史价格查询",
+    "body": "商品历史价格查询\n查询\n请先拖动滑块验证是真人后查询！\n拖动滑块完成拼图\n历史价格图\n\n使用说明：\n\n\n在上方的输入框里输入商品的网址查询历史分享价格。\n\n支持主流电商商品的历史分享价格查询，仅供参考。                      \n\nCopyright © 2024 - 2028 商品历史价格查询 www.hisprice.com All Rights Reserved"
+  }
+}
