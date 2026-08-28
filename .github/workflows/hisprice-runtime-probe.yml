@@ -10,35 +10,61 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Isolate HisPrice request construction
+      - name: Instrument HisPrice checksum runtime
         run: |
           mkdir -p /tmp/hp debug
-          curl -fsSL -A 'Mozilla/5.0' -e 'https://www.hisprice.com/' 'https://www.hisprice.com/codejs/chart18.js?t=19' -o /tmp/hp/chart18.js
+          curl -fsSL -A 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X)' -c /tmp/hp/cookies.txt 'https://www.hisprice.com/his.php?hisurl=https%3A%2F%2Fdetail.tmall.com%2Fitem.htm%3Fid%3D957929114177' -o /tmp/hp/page.html
           curl -fsSL -A 'Mozilla/5.0' -e 'https://www.hisprice.com/' 'https://www.hisprice.com/codejs/gs_n1.js?t=1' -o /tmp/hp/gs.js
-          curl -fsSL -A 'Mozilla/5.0' 'https://www.hisprice.com/his.php?hisurl=https%3A%2F%2Fdetail.tmall.com%2Fitem.htm%3Fid%3D957929114177' -o /tmp/hp/page.html
-          python - <<'PY'
-          import json,re,pathlib
-          keys=['ptinfo.php','function preinit','preinit=','checkCode','checkCodeId','reqid','mtm','preudParam','localJsPreUrl','taoInfoUrl','$.ajax','$.post']
-          out={}
-          for name in ['chart18.js','gs.js','page.html']:
-              s=pathlib.Path('/tmp/hp/'+name).read_text(errors='ignore')
-              rows=[]
-              for key in keys:
-                  pos=0
-                  while True:
-                      i=s.lower().find(key.lower(),pos)
-                      if i<0: break
-                      rows.append({'key':key,'at':i,'excerpt':re.sub(r'\s+',' ',s[max(0,i-900):min(len(s),i+1800)])})
-                      pos=i+len(key)
-                      if len(rows)>=80: break
-                  if len(rows)>=80: break
-              out[name]={'length':len(s),'hits':rows}
-          pathlib.Path('debug/hisprice-request-compact.json').write_text(json.dumps(out,ensure_ascii=False,indent=2))
-          PY
-      - name: Commit compact capture
+          cat >/tmp/hp/probe.mjs <<'JS'
+          import fs from 'fs';
+          import vm from 'vm';
+
+          const html=fs.readFileSync('/tmp/hp/page.html','utf8');
+          const gs=fs.readFileSync('/tmp/hp/gs.js','utf8');
+          const hidden={};
+          for(const tag of html.match(/<input\b[^>]*>/gi)||[]){
+            const id=(tag.match(/\bid=["']([^"']*)["']/i)||[])[1]||'';
+            const name=(tag.match(/\bname=["']([^"']*)["']/i)||[])[1]||'';
+            const value=(tag.match(/\bvalue=["']([^"']*)["']/i)||[])[1]||'';
+            if(id) hidden['#'+id]=value;
+            if(name) hidden['#'+name]=hidden['#'+name]||value;
+          }
+          const cookieLines=fs.readFileSync('/tmp/hp/cookies.txt','utf8').split(/\r?\n/).filter(x=>x&&!x.startsWith('#'));
+          const cookieString=cookieLines.map(x=>{const p=x.split('\t');return p.length>=7?`${p[5]}=${p[6]}`:''}).filter(Boolean).join('; ');
+          const trace=[];
+          const fallback='0123456789abcdef0123456789abcdef';
+          function jq(sel){
+            const key=String(sel);
+            trace.push({kind:'selector',key});
+            return {
+              val(v){ if(arguments.length){hidden[key]=String(v); trace.push({kind:'setVal',key,value:String(v)}); return this;} const value=(hidden[key]??fallback); trace.push({kind:'val',key,value}); return value; },
+              text(){return hidden[key]??fallback;}, html(){return this;},show(){return this;},hide(){return this;},append(){return this;},attr(){return '';},
+              width(){return 390;},height(){return 100;},offset(){return {left:0,top:0};},on(){return this;},bind(){return this;},css(){return this;},remove(){return this;},each(){return this;},click(){return this;},hover(){return this;}
+            };
+          }
+          jq.ajax=(o={})=>{trace.push({kind:'ajax',url:String(o.url||''),type:String(o.type||''),data:o.data||null});return {};};
+          jq.get=jq.post=jq.getJSON=(...args)=>{trace.push({kind:'jqCall',args:args.map(x=>typeof x==='string'?x:'[obj]')});return {};};
+          jq.plot=()=>({getData:()=>[],pointOffset:()=>({left:0,top:0}),width:()=>300,height:()=>200});
+          const noop=()=>{};
+          const doc={cookie:cookieString,body:{appendChild:noop},documentElement:{scrollWidth:390},createElement:()=>({style:{}}),getElementById:(id)=>({value:hidden['#'+id]??fallback,style:{}}),querySelector:()=>null};
+          const ua='Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148';
+          const sandbox={console:{log:(...a)=>trace.push({kind:'console',args:a.map(String)}),warn:noop,error:noop},$:jq,jQuery:jq,document:doc,navigator:{userAgent:ua,appVersion:ua},location:{href:'https://www.hisprice.com/his.php?hisurl=https%3A%2F%2Fdetail.tmall.com%2Fitem.htm%3Fid%3D957929114177',search:'?hisurl=https%3A%2F%2Fdetail.tmall.com%2Fitem.htm%3Fid%3D957929114177',host:'www.hisprice.com'},localStorage:{},sessionStorage:{},alert:noop,open:noop,Image:function(){},XMLHttpRequest:function(){},setTimeout:(fn)=>0,clearTimeout:noop,setInterval:(fn)=>0,clearInterval:noop,atob:s=>Buffer.from(s,'base64').toString('binary'),btoa:s=>Buffer.from(s,'binary').toString('base64'),pako:{inflate:(v)=>v,ungzip:(v)=>v}};
+          sandbox.window=sandbox;
+          vm.createContext(sandbox);
+          let loadError='';
+          try{vm.runInContext(gs,sandbox,{filename:'gs.js',timeout:5000});}catch(e){loadError=String(e?.stack||e).slice(0,2500);}
+          const ts=Date.now();
+          let result=null,kError='',preinitError='';
+          try{result=typeof sandbox.k==='function'?sandbox.k(ts):null;}catch(e){kError=String(e?.stack||e).slice(0,2500);}
+          try{if(typeof sandbox.preinit==='function')sandbox.preinit('https://detail.tmall.com/item.htm?id=957929114177');}catch(e){preinitError=String(e?.stack||e).slice(0,2500);}
+          const out={hidden,cookieNames:cookieString.split(';').map(x=>x.trim().split('=')[0]).filter(Boolean),timestamp:ts,result,kType:typeof sandbox.k,preinitType:typeof sandbox.preinit,loadError,kError,preinitError,trace:trace.slice(-300)};
+          fs.writeFileSync('debug/hisprice-k-runtime.json',JSON.stringify(out,null,2));
+          JS
+          node /tmp/hp/probe.mjs
+      - name: Commit checksum capture
         run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add debug/hisprice-request-compact.json
-          git diff --cached --quiet || git commit -m 'chore: capture HisPrice request construction [skip ci]'
+          git add debug/hisprice-k-runtime.json
+          git diff --cached --quiet || git commit -m 'chore: capture HisPrice checksum runtime [skip ci]'
           git push
