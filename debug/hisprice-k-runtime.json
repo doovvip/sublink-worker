@@ -4,10 +4,10 @@
     "#hisurl": "",
     "#codeId": "",
     "#tid": "",
-    "#checkCodeId": "b08be7902137ed4741bbfc36708c58a6",
-    "#reqid": "7e272417a2f919331491a885a85c16a3",
+    "#checkCodeId": "b78a63d7b4b1ad03a67ee00b5ef84dba",
+    "#reqid": "adc05ed5a5cbbb0f2b9297d03029906a",
     "#sid": "",
-    "#mtm": "1787934237",
+    "#mtm": "1787934288",
     "#dwv": "",
     "#rp": "",
     "#taoInfoUrl": "",
@@ -18,17 +18,18 @@
     "#taFlagId": "",
     "#nextYouhuiPage": "1"
   },
-  "cookieNames": [
-    "JM_SESSION_X",
-    "UMID"
-  ],
-  "timestamp": 1787934238238,
-  "result": null,
+  "cookies": {
+    "JM_SESSION_X": "1",
+    "UMID": "NNWVVJXUFQEULDDVHTK_HN_1787934288",
+    "shot": "0123456789abcdef0123456789abcdef"
+  },
+  "timestamp": 1787934289497,
+  "result": "2da",
   "kType": "function",
   "preinitType": "function",
   "loadError": "",
-  "kError": "ReferenceError: setCookie is not defined\n    at putv (gs.js:11:2)\n    at getv (gs.js:40:4)\n    at Object.LetIT (gs.js:3:39631)\n    at Object.k (gs.js:3:40631)\n    at file:///tmp/hp/probe.mjs:35:50\n    at ModuleJob.run (node:internal/modules/esm/module_job:343:25)\n    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:681:26)\n    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)",
-  "preinitError": "ReferenceError: setCookie is not defined\n    at putv (gs.js:11:2)\n    at getv (gs.js:40:4)\n    at _preinit (gs.js:3:27532)\n    at Object.preinit (gs.js:3:25859)\n    at file:///tmp/hp/probe.mjs:36:52\n    at ModuleJob.run (node:internal/modules/esm/module_job:343:25)\n    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:681:26)\n    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)",
+  "kError": "",
+  "preinitError": "",
   "trace": [
     {
       "kind": "selector",
@@ -37,7 +38,7 @@
     {
       "kind": "val",
       "key": "#reqid",
-      "value": "7e272417a2f919331491a885a85c16a3"
+      "value": "adc05ed5a5cbbb0f2b9297d03029906a"
     },
     {
       "kind": "selector",
@@ -46,7 +47,7 @@
     {
       "kind": "val",
       "key": "#checkCodeId",
-      "value": "b08be7902137ed4741bbfc36708c58a6"
+      "value": "b78a63d7b4b1ad03a67ee00b5ef84dba"
     },
     {
       "kind": "getCookie",
@@ -54,18 +55,29 @@
       "value": "0123456789abcdef0123456789abcdef"
     },
     {
+      "kind": "setCookie",
+      "name": "shot",
+      "value": "0123456789abcdef0123456789abcdef",
+      "rest": []
+    },
+    {
+      "kind": "getCookie",
+      "name": "UMID",
+      "value": "NNWVVJXUFQEULDDVHTK_HN_1787934288"
+    },
+    {
       "kind": "selector",
       "key": "#checkCodeId"
     },
     {
       "kind": "val",
       "key": "#checkCodeId",
-      "value": "b08be7902137ed4741bbfc36708c58a6"
+      "value": "b78a63d7b4b1ad03a67ee00b5ef84dba"
     },
     {
       "kind": "getCookie",
       "name": "UMID",
-      "value": "WDAGSCYWFCHMAWVICKA_HN_1787934237"
+      "value": "NNWVVJXUFQEULDDVHTK_HN_1787934288"
     },
     {
       "kind": "selector",
@@ -74,12 +86,49 @@
     {
       "kind": "val",
       "key": "#reqid",
-      "value": "7e272417a2f919331491a885a85c16a3"
+      "value": "adc05ed5a5cbbb0f2b9297d03029906a"
     },
     {
       "kind": "getCookie",
       "name": "shot",
       "value": "0123456789abcdef0123456789abcdef"
+    },
+    {
+      "kind": "selector",
+      "key": "#reqid"
+    },
+    {
+      "kind": "val",
+      "key": "#reqid",
+      "value": "adc05ed5a5cbbb0f2b9297d03029906a"
+    },
+    {
+      "kind": "selector",
+      "key": "#checkCodeId"
+    },
+    {
+      "kind": "val",
+      "key": "#checkCodeId",
+      "value": "b78a63d7b4b1ad03a67ee00b5ef84dba"
+    },
+    {
+      "kind": "getCookie",
+      "name": "shot",
+      "value": "0123456789abcdef0123456789abcdef"
+    },
+    {
+      "kind": "getCookie",
+      "name": "UMID",
+      "value": "NNWVVJXUFQEULDDVHTK_HN_1787934288"
+    },
+    {
+      "kind": "ajax",
+      "url": "/dm/ptinfo.php?ud=NNWVVJXUFQEULDDVHTK_HN_1787934288&reqid=adc05ed5a5cbbb0f2b9297d03029906a&flg=1&cd=b78a63d7b4b1ad03a67ee00b5ef84dbaP2da&qt=1787934289499&0123456789abcdef0123456789abcdef",
+      "type": "post",
+      "data": {
+        "checkCode": "b78a63d7b4b1ad03a67ee00b5ef84dbaP2da",
+        "con": "https://detail.tmall.com/item.htm?id=957929114177"
+      }
     }
   ]
 }
