@@ -1,20 +1,20 @@
 #!name=淘宝商品ID探测｜埋点版
-#!desc=候选诊断｜V1.5.0｜针对已确认淘宝埋点请求增强商品ID提取｜面板显示安全诊断结果
+#!desc=候选诊断｜V1.6.0｜启用 binary-body-mode 读取淘宝埋点请求体｜面板显示安全诊断结果
 #!author=doovvip
 #!category=调试
 #!system=ios
-#!version=1.5.0
+#!version=1.6.0
 #!date=2026-08-28
 
 # 只用于定位当前商品ID；测试完成后关闭。
 # 不阻断淘宝，不修改主配置。
-# v1.5 针对已确认命中的 h-adashx.ut.taobao.com/upload，增强表单/JSON/多层URL编码/嵌套字段提取。
+# v1.6 根据 Surge 面板确认 body=undefined 的结果，切换 binary-body-mode 读取 Uint8Array 请求体。
 
 [Panel]
 淘宝商品ID探测面板 = title="淘宝商品ID探测", content="等待淘宝埋点请求…\n打开淘宝商品详情页后刷新此面板", style=info, script-name=淘宝探测面板, update-interval=1
 
 [Script]
-淘宝商品ID探测 = type=http-request, pattern=^https?:\/\/h-adashx\.ut\.taobao\.com\/upload, requires-body=true, max-size=-1, timeout=10, script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/scripts/taobao_price_analytics_probe.surge.js?v=1.5.0, script-update-interval=0
+淘宝商品ID探测 = type=http-request, pattern=^https?:\/\/h-adashx\.ut\.taobao\.com\/upload, requires-body=true, binary-body-mode=true, max-size=-1, timeout=10, script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/scripts/taobao_price_analytics_probe.surge.js?v=1.6.0, script-update-interval=0
 淘宝探测面板 = type=generic, script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/scripts/taobao_price_probe_panel.surge.js?v=1.4.0, script-update-interval=0
 
 [MITM]
