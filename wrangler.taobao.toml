@@ -1,4 +1,0 @@
-name = "taobao-price-checker"
-main = "src/taobaoPriceWorker.js"
-compatibility_date = "2024-07-24"
-compatibility_flags = ["nodejs_compat"]
