@@ -10,46 +10,32 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Call live HisPrice history endpoint
+      - name: Extract HisPrice source around ptinfo
         run: |
           mkdir -p /tmp/hp debug
-          cat >/tmp/hp/live.mjs <<'JS'
-          import fs from 'fs';
-          const id='957929114177';
-          const itemUrl=`https://detail.tmall.com/item.htm?id=${id}`;
-          const pageUrl=`https://www.hisprice.com/his.php?hisurl=${encodeURIComponent(itemUrl)}`;
-          const ua='Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Version/18.0 Mobile/15E148 Safari/604.1';
-          const page=await fetch(pageUrl,{headers:{'user-agent':ua,'accept-language':'zh-CN,zh;q=0.9'}});
-          const html=await page.text();
-          const hidden={};
-          for(const tag of html.match(/<input\b[^>]*>/gi)||[]){
-            const idv=(tag.match(/\bid=["']([^"']*)["']/i)||[])[1]||'';
-            const name=(tag.match(/\bname=["']([^"']*)["']/i)||[])[1]||'';
-            const value=(tag.match(/\bvalue=["']([^"']*)["']/i)||[])[1]||'';
-            if(idv) hidden[idv]=value;
-            if(name && !(name in hidden)) hidden[name]=value;
-          }
-          const pick=(keys)=>{for(const k of keys){if(hidden[k]) return String(hidden[k]);} return ''};
-          const reqid=pick(['reqid','reqId']);
-          const baseCode=pick(['checkCodeId','checkCode','checkcode']);
-          const checkCode=baseCode?(baseCode.endsWith('P')?baseCode:baseCode+'P'):'';
-          const ud=pick(['uid','ud','userid']);
-          const apiUrl=`https://www.hisprice.com/dm/ptinfo.php?ud=${encodeURIComponent(ud)}&reqid=${encodeURIComponent(reqid)}&flg=1&cd=${encodeURIComponent(checkCode)}&qt=${Date.now()}&`;
-          let api={skipped:true};
-          if(reqid&&checkCode){
-            const cookie=(page.headers.get('set-cookie')||'').split(',').map(s=>s.split(';')[0]).join('; ');
-            const r=await fetch(apiUrl,{method:'POST',headers:{'user-agent':ua,'referer':pageUrl,'origin':'https://www.hisprice.com','content-type':'application/x-www-form-urlencoded; charset=UTF-8',...(cookie?{'cookie':cookie}:{})},body:new URLSearchParams({checkCode,con:itemUrl})});
-            const text=await r.text();
-            api={status:r.status,contentType:r.headers.get('content-type')||'',length:text.length,text:text.slice(0,30000)};
-          }
-          const out={pageStatus:page.status,pageLength:html.length,hidden,derived:{reqid,baseCode,checkCode,ud,apiUrl},api};
-          fs.writeFileSync('debug/hisprice-runtime.json',JSON.stringify(out,null,2));
-          JS
-          node /tmp/hp/live.mjs
-      - name: Commit runtime capture
+          curl -fsSL -A 'Mozilla/5.0' -e 'https://www.hisprice.com/' 'https://www.hisprice.com/codejs/v.js' -o /tmp/hp/v.js
+          curl -fsSL -A 'Mozilla/5.0' -e 'https://www.hisprice.com/' 'https://www.hisprice.com/codejs/chart18.js?t=19' -o /tmp/hp/chart18.js
+          curl -fsSL -A 'Mozilla/5.0' -e 'https://www.hisprice.com/' 'https://www.hisprice.com/codejs/gs_n1.js?t=1' -o /tmp/hp/gs.js
+          python - <<'PY'
+          import json,re,pathlib
+          out={}
+          for name in ['v.js','chart18.js','gs.js']:
+              s=pathlib.Path('/tmp/hp/'+name).read_text(errors='ignore')
+              hits=[]
+              for key in ['ptinfo.php','preinit','preudParam','checkCode','reqid','localJsPreUrl','mtm']:
+                  pos=0
+                  while len(hits)<40:
+                      i=s.lower().find(key.lower(),pos)
+                      if i<0: break
+                      hits.append({'key':key,'excerpt':re.sub(r'\s+',' ',s[max(0,i-2500):min(len(s),i+5000)])})
+                      pos=i+len(key)
+              out[name]={'length':len(s),'hits':hits}
+          pathlib.Path('debug/hisprice-source.json').write_text(json.dumps(out,ensure_ascii=False,indent=2))
+          PY
+      - name: Commit source capture
         run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add debug/hisprice-runtime.json
-          git diff --cached --quiet || git commit -m 'chore: capture live HisPrice ptinfo response [skip ci]'
+          git add debug/hisprice-source.json
+          git diff --cached --quiet || git commit -m 'chore: capture HisPrice ptinfo source [skip ci]'
           git push
