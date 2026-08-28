@@ -1,0 +1,88 @@
+{
+  "hidden": {
+    "#kValId": "",
+    "#hisurl": "",
+    "#codeId": "",
+    "#tid": "",
+    "#checkCodeId": "11b4dc6e233880f00323332630835968",
+    "#reqid": "a9a5b312c051c2d2ef6fde69ef686a42",
+    "#sid": "",
+    "#mtm": "1787934377",
+    "#dwv": "",
+    "#rp": "",
+    "#taoInfoUrl": "",
+    "#addPramaId": "",
+    "#addTitleId": "",
+    "#taId": "",
+    "#taTitleId": "",
+    "#taFlagId": "",
+    "#nextYouhuiPage": "1"
+  },
+  "cookies": {
+    "JM_SESSION_X": "1",
+    "UMID": "ETJTSQGINEHJFHIHGEJ_HN_1787934377",
+    "shot": ""
+  },
+  "captured": {
+    "url": "/dm/ptinfo.php?ud=ETJTSQGINEHJFHIHGEJ_HN_1787934377&reqid=a9a5b312c051c2d2ef6fde69ef686a42&flg=1&cd=11b4dc6e233880f00323332630835968Pcefg33&qt=1787934379727&",
+    "type": "post",
+    "data": {
+      "checkCode": "11b4dc6e233880f00323332630835968Pcefg33",
+      "con": "https://detail.tmall.com/item.htm?id=957929114177"
+    },
+    "dataType": "json"
+  },
+  "loadError": "",
+  "preinitError": "",
+  "trace": [
+    {
+      "kind": "getCookie",
+      "name": "UMID",
+      "value": "ETJTSQGINEHJFHIHGEJ_HN_1787934377"
+    },
+    {
+      "kind": "getCookie",
+      "name": "shot",
+      "value": ""
+    },
+    {
+      "kind": "setCookie",
+      "name": "shot",
+      "value": "",
+      "rest": []
+    },
+    {
+      "kind": "getCookie",
+      "name": "shot",
+      "value": ""
+    },
+    {
+      "kind": "setCookie",
+      "name": "shot",
+      "value": "",
+      "rest": []
+    },
+    {
+      "kind": "getCookie",
+      "name": "UMID",
+      "value": "ETJTSQGINEHJFHIHGEJ_HN_1787934377"
+    },
+    {
+      "kind": "ajax",
+      "url": "/dm/ptinfo.php?ud=ETJTSQGINEHJFHIHGEJ_HN_1787934377&reqid=a9a5b312c051c2d2ef6fde69ef686a42&flg=1&cd=11b4dc6e233880f00323332630835968Pcefg33&qt=1787934379727&",
+      "type": "post",
+      "data": {
+        "checkCode": "11b4dc6e233880f00323332630835968Pcefg33",
+        "con": "https://detail.tmall.com/item.htm?id=957929114177"
+      },
+      "dataType": "json"
+    }
+  ],
+  "api": {
+    "target": "https://www.hisprice.com/dm/ptinfo.php?ud=ETJTSQGINEHJFHIHGEJ_HN_1787934377&reqid=a9a5b312c051c2d2ef6fde69ef686a42&flg=1&cd=11b4dc6e233880f00323332630835968Pcefg33&qt=1787934379727&",
+    "status": 200,
+    "contentType": "text/html",
+    "length": 5,
+    "text": "error"
+  }
+}
