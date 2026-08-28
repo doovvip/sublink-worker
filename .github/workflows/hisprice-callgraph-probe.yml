@@ -1,0 +1,68 @@
+name: HisPrice Callgraph Probe
+on:
+  push:
+    paths:
+      - '.github/workflows/hisprice-callgraph-probe.yml'
+permissions:
+  contents: write
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Trace preinit callgraph
+        run: |
+          python - <<'PY'
+          import re,json,urllib.request,pathlib
+          urls=['https://www.hisprice.com/codejs/chart18.js?t=19','https://www.hisprice.com/codejs/v.js','https://www.hisprice.com/codejs/gs_n1.js?t=1']
+          texts=[]
+          for u in urls:
+            req=urllib.request.Request(u,headers={'User-Agent':'Mozilla/5.0','Referer':'https://www.hisprice.com/'})
+            texts.append(urllib.request.urlopen(req,timeout=30).read().decode('utf-8','ignore'))
+          text='\n'.join(texts)
+          def body(name):
+            m=re.search(r'function\s+'+re.escape(name)+r'\s*\(([^)]*)\)\s*\{',text)
+            if not m:return None
+            i=m.end()-1;depth=0;quote=None;esc=False
+            for j in range(i,len(text)):
+              c=text[j]
+              if quote:
+                if esc:esc=False
+                elif c=='\\':esc=True
+                elif c==quote:quote=None
+                continue
+              if c in "'\"`":quote=c;continue
+              if c=='{':depth+=1
+              elif c=='}':
+                depth-=1
+                if depth==0:return {'params':m.group(1),'body':text[m.start():j+1]}
+            return None
+          queue=['preinit'];seen=set();result={}
+          builtins={'if','for','while','switch','return','setTimeout','setInterval','parseInt','parseFloat','String','Number','Date','eval','encodeURIComponent','decodeURIComponent','alert','console','Math','JSON','Object','Array'}
+          for depth in range(4):
+            nxt=[]
+            for name in queue:
+              if name in seen:continue
+              seen.add(name);b=body(name)
+              if not b:continue
+              src=b['body']
+              calls=[]
+              for c in re.findall(r'\b([A-Za-z_$][\w$]*)\s*\(',src):
+                if c!=name and c not in builtins and not c.startswith('$') and body(c):calls.append(c)
+              reqs=[]
+              for pat in [r'url\s*:\s*([^,\n}]+)',r'\$\.ajax\s*\((\{[\s\S]{0,1200}?\})\s*\)',r'\$\.get\s*\(([^\n;]+)',r'\$\.post\s*\(([^\n;]+)',r'fetch\s*\(([^\n;]+)']:
+                reqs += [re.sub(r'\s+',' ',x).strip()[:1200] for x in re.findall(pat,src,re.I)]
+              strings=[s for s in re.findall(r'''["']([^"']+)["']''',src) if len(s)<500 and re.search(r'(php|ajax|api|price|history|chart|mck|check|init|data|/)',s,re.I)]
+              result[name]={'params':b['params'],'calls':list(dict.fromkeys(calls)),'requestExpressions':list(dict.fromkeys(reqs))[:20],'strings':list(dict.fromkeys(strings))[:40],'normalizedBody':re.sub(r'\s+',' ',src)[:2500]}
+              nxt+=calls
+            queue=nxt
+          pathlib.Path('debug').mkdir(exist_ok=True)
+          pathlib.Path('debug/hisprice-callgraph.json').write_text(json.dumps(result,ensure_ascii=False,indent=2),encoding='utf-8')
+          PY
+      - name: Commit callgraph
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add debug/hisprice-callgraph.json
+          git diff --cached --quiet || git commit -m 'chore: capture HisPrice preinit callgraph [skip ci]'
+          git push
