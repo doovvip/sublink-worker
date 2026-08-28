@@ -42,8 +42,7 @@ jobs:
           jq.plot=()=>({getData:()=>[],pointOffset:()=>({left:0,top:0}),width:()=>300,height:()=>200});
           const noop=()=>{};
           const docObj={body:{appendChild:noop},documentElement:{scrollWidth:390},createElement:()=>({}),getElementById:()=>({}),cookie:''};
-          const sandbox={console:{log:noop,warn:noop,error:noop},$,jQuery:jq};
-          sandbox.$=jq;
+          const sandbox={console:{log:noop,warn:noop,error:noop},$:jq,jQuery:jq};
           sandbox.window=sandbox;
           sandbox.document=new Proxy(docObj,{get:(t,p)=>p in t?t[p]:noop,set:(t,p,v)=>(t[p]=v,true)});
           sandbox.navigator={userAgent:'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148'};
