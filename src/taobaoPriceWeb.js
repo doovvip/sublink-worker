@@ -1,4 +1,4 @@
-const PAGE = `<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>淘宝历史比价</title><style>body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",sans-serif;background:#f5f5f7;margin:0;color:#111}.wrap{max-width:720px;margin:0 auto;padding:28px 18px 60px}.card{background:#fff;border-radius:22px;padding:22px;box-shadow:0 8px 30px rgba(0,0,0,.06)}h1{font-size:28px;margin:0 0 8px}.sub{color:#666;margin:0 0 22px;line-height:1.5}textarea{box-sizing:border-box;width:100%;min-height:120px;border:1px solid #ddd;border-radius:16px;padding:14px;font-size:16px;resize:vertical;background:#fafafa}button,.fallback{box-sizing:border-box;width:100%;border:0;border-radius:16px;padding:15px;font-size:17px;font-weight:700;margin-top:14px;background:#111;color:#fff;text-align:center;text-decoration:none;display:block}.fallback{background:#f0f0f2;color:#111;display:none}.result{margin-top:18px;display:none}.row{padding:12px 0;border-bottom:1px solid #eee;display:flex;justify-content:space-between;gap:16px}.row:last-child{border-bottom:0}.k{color:#666}.v{text-align:right;font-weight:600}.status{margin-top:14px;color:#666;font-size:14px}.tip{margin-top:16px;color:#888;font-size:13px;line-height:1.5}</style></head><body><div class="wrap"><div class="card"><h1>淘宝历史比价</h1><p class="sub">复制淘宝/天猫商品链接，粘贴后直接查询。</p><textarea id="q" placeholder="粘贴淘宝分享文本或商品链接"></textarea><button id="go">查询历史价格</button><a id="fallback" class="fallback" target="_blank" rel="noopener">打开原始历史价格页</a><div id="status" class="status"></div><div id="result" class="result"></div><div class="tip">自动尝试比价狗、慢慢买、HisPrice；若无法结构化读取，再保留原始页面入口。</div></div></div><script>const q=document.getElementById('q'),go=document.getElementById('go'),st=document.getElementById('status'),box=document.getElementById('result'),fb=document.getElementById('fallback');go.onclick=async()=>{const text=q.value.trim();if(!text){st.textContent='先粘贴商品链接';return}go.disabled=true;st.textContent='正在查询…';box.style.display='none';box.innerHTML='';fb.style.display='none';try{const r=await fetch('/api/taobao-price?q='+encodeURIComponent(text));const d=await r.json();if(d.fallbackUrl){fb.href=d.fallbackUrl;fb.style.display='block'}if(!r.ok||!d.ok)throw new Error(d.message||'查询失败');const rows=[['商品ID',d.itemId||'-'],['当前/参考价',d.currentPrice!=null?'¥'+d.currentPrice:'-'],['历史最低',d.lowestPrice!=null?'¥'+d.lowestPrice:'-'],['最低价日期',d.lowestDate||'-'],['历史最高',d.highestPrice!=null?'¥'+d.highestPrice:'-'],['数据源',d.source||'-']];box.innerHTML=rows.map(x=>'<div class="row"><span class="k">'+x[0]+'</span><span class="v">'+String(x[1]).replace(/[&<>]/g,s=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[s]))+'</span></div>').join('');box.style.display='block';st.textContent=d.note||'查询完成'}catch(e){st.textContent='自动查询失败：'+e.message+(fb.style.display==='block'?'，可打开原始历史价格页':'')}finally{go.disabled=false}};</script></body></html>`;
+const PAGE = `<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>淘宝历史比价</title><style>body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",sans-serif;background:#f5f5f7;margin:0;color:#111}.wrap{max-width:720px;margin:0 auto;padding:28px 18px 60px}.card{background:#fff;border-radius:22px;padding:22px;box-shadow:0 8px 30px rgba(0,0,0,.06)}h1{font-size:28px;margin:0 0 8px}.sub{color:#666;margin:0 0 22px;line-height:1.5}textarea{box-sizing:border-box;width:100%;min-height:120px;border:1px solid #ddd;border-radius:16px;padding:14px;font-size:16px;resize:vertical;background:#fafafa}button,.fallback{box-sizing:border-box;width:100%;border:0;border-radius:16px;padding:15px;font-size:17px;font-weight:700;margin-top:14px;background:#111;color:#fff;text-align:center;text-decoration:none;display:block}.fallback{background:#f0f0f2;color:#111;display:none}.result{margin-top:18px;display:none}.row{padding:12px 0;border-bottom:1px solid #eee;display:flex;justify-content:space-between;gap:16px}.row:last-child{border-bottom:0}.k{color:#666}.v{text-align:right;font-weight:600}.status{margin-top:14px;color:#666;font-size:14px}.tip{margin-top:16px;color:#888;font-size:13px;line-height:1.5}</style></head><body><div class="wrap"><div class="card"><h1>淘宝历史比价</h1><p class="sub">复制淘宝/天猫商品链接，粘贴后直接查询。</p><textarea id="q" placeholder="粘贴淘宝分享文本或商品链接"></textarea><button id="go">查询历史价格</button><a id="fallback" class="fallback" target="_blank" rel="noopener">打开原始历史价格页</a><div id="status" class="status"></div><div id="result" class="result"></div><div class="tip">自动尝试比价狗、慢慢买、HisPrice；HisPrice 只读取历史价格图数据，避免把页面按钮/版本号误识别为价格。</div></div></div><script>const q=document.getElementById('q'),go=document.getElementById('go'),st=document.getElementById('status'),box=document.getElementById('result'),fb=document.getElementById('fallback');go.onclick=async()=>{const text=q.value.trim();if(!text){st.textContent='先粘贴商品链接';return}go.disabled=true;st.textContent='正在查询…';box.style.display='none';box.innerHTML='';fb.style.display='none';try{const r=await fetch('/api/taobao-price?q='+encodeURIComponent(text));const d=await r.json();if(d.fallbackUrl){fb.href=d.fallbackUrl;fb.style.display='block'}if(!r.ok||!d.ok)throw new Error(d.message||'查询失败');const rows=[['商品ID',d.itemId||'-'],['当前/参考价',d.currentPrice!=null?'¥'+d.currentPrice:'-'],['历史最低',d.lowestPrice!=null?'¥'+d.lowestPrice:'-'],['最低价日期',d.lowestDate||'-'],['历史最高',d.highestPrice!=null?'¥'+d.highestPrice:'-'],['数据源',d.source||'-']];box.innerHTML=rows.map(x=>'<div class="row"><span class="k">'+x[0]+'</span><span class="v">'+String(x[1]).replace(/[&<>]/g,s=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[s]))+'</span></div>').join('');box.style.display='block';st.textContent=d.note||'查询完成'}catch(e){st.textContent='自动查询失败：'+e.message+(fb.style.display==='block'?'，可打开原始历史价格页':'')}finally{go.disabled=false}};</script></body></html>`;
 
 export async function handleTaobaoPricePage(request) {
   const url = new URL(request.url);
@@ -57,19 +57,53 @@ async function queryHisPrice(itemUrl){
   const response=await fetch(url,{headers:{'User-Agent':'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Version/18.0 Mobile/15E148 Safari/604.1','Accept-Language':'zh-CN,zh;q=0.9'}});
   if(!response.ok)return null;
   const html=await response.text();
-  const cleaned=html.replace(/<script[\s\S]*?<\/script>/gi,' ').replace(/<style[\s\S]*?<\/style>/gi,' ').replace(/<[^>]+>/g,' ').replace(/&nbsp;/g,' ').replace(/\s+/g,' ');
-  const low=firstPrice(cleaned,[/历史最低价[^0-9]{0,20}(\d+(?:\.\d+)?)/i,/最低价[^0-9]{0,20}(\d+(?:\.\d+)?)/i]);
-  const high=firstPrice(cleaned,[/历史最高价[^0-9]{0,20}(\d+(?:\.\d+)?)/i,/最高价[^0-9]{0,20}(\d+(?:\.\d+)?)/i]);
-  const points=[...html.matchAll(/(?:price|value|y)\s*[:=]\s*["']?(\d+(?:\.\d+)?)/gi)].map(m=>Number(m[1])).filter(n=>Number.isFinite(n)&&n>0&&n<1000000);
-  const uniq=[...new Set(points)];
-  const derivedLow=uniq.length?Math.min(...uniq):null;const derivedHigh=uniq.length?Math.max(...uniq):null;
-  const lowestPrice=low??derivedLow;const highestPrice=high??derivedHigh;const currentPrice=uniq.length?uniq[uniq.length-1]:(lowestPrice!=null&&highestPrice===lowestPrice?lowestPrice:null);
-  if(lowestPrice==null&&highestPrice==null&&currentPrice==null)return null;
-  return{ok:true,source:'HisPrice',currentPrice:roundMaybe(currentPrice),lowestPrice:roundMaybe(lowestPrice),lowestDate:'',highestPrice:roundMaybe(highestPrice),note:uniq.length<=1?'HisPrice 当前只返回到单点/有限历史数据':'HisPrice 历史价格已直接读取'};
+  const chart=parseHisPriceChart(html);
+  if(!chart)return null;
+  return{ok:true,source:'HisPrice',currentPrice:chart.currentPrice,lowestPrice:chart.lowestPrice,lowestDate:chart.lowestDate,highestPrice:chart.highestPrice,note:chart.count<=1?'HisPrice 当前只返回单点/有限历史数据':'HisPrice 历史价格图已直接读取'};
 }
 
-function firstPrice(text,patterns){for(const p of patterns){const m=text.match(p);if(m){const n=Number(m[1]);if(Number.isFinite(n))return n;}}return null;}
-function roundMaybe(v){return v==null?null:round2(Number(v));}
+function parseHisPriceChart(html){
+  const scripts=[...String(html||'').matchAll(/<script[^>]*>([\s\S]*?)<\/script>/gi)].map(m=>m[1]);
+  const candidates=[];
+  for(const script of scripts){
+    const looksLikeChart=/echarts|highcharts|series\s*:|data\s*:|历史价格|价格图/i.test(script);
+    if(!looksLikeChart)continue;
+    const arrayPatterns=[/data\s*:\s*(\[[\s\S]{1,20000}?\])/gi,/series\s*:\s*\[[\s\S]{0,2000}?data\s*:\s*(\[[\s\S]{1,20000}?\])/gi];
+    for(const pattern of arrayPatterns){
+      let m;
+      while((m=pattern.exec(script))){
+        const values=extractChartPrices(m[1]);
+        if(values.length)candidates.push(values);
+      }
+    }
+  }
+  if(!candidates.length){
+    const chartArea=String(html||'').match(/历史价格图[\s\S]{0,12000}/i)?.[0]||'';
+    const axis=[...chartArea.matchAll(/(?:^|[>,'"\s])(\d{2,6}(?:\.\d{1,2})?)(?=[<,'"\s]|$)/g)].map(m=>Number(m[1])).filter(validPrice);
+    if(axis.length){
+      const freq=new Map();for(const n of axis)freq.set(n,(freq.get(n)||0)+1);
+      const plausible=[...freq.keys()].filter(n=>n>=10);
+      if(plausible.length)candidates.push(plausible);
+    }
+  }
+  if(!candidates.length)return null;
+  candidates.sort((a,b)=>scorePriceSeries(b)-scorePriceSeries(a));
+  const prices=candidates[0].filter(validPrice);
+  if(!prices.length)return null;
+  const lowestPrice=round2(Math.min(...prices));
+  const highestPrice=round2(Math.max(...prices));
+  const currentPrice=round2(prices[prices.length-1]);
+  return{currentPrice,lowestPrice,highestPrice,lowestDate:'',count:prices.length};
+}
+
+function extractChartPrices(raw){
+  const out=[];const s=String(raw||'');
+  for(const m of s.matchAll(/(?:^|[,\[]\s*)(?:\[[^\]]{0,100}?,\s*)?["']?(\d{2,6}(?:\.\d{1,2})?)["']?\s*(?:\]|,|$)/g)){const n=Number(m[1]);if(validPrice(n))out.push(n);}
+  for(const m of s.matchAll(/(?:value|price|y)\s*[:=]\s*["']?(\d{2,6}(?:\.\d{1,2})?)/gi)){const n=Number(m[1]);if(validPrice(n))out.push(n);}
+  return out;
+}
+function validPrice(n){return Number.isFinite(Number(n))&&Number(n)>=10&&Number(n)<1000000;}
+function scorePriceSeries(a){if(!a?.length)return 0;const spread=Math.max(...a)-Math.min(...a);return a.length*10+(spread>=0?1:0);}
 function extractUrl(text){const match=String(text||'').match(/https?:\/\/[^\s\u3000]+/i);return match?match[0].replace(/[)\]}>，。；;！!]+$/g,''):'';}
 function extractId(text){const s=decodeURIComponentSafe(String(text||'')).replace(/&amp;/g,'&');const patterns=[/[?&]id=(\d{6,})/i,/[?&]itemId=(\d{6,})/i,/["']itemId["']\s*[:=]\s*["']?(\d{6,})/i,/\b(\d{10,15})\b/];for(const pattern of patterns){const match=s.match(pattern);if(match)return match[1];}return'';}
 function decodeURIComponentSafe(value){try{return decodeURIComponent(value);}catch{return value;}}
