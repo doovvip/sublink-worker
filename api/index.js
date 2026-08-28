@@ -1,4 +1,4 @@
-// Taobao price web endpoint build trigger 2026-08-29 00:03
+// Taobao price web endpoint build trigger 2026-08-29 00:38
 import { createRequire } from 'module';
 import { Readable } from 'stream';
 import { createVercelRuntime } from '../src/runtime/vercel.js';
