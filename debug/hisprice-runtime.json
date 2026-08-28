@@ -1,0 +1,31 @@
+{
+  "logs": [
+    {
+      "kind": "loadError",
+      "file": "chart18.js",
+      "message": "Cannot read properties of undefined (reading 'toLowerCase')"
+    },
+    {
+      "kind": "ajax",
+      "type": "post",
+      "dataType": "json",
+      "url": "/dm/ptinfo.php?ud=&reqid=probe-reqid&flg=1&cd=P&qt=1787932453164&",
+      "data": {
+        "checkCode": "P",
+        "con": "957929114177"
+      },
+      "jsonp": null
+    },
+    {
+      "kind": "ajax",
+      "type": "post",
+      "dataType": "json",
+      "url": "/dm/ptinfo.php?ud=&reqid=probe-reqid&flg=1&cd=P&qt=1787932453165&",
+      "data": {
+        "checkCode": "P",
+        "con": "https://detail.tmall.com/item.htm?id=957929114177"
+      },
+      "jsonp": null
+    }
+  ]
+}
