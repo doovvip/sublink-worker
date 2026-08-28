@@ -1,24 +1,22 @@
-#!name=淘宝历史比价｜短链直查版
-#!desc=候选测试｜V1.14.0｜打开 e.tb.cn/m.tb.cn/tb.cn 分享短链后自动展开真实商品地址并查询历史价格
+#!name=淘宝历史比价｜分享链路深挖版
+#!desc=候选测试｜V1.15.0｜直接深挖淘宝“分享→复制链接”链路，REQ/RESP并行提取商品ID
 #!author=doovvip
 #!category=淘宝
 #!system=ios
-#!version=1.14.0
+#!version=1.15.0
 #!date=2026-08-28
 
-# 不修改主配置；不封IP/QUIC；不依赖淘宝内部详情API。
-# 用法：点开淘宝分享出来的 e.tb.cn / m.tb.cn / tb.cn 链接一次，然后回 Surge 看“淘宝历史比价”面板。
-# 不需要快捷指令，不需要手工填写商品ID。
+# 不修改主配置；不封IP/QUIC；不依赖短链必须经过Surge。
+# 已知 h-adashx.ut.taobao.com/upload 能稳定命中，因此以分享/复制链路为主，同时并行扫描淘宝/Tmall MTop候选请求与响应。
+# 操作只需：淘宝商品页 → 分享 → 复制链接，一次。
 
 [Panel]
-淘宝商品ID探测面板 = title="淘宝历史比价", content="等待淘宝分享短链…\n点开一次 e.tb.cn / m.tb.cn / tb.cn 商品链接", style=info, script-name=淘宝探测面板, update-interval=1
+淘宝商品ID探测面板 = title="淘宝历史比价", content="等待分享链路…\n淘宝商品页 → 分享 → 复制链接一次", style=info, script-name=淘宝探测面板, update-interval=1
 
 [Script]
-淘宝短链直查.REQ = type=http-request, pattern=^https?:\/\/(?:e\.tb\.cn|m\.tb\.cn|tb\.cn)\/, requires-body=false, timeout=20, script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/scripts/taobao_shortlink_history.surge.js?v=1.14.0, script-update-interval=0
-淘宝短链直查.RESP = type=http-response, pattern=^https?:\/\/(?:e\.tb\.cn|m\.tb\.cn|tb\.cn)\/, requires-body=true, max-size=-1, timeout=20, script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/scripts/taobao_shortlink_history.surge.js?v=1.14.0, script-update-interval=0
-淘宝落地页.REQ = type=http-request, pattern=^https?:\/\/(?:item\.taobao\.com|detail\.tmall\.com|h5\.m\.taobao\.com|main\.m\.taobao\.com)\/, requires-body=false, timeout=20, script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/scripts/taobao_shortlink_history.surge.js?v=1.14.0, script-update-interval=0
-淘宝落地页.RESP = type=http-response, pattern=^https?:\/\/(?:item\.taobao\.com|detail\.tmall\.com|h5\.m\.taobao\.com|main\.m\.taobao\.com)\/, requires-body=true, max-size=-1, timeout=20, script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/scripts/taobao_shortlink_history.surge.js?v=1.14.0, script-update-interval=0
-淘宝探测面板 = type=generic, script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/scripts/taobao_price_probe_panel.surge.js?v=1.14.0, script-update-interval=0
+淘宝分享链路.REQ = type=http-request, pattern=^https?:\/\/(?:h-adashx\.ut\.taobao\.com\/upload|(?:acs\.m\.taobao\.com|acs\.tao\.co|trade-acs\.m\.taobao\.com)\/gw\/.*(?:share|detail|item|auction|product|trade|sku|buy).*)$, requires-body=true, binary-body-mode=true, max-size=-1, timeout=15, script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/scripts/taobao_share_deep_probe.surge.js?v=1.15.0, script-update-interval=0
+淘宝分享链路.RESP = type=http-response, pattern=^https?:\/\/(?:h-adashx\.ut\.taobao\.com\/upload|(?:acs\.m\.taobao\.com|acs\.tao\.co|trade-acs\.m\.taobao\.com)\/gw\/.*(?:share|detail|item|auction|product|trade|sku|buy).*)$, requires-body=true, binary-body-mode=true, max-size=-1, timeout=15, script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/scripts/taobao_share_deep_probe.surge.js?v=1.15.0, script-update-interval=0
+淘宝探测面板 = type=generic, script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/scripts/taobao_price_probe_panel.surge.js?v=1.15.0, script-update-interval=0
 
 [MITM]
-hostname = %APPEND% e.tb.cn, m.tb.cn, tb.cn, item.taobao.com, detail.tmall.com, h5.m.taobao.com, main.m.taobao.com
+hostname = %APPEND% h-adashx.ut.taobao.com, acs.m.taobao.com, acs.tao.co, trade-acs.m.taobao.com
