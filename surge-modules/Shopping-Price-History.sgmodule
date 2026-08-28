@@ -3,7 +3,7 @@
 #!author=wf021325 / yichahucha / ddgksf2013 / doovvip integration
 #!category=购物
 #!system=ios
-#!version=1.0.0
+#!version=1.0.1
 #!date=2026-08-28
 
 # 统一模块：京东 + 淘宝
@@ -16,7 +16,7 @@
 
 淘宝比价.AMDC = type=http-request, pattern=^https?:\/\/.+\/amdc\/mobileDispatch, requires-body=true, max-size=-1, timeout=30, script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/scripts/taobao_price.surge.js, script-update-interval=86400
 
-淘宝历史比价 = type=http-response, pattern=^https?:\/\/trade-acs\.m\.taobao\.com\/gw\/mtop\.taobao\.detail\.getdetail, requires-body=true, max-size=-1, timeout=30, script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/scripts/taobao_price.surge.js, script-update-interval=86400
+淘宝历史比价 = type=http-response, pattern=^https?:\/\/(?:trade-acs|guide-acs|acs|h5api)\.m\.taobao\.com\/gw\/mtop\.taobao\.detail\.getdetail, requires-body=true, max-size=-1, timeout=30, script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/scripts/taobao_price.surge.js, script-update-interval=86400
 
 [MITM]
-hostname = %APPEND% in.m.jd.com, *.manmanbuy.com, trade-acs.m.taobao.com, amdc.m.taobao.com
+hostname = %APPEND% in.m.jd.com, *.manmanbuy.com, trade-acs.m.taobao.com, guide-acs.m.taobao.com, acs.m.taobao.com, h5api.m.taobao.com, amdc.m.taobao.com
