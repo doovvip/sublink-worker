@@ -1,0 +1,22 @@
+#!name=淘宝历史比价
+#!desc=Surge版｜适配 Surge-1.0｜淘宝商品详情历史价格｜自托管脚本
+#!author=yichahucha / ddgksf2013 / doovvip Surge adaptation
+#!category=淘宝
+#!system=ios
+#!version=1.0.0
+#!date=2026-08-28
+
+# 候选版：先实机验证，确认后再作为正式母版。
+# 说明：
+# 1. 进入淘宝商品详情页触发历史价格查询。
+# 2. 优先在商品详情服务区域显示；部分商品结构不兼容时脚本会以通知方式提示。
+# 3. 不依赖慢慢买 App CK。
+# 4. 独立模块，不改 Surge-1.0 主配置。
+
+[Script]
+淘宝比价.AMDC = type=http-request, pattern=^https?:\/\/.+\/amdc\/mobileDispatch, requires-body=true, max-size=-1, timeout=30, script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/scripts/taobao_price.surge.js, script-update-interval=86400
+
+淘宝历史比价 = type=http-response, pattern=^https?:\/\/trade-acs\.m\.taobao\.com\/gw\/mtop\.taobao\.detail\.getdetail, requires-body=true, max-size=-1, timeout=30, script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/scripts/taobao_price.surge.js, script-update-interval=86400
+
+[MITM]
+hostname = %APPEND% trade-acs.m.taobao.com, amdc.m.taobao.com
