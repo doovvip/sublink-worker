@@ -1,8 +1,7 @@
 #!name = YouTube 净化增强
-#!desc = Surge正式母版｜已实机跑通：Maasea核心逻辑 + QUIC拦截 + 自托管脚本 + 最小MITM｜去广告 / PIP / 后台播放
+#!desc = Surge正式母版｜已实机跑通｜去广告 / PIP / 后台播放｜无图标元数据
 #!author = Maasea / doovvip integration
-#!category = YouTube
-#!version = 2.0.0
+#!version = 2.0.1
 #!date = 2026-08-28
 #!arguments = 屏蔽上传按钮:true,屏蔽选段按钮:true,屏蔽Shorts按钮:false,字幕翻译语言:off,启用调试模式:false
 #!arguments-desc = - 屏蔽参数：[true, false]\n- 翻译参数：[语言代码, off]\n\n默认关闭字幕翻译与调试模式。
