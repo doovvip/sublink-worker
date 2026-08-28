@@ -1,0 +1,61 @@
+{
+  "hidden": {
+    "#kValId": "",
+    "#hisurl": "",
+    "#codeId": "",
+    "#tid": "",
+    "#checkCodeId": "953c51403dd487027983d1af2d8c58fd",
+    "#reqid": "6cda4bbd20e23d5e040498c3da5085b4",
+    "#sid": "",
+    "#mtm": "1787934189",
+    "#dwv": "",
+    "#rp": "",
+    "#taoInfoUrl": "",
+    "#addPramaId": "",
+    "#addTitleId": "",
+    "#taId": "",
+    "#taTitleId": "",
+    "#taFlagId": "",
+    "#nextYouhuiPage": "1"
+  },
+  "cookieNames": [
+    "JM_SESSION_X",
+    "UMID"
+  ],
+  "timestamp": 1787934191571,
+  "result": null,
+  "kType": "function",
+  "preinitType": "function",
+  "loadError": "",
+  "kError": "ReferenceError: getCookie is not defined\n    at getv (gs.js:37:9)\n    at Object.LetIT (gs.js:3:39631)\n    at Object.k (gs.js:3:40631)\n    at file:///tmp/hp/probe.mjs:40:50\n    at ModuleJob.run (node:internal/modules/esm/module_job:343:25)\n    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:681:26)\n    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)",
+  "preinitError": "ReferenceError: getCookie is not defined\n    at _preinit (gs.js:3:27425)\n    at Object.preinit (gs.js:3:25859)\n    at file:///tmp/hp/probe.mjs:41:52\n    at ModuleJob.run (node:internal/modules/esm/module_job:343:25)\n    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:681:26)\n    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)",
+  "trace": [
+    {
+      "kind": "selector",
+      "key": "#reqid"
+    },
+    {
+      "kind": "val",
+      "key": "#reqid",
+      "value": "6cda4bbd20e23d5e040498c3da5085b4"
+    },
+    {
+      "kind": "selector",
+      "key": "#checkCodeId"
+    },
+    {
+      "kind": "val",
+      "key": "#checkCodeId",
+      "value": "953c51403dd487027983d1af2d8c58fd"
+    },
+    {
+      "kind": "selector",
+      "key": "#checkCodeId"
+    },
+    {
+      "kind": "val",
+      "key": "#checkCodeId",
+      "value": "953c51403dd487027983d1af2d8c58fd"
+    }
+  ]
+}
