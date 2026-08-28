@@ -1,22 +1,22 @@
-#!name=淘宝历史比价｜分享链路深挖版
-#!desc=候选测试｜V1.15.0｜直接深挖淘宝“分享→复制链接”链路，REQ/RESP并行提取商品ID
+#!name=淘宝历史比价｜分享结构解析版
+#!desc=候选测试｜V1.16.0｜拆解已确认命中的分享埋点请求体结构，只显示字段名/类型/长度
 #!author=doovvip
 #!category=淘宝
 #!system=ios
-#!version=1.15.0
+#!version=1.16.0
 #!date=2026-08-28
 
-# 不修改主配置；不封IP/QUIC；不依赖短链必须经过Surge。
-# 已知 h-adashx.ut.taobao.com/upload 能稳定命中，因此以分享/复制链路为主，同时并行扫描淘宝/Tmall MTop候选请求与响应。
-# 操作只需：淘宝商品页 → 分享 → 复制链接，一次。
+# 不修改主配置；不封IP/QUIC。
+# 已确认 h-adashx.ut.taobao.com/upload 在“分享→复制链接”时稳定命中。
+# 本版只拆字段结构，不显示 Cookie/Token/原始值。
 
 [Panel]
-淘宝商品ID探测面板 = title="淘宝历史比价", content="等待分享链路…\n淘宝商品页 → 分享 → 复制链接一次", style=info, script-name=淘宝探测面板, update-interval=1
+淘宝商品ID探测面板 = title="淘宝历史比价", content="等待分享埋点结构…\n淘宝商品页 → 分享 → 复制链接一次", style=info, script-name=淘宝探测面板, update-interval=1
 
 [Script]
-淘宝分享链路.REQ = type=http-request, pattern=^https?:\/\/(?:h-adashx\.ut\.taobao\.com\/upload|(?:acs\.m\.taobao\.com|acs\.tao\.co|trade-acs\.m\.taobao\.com)\/gw\/.*(?:share|detail|item|auction|product|trade|sku|buy).*)$, requires-body=true, binary-body-mode=true, max-size=-1, timeout=15, script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/scripts/taobao_share_deep_probe.surge.js?v=1.15.0, script-update-interval=0
-淘宝分享链路.RESP = type=http-response, pattern=^https?:\/\/(?:h-adashx\.ut\.taobao\.com\/upload|(?:acs\.m\.taobao\.com|acs\.tao\.co|trade-acs\.m\.taobao\.com)\/gw\/.*(?:share|detail|item|auction|product|trade|sku|buy).*)$, requires-body=true, binary-body-mode=true, max-size=-1, timeout=15, script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/scripts/taobao_share_deep_probe.surge.js?v=1.15.0, script-update-interval=0
-淘宝探测面板 = type=generic, script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/scripts/taobao_price_probe_panel.surge.js?v=1.15.0, script-update-interval=0
+淘宝分享结构.REQ = type=http-request, pattern=^https?:\/\/h-adashx\.ut\.taobao\.com\/upload, requires-body=true, binary-body-mode=true, max-size=-1, timeout=15, script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/scripts/taobao_share_deep_probe.surge.js?v=1.16.0, script-update-interval=0
+淘宝分享结构.RESP = type=http-response, pattern=^https?:\/\/h-adashx\.ut\.taobao\.com\/upload, requires-body=true, binary-body-mode=true, max-size=-1, timeout=15, script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/scripts/taobao_share_deep_probe.surge.js?v=1.16.0, script-update-interval=0
+淘宝探测面板 = type=generic, script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/scripts/taobao_price_probe_panel.surge.js?v=1.16.0, script-update-interval=0
 
 [MITM]
-hostname = %APPEND% h-adashx.ut.taobao.com, acs.m.taobao.com, acs.tao.co, trade-acs.m.taobao.com
+hostname = %APPEND% h-adashx.ut.taobao.com
