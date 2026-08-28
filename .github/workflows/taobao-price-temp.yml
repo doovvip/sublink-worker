@@ -1,0 +1,33 @@
+name: Taobao Price Temporary Worker
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'src/taobaoPriceWeb.js'
+      - 'src/taobaoPriceWorker.js'
+      - 'wrangler.taobao.toml'
+      - '.github/workflows/taobao-price-temp.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Deploy temporary Cloudflare Worker
+        run: npx wrangler deploy --temporary --config wrangler.taobao.toml
