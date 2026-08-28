@@ -1,6 +1,6 @@
 /* Taobao analytics item-id probe for Surge.
- * v1.2: always notify once per request-structure family so we can verify execution.
- * Only exposes body type/length, content-type and safe key names. Never exposes values.
+ * v1.3: persist safe diagnostics for an Information Panel.
+ * Only exposes body type/length, content-type, safe key names, and candidate item IDs.
  */
 
 const req = $request || {};
@@ -9,6 +9,7 @@ const raw = typeof body === 'string' ? body : '';
 const url = String(req.url || '');
 const headers = req.headers || {};
 const KEY = 'taobao_analytics_probe_last';
+const PANEL_KEY = 'taobao_analytics_probe_panel';
 
 function getHeader(name) {
   const n = String(name).toLowerCase();
@@ -75,21 +76,24 @@ const ct = getHeader('content-type').split(';')[0] || 'unknown';
 const bodyType = typeof body;
 const bodyLen = raw.length;
 const keys = safeKeyNames(raw);
+const timestamp = new Date().toLocaleString();
+const safeMessage = ids.length
+  ? `时间: ${timestamp}\n命中候选ID: ${ids.join(' / ')}\nbody=${bodyType} len=${bodyLen}\ncontent-type=${ct}${keys.length ? `\nkeys=${keys.join(', ')}` : '\nkeys=none/encoded-binary'}`
+  : `时间: ${timestamp}\nbody=${bodyType} len=${bodyLen}\ncontent-type=${ct}${keys.length ? `\nkeys=${keys.join(', ')}` : '\nkeys=none/encoded-binary'}`;
 
-let title = '淘宝商品ID探测';
-let subtitle = ids.length ? '命中商品ID' : '脚本已执行';
-let message = ids.length
-  ? ids.join(' / ')
-  : `type=${bodyType} len=${bodyLen} ct=${ct}${keys.length ? ' | keys=' + keys.join(',') : ' | keys=none/encoded-binary'}`;
+try {
+  $persistentStore.write(JSON.stringify({message: safeMessage, ids: ids.length > 0, time: Date.now()}), PANEL_KEY);
+} catch (_) {}
 
-// throttle identical notifications to once per 20 seconds, but never suppress forever because of old persisted state
-const sig = subtitle + '|' + message;
+const sig = (ids.length ? 'id|' : 'diag|') + safeMessage.replace(/^时间:.*\n/, '');
 let last = {};
 try { last = JSON.parse($persistentStore.read(KEY) || '{}'); } catch (_) {}
 const now = Date.now();
 if (last.sig !== sig || now - Number(last.time || 0) > 20000) {
   try { $persistentStore.write(JSON.stringify({sig, time: now}), KEY); } catch (_) {}
-  $notification.post(title, subtitle, message);
+  try {
+    $notification.post('淘宝商品ID探测', ids.length ? '命中商品ID' : '脚本已执行', ids.length ? ids.join(' / ') : `len=${bodyLen} ct=${ct}`);
+  } catch (_) {}
 }
 
 $done({});
