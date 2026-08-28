@@ -9,9 +9,9 @@
       "kind": "ajax",
       "type": "post",
       "dataType": "json",
-      "url": "/dm/ptinfo.php?ud=&reqid=probe-reqid&flg=1&cd=P&qt=1787932453164&",
+      "url": "/dm/ptinfo.php?ud=&reqid=REQID32CHARS0123456789ABCDEFGH&flg=1&cd=CHECKCODE32CHARS0123456789ABCDEFP&qt=1787932614818&",
       "data": {
-        "checkCode": "P",
+        "checkCode": "CHECKCODE32CHARS0123456789ABCDEFP",
         "con": "957929114177"
       },
       "jsonp": null
@@ -20,9 +20,9 @@
       "kind": "ajax",
       "type": "post",
       "dataType": "json",
-      "url": "/dm/ptinfo.php?ud=&reqid=probe-reqid&flg=1&cd=P&qt=1787932453165&",
+      "url": "/dm/ptinfo.php?ud=&reqid=REQID32CHARS0123456789ABCDEFGH&flg=1&cd=CHECKCODE32CHARS0123456789ABCDEFP&qt=1787932614820&",
       "data": {
-        "checkCode": "P",
+        "checkCode": "CHECKCODE32CHARS0123456789ABCDEFP",
         "con": "https://detail.tmall.com/item.htm?id=957929114177"
       },
       "jsonp": null
