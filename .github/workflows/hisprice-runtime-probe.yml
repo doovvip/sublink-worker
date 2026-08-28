@@ -10,65 +10,46 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Fetch assets
+      - name: Call live HisPrice history endpoint
         run: |
-          mkdir -p /tmp/hp
-          curl -fsSL -A 'Mozilla/5.0' -e 'https://www.hisprice.com/' 'https://www.hisprice.com/codejs/chart18.js?t=19' -o /tmp/hp/chart18.js
-          curl -fsSL -A 'Mozilla/5.0' -e 'https://www.hisprice.com/' 'https://www.hisprice.com/codejs/v.js' -o /tmp/hp/v.js
-          curl -fsSL -A 'Mozilla/5.0' -e 'https://www.hisprice.com/' 'https://www.hisprice.com/codejs/gs_n1.js?t=1' -o /tmp/hp/gs.js
-      - name: Execute with browser stubs and capture requests
-        run: |
-          cat >/tmp/hp/probe.mjs <<'JS'
+          mkdir -p /tmp/hp debug
+          cat >/tmp/hp/live.mjs <<'JS'
           import fs from 'fs';
-          import vm from 'vm';
-          const logs=[];
-          const values={
-            '#taoInfoUrl':'https://detail.tmall.com/item.htm?id=957929114177',
-            '#reqid':'REQID32CHARS0123456789ABCDEFGH', '#mtm':'1234567890', '#checkCodeId':'CHECKCODE32CHARS0123456789ABCDEF', '#uid':'probe-uid'
-          };
-          function jq(sel){
-            return {
-              val(v){ if(arguments.length){values[String(sel)]=v;return this;} return values[String(sel)]??''; },
-              text(v){ if(arguments.length)return this; return values[String(sel)]??''; },
-              html(){return this;},show(){return this;},hide(){return this;},append(){return this;},attr(){return '';},
-              width(){return 390;},height(){return 100;},offset(){return {left:0,top:0};},on(){return this;},bind(){return this;},
-              css(){return this;},remove(){return this;},each(){return this;},click(){return this;},hover(){return this;}
-            };
+          const id='957929114177';
+          const itemUrl=`https://detail.tmall.com/item.htm?id=${id}`;
+          const pageUrl=`https://www.hisprice.com/his.php?hisurl=${encodeURIComponent(itemUrl)}`;
+          const ua='Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Version/18.0 Mobile/15E148 Safari/604.1';
+          const page=await fetch(pageUrl,{headers:{'user-agent':ua,'accept-language':'zh-CN,zh;q=0.9'}});
+          const html=await page.text();
+          const hidden={};
+          for(const tag of html.match(/<input\b[^>]*>/gi)||[]){
+            const idv=(tag.match(/\bid=["']([^"']*)["']/i)||[])[1]||'';
+            const name=(tag.match(/\bname=["']([^"']*)["']/i)||[])[1]||'';
+            const value=(tag.match(/\bvalue=["']([^"']*)["']/i)||[])[1]||'';
+            if(idv) hidden[idv]=value;
+            if(name && !(name in hidden)) hidden[name]=value;
           }
-          jq.ajax=(o={})=>{logs.push({kind:'ajax',type:o.type,method:o.method,dataType:o.dataType,url:String(o.url??''),data:o.data??null,jsonp:o.jsonp??null});return {};};
-          jq.get=(...a)=>{logs.push({kind:'get',args:a.map(String)});return {};};
-          jq.post=(...a)=>{logs.push({kind:'post',args:a.map(x=>typeof x==='string'?x:'[obj]')});return {};};
-          jq.getJSON=(...a)=>{logs.push({kind:'getJSON',args:a.map(String)});return {};};
-          jq.plot=()=>({getData:()=>[],pointOffset:()=>({left:0,top:0}),width:()=>300,height:()=>200});
-          const noop=()=>{};
-          const docObj={body:{appendChild:noop},documentElement:{scrollWidth:390},createElement:()=>({}),getElementById:()=>({}),cookie:''};
-          const ua='Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148';
-          const sandbox={console:{log:noop,warn:noop,error:noop},$:jq,jQuery:jq};
-          sandbox.window=sandbox;
-          sandbox.document=new Proxy(docObj,{get:(t,p)=>p in t?t[p]:noop,set:(t,p,v)=>(t[p]=v,true)});
-          sandbox.navigator={userAgent:ua,appVersion:ua};
-          sandbox.location={href:'https://www.hisprice.com/his.php?hisurl=https%3A%2F%2Fdetail.tmall.com%2Fitem.htm%3Fid%3D957929114177',search:''};
-          sandbox.localStorage={};
-          sandbox.setTimeout=(fn)=>0;sandbox.clearTimeout=noop;sandbox.setInterval=(fn)=>0;sandbox.clearInterval=noop;
-          sandbox.atob=s=>Buffer.from(s,'base64').toString('binary');sandbox.btoa=s=>Buffer.from(s,'binary').toString('base64');
-          sandbox.alert=noop;sandbox.open=noop;sandbox.Image=function(){};sandbox.XMLHttpRequest=function(){};
-          vm.createContext(sandbox);
-          for(const f of ['chart18.js','v.js','gs.js']){
-            try{vm.runInContext(fs.readFileSync('/tmp/hp/'+f,'utf8'),sandbox,{filename:f,timeout:3000});}
-            catch(e){logs.push({kind:'loadError',file:f,message:String(e.message||e)});}
+          const pick=(keys)=>{for(const k of keys){if(hidden[k]) return String(hidden[k]);} return ''};
+          const reqid=pick(['reqid','reqId']);
+          const baseCode=pick(['checkCodeId','checkCode','checkcode']);
+          const checkCode=baseCode?(baseCode.endsWith('P')?baseCode:baseCode+'P'):'';
+          const ud=pick(['uid','ud','userid']);
+          const apiUrl=`https://www.hisprice.com/dm/ptinfo.php?ud=${encodeURIComponent(ud)}&reqid=${encodeURIComponent(reqid)}&flg=1&cd=${encodeURIComponent(checkCode)}&qt=${Date.now()}&`;
+          let api={skipped:true};
+          if(reqid&&checkCode){
+            const cookie=(page.headers.get('set-cookie')||'').split(',').map(s=>s.split(';')[0]).join('; ');
+            const r=await fetch(apiUrl,{method:'POST',headers:{'user-agent':ua,'referer':pageUrl,'origin':'https://www.hisprice.com','content-type':'application/x-www-form-urlencoded; charset=UTF-8',...(cookie?{'cookie':cookie}:{})},body:new URLSearchParams({checkCode,con:itemUrl})});
+            const text=await r.text();
+            api={status:r.status,contentType:r.headers.get('content-type')||'',length:text.length,text:text.slice(0,30000)};
           }
-          for(const input of ['957929114177','https://detail.tmall.com/item.htm?id=957929114177']){
-            try{ if(typeof sandbox.preinit==='function') sandbox.preinit(input); else logs.push({kind:'missing',name:'preinit'}); }
-            catch(e){logs.push({kind:'callError',input,message:String(e.message||e),stack:String(e.stack||'').slice(0,1000)});}
-          }
-          fs.mkdirSync('debug',{recursive:true});
-          fs.writeFileSync('debug/hisprice-runtime.json',JSON.stringify({logs},null,2));
+          const out={pageStatus:page.status,pageLength:html.length,hidden,derived:{reqid,baseCode,checkCode,ud,apiUrl},api};
+          fs.writeFileSync('debug/hisprice-runtime.json',JSON.stringify(out,null,2));
           JS
-          node /tmp/hp/probe.mjs
+          node /tmp/hp/live.mjs
       - name: Commit runtime capture
         run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git add debug/hisprice-runtime.json
-          git diff --cached --quiet || git commit -m 'chore: capture HisPrice runtime request [skip ci]'
+          git diff --cached --quiet || git commit -m 'chore: capture live HisPrice ptinfo response [skip ci]'
           git push
