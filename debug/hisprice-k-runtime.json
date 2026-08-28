@@ -4,10 +4,10 @@
     "#hisurl": "",
     "#codeId": "",
     "#tid": "",
-    "#checkCodeId": "953c51403dd487027983d1af2d8c58fd",
-    "#reqid": "6cda4bbd20e23d5e040498c3da5085b4",
+    "#checkCodeId": "b08be7902137ed4741bbfc36708c58a6",
+    "#reqid": "7e272417a2f919331491a885a85c16a3",
     "#sid": "",
-    "#mtm": "1787934189",
+    "#mtm": "1787934237",
     "#dwv": "",
     "#rp": "",
     "#taoInfoUrl": "",
@@ -22,13 +22,13 @@
     "JM_SESSION_X",
     "UMID"
   ],
-  "timestamp": 1787934191571,
+  "timestamp": 1787934238238,
   "result": null,
   "kType": "function",
   "preinitType": "function",
   "loadError": "",
-  "kError": "ReferenceError: getCookie is not defined\n    at getv (gs.js:37:9)\n    at Object.LetIT (gs.js:3:39631)\n    at Object.k (gs.js:3:40631)\n    at file:///tmp/hp/probe.mjs:40:50\n    at ModuleJob.run (node:internal/modules/esm/module_job:343:25)\n    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:681:26)\n    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)",
-  "preinitError": "ReferenceError: getCookie is not defined\n    at _preinit (gs.js:3:27425)\n    at Object.preinit (gs.js:3:25859)\n    at file:///tmp/hp/probe.mjs:41:52\n    at ModuleJob.run (node:internal/modules/esm/module_job:343:25)\n    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:681:26)\n    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)",
+  "kError": "ReferenceError: setCookie is not defined\n    at putv (gs.js:11:2)\n    at getv (gs.js:40:4)\n    at Object.LetIT (gs.js:3:39631)\n    at Object.k (gs.js:3:40631)\n    at file:///tmp/hp/probe.mjs:35:50\n    at ModuleJob.run (node:internal/modules/esm/module_job:343:25)\n    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:681:26)\n    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)",
+  "preinitError": "ReferenceError: setCookie is not defined\n    at putv (gs.js:11:2)\n    at getv (gs.js:40:4)\n    at _preinit (gs.js:3:27532)\n    at Object.preinit (gs.js:3:25859)\n    at file:///tmp/hp/probe.mjs:36:52\n    at ModuleJob.run (node:internal/modules/esm/module_job:343:25)\n    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:681:26)\n    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)",
   "trace": [
     {
       "kind": "selector",
@@ -37,7 +37,7 @@
     {
       "kind": "val",
       "key": "#reqid",
-      "value": "6cda4bbd20e23d5e040498c3da5085b4"
+      "value": "7e272417a2f919331491a885a85c16a3"
     },
     {
       "kind": "selector",
@@ -46,7 +46,12 @@
     {
       "kind": "val",
       "key": "#checkCodeId",
-      "value": "953c51403dd487027983d1af2d8c58fd"
+      "value": "b08be7902137ed4741bbfc36708c58a6"
+    },
+    {
+      "kind": "getCookie",
+      "name": "shot",
+      "value": "0123456789abcdef0123456789abcdef"
     },
     {
       "kind": "selector",
@@ -55,7 +60,26 @@
     {
       "kind": "val",
       "key": "#checkCodeId",
-      "value": "953c51403dd487027983d1af2d8c58fd"
+      "value": "b08be7902137ed4741bbfc36708c58a6"
+    },
+    {
+      "kind": "getCookie",
+      "name": "UMID",
+      "value": "WDAGSCYWFCHMAWVICKA_HN_1787934237"
+    },
+    {
+      "kind": "selector",
+      "key": "#reqid"
+    },
+    {
+      "kind": "val",
+      "key": "#reqid",
+      "value": "7e272417a2f919331491a885a85c16a3"
+    },
+    {
+      "kind": "getCookie",
+      "name": "shot",
+      "value": "0123456789abcdef0123456789abcdef"
     }
   ]
 }
