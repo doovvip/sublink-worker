@@ -1,15 +1,15 @@
 #!name=京东历史比价
-#!desc=Surge版｜京东商品详情页显示历史价格；首次使用需打开“慢慢买”APP进入“我的”获取 CK
+#!desc=Surge版｜适配 Surge-1.0｜京东商品详情页显示历史价格；慢慢买 CK 自动抓取增强
 #!author=wf021325 / doovvip Surge adaptation
 #!category=京东
 #!system=ios
-#!version=1.0.0
+#!version=1.0.1
 #!date=2026-08-28
 
 [Script]
-京东历史比价 = type=http-response, pattern=^https?:\/\/in\.m\.jd\.com\/product\/graphext\/\d+\.html, requires-body=true, max-size=-1, timeout=30, script-path=https://raw.githubusercontent.com/wf021325/qx/master/js/jd_price.js, script-update-interval=86400
+京东历史比价 = type=http-response, pattern=^https?:\/\/in\.m\.jd\.com\/product\/graphext\/\d+\.html(?:\?.*)?$, requires-body=true, max-size=-1, timeout=30, script-path=https://raw.githubusercontent.com/wf021325/qx/master/js/jd_price.js, script-update-interval=86400
 
-慢慢买CK = type=http-request, pattern=^https?:\/\/apapia-sqk-weblogic\.manmanbuy\.com\/baoliao\/center\/menu$, requires-body=true, max-size=-1, timeout=30, script-path=https://raw.githubusercontent.com/wf021325/qx/master/js/jd_price.js, script-update-interval=86400
+慢慢买CK增强抓取 = type=http-request, pattern=^https?:\/\/apapia-[^\/]+\.manmanbuy\.com\/, requires-body=true, max-size=-1, timeout=15, script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/scripts/jd_price_ck.surge.js, script-update-interval=86400
 
 [MITM]
-hostname = %APPEND% in.m.jd.com, apapia-sqk-weblogic.manmanbuy.com
+hostname = %APPEND% in.m.jd.com, *.manmanbuy.com
