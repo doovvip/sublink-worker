@@ -1,0 +1,16 @@
+#!name=淘宝比价接口探测｜临时
+#!desc=仅用于定位新版淘宝商品详情实际接口｜不读取正文/参数/请求体
+#!author=doovvip
+#!category=调试
+#!system=ios
+#!version=1.0.0
+#!date=2026-08-28
+
+# 临时诊断模块：测试完成后关闭/删除。
+# 仅弹出 host + pathname，不读取查询参数、请求体或请求头。
+
+[Script]
+淘宝接口探测 = type=http-request, pattern=^https?:\/\/(?:[^\/]+\.)?(?:taobao|tmall)\.com\/, requires-body=false, timeout=10, script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/scripts/taobao_price_debug.surge.js, script-update-interval=86400
+
+[MITM]
+hostname = %APPEND% *.taobao.com, *.tmall.com
