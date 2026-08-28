@@ -30,4 +30,28 @@ jobs:
         run: npm ci
 
       - name: Deploy temporary Cloudflare Worker
-        run: npx wrangler deploy --temporary --config wrangler.taobao.toml
+        shell: bash
+        run: |
+          set -o pipefail
+          npx wrangler deploy --temporary --config wrangler.taobao.toml | tee /tmp/taobao-worker-deploy.log
+          WORKER_URL=$(grep -Eo 'https://[A-Za-z0-9.-]+\.workers\.dev' /tmp/taobao-worker-deploy.log | tail -n 1)
+          test -n "$WORKER_URL"
+          echo "WORKER_URL=$WORKER_URL" >> "$GITHUB_ENV"
+          echo "Temporary Worker: $WORKER_URL"
+
+      - name: Smoke test Taobao checker
+        shell: bash
+        run: |
+          set -e
+          echo "Health:"
+          curl -fsS "$WORKER_URL/health"
+          echo
+          echo "UI marker:"
+          curl -fsS "$WORKER_URL/taobao-price" | grep -F '打开 HisPrice（需滑块验证）'
+          echo
+          ITEM='https://detail.tmall.com/item.htm?id=957929114177'
+          for i in 1 2 3; do
+            echo "API run $i:"
+            curl -sS --max-time 30 -G "$WORKER_URL/api/taobao-price" --data-urlencode "q=$ITEM"
+            echo
+          done
