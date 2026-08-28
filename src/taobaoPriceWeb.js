@@ -44,8 +44,18 @@ async function queryBijiago(itemUrl){
   const api=`https://browser.bijiago.com/extension/price_towards?url=${encodeURIComponent(itemUrl)}&format=jsonp&union=union_bijiago&from_device=bijiago&version=${Date.now()}`;
   const response=await fetch(api,{headers:{'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36',Referer:itemUrl,Cookie:cookieParts.join('; ')}});
   if(!response.ok)return null;const data=parseJsonLike(await response.text());if(!data||!Array.isArray(data.store)||!data.store.length)return null;
-  const store=data.store.length>1?data.store[1]:data.store[0];
-  return{ok:true,source:'比价狗',currentPrice:normalizeCurrent(store.last_price),lowestPrice:toNumber(store.lowest),lowestDate:formatStamp(store.min_stamp),highestPrice:toNumber(store.highest),note:data?.analysis?.tip||''};
+  const candidates=data.store.filter(x=>x&&typeof x==='object');
+  const store=candidates.find(x=>x.lowest!=null||x.min_stamp!=null||x.price_range!=null||x.current_price!=null)||candidates[0];
+  if(!store)return null;
+  const range=parsePriceRange(store.price_range);
+  const current=firstFinite(
+    normalizeCurrent(store.current_price),
+    normalizeCurrent(store.last_price),
+    normalizeCurrent(store.price)
+  );
+  const low=firstFinite(toNumber(store.lowest),range.low);
+  const high=firstFinite(toNumber(store.highest),range.high);
+  return{ok:true,source:'比价狗',currentPrice:current,lowestPrice:low,lowestDate:formatStamp(store.min_stamp),highestPrice:high,note:data?.analysis?.tip||''};
 }
 
 async function queryManmanbuy(itemUrl){
@@ -65,12 +75,19 @@ function validateResult(result){
   if(cur!=null&&(cur<low/5||cur>high*5))return{ok:false,reason:`${result.source||'数据源'} 当前价与历史区间明显冲突，已丢弃`};
   return{ok:true,value:{...result,currentPrice:cur,lowestPrice:low,highestPrice:high}};
 }
+function parsePriceRange(value){
+  const nums=(String(value??'').match(/\d+(?:\.\d+)?/g)||[]).map(Number).filter(Number.isFinite).map(normalizeRangeNumber);
+  if(!nums.length)return{low:null,high:null};
+  return{low:Math.min(...nums),high:Math.max(...nums)};
+}
+function normalizeRangeNumber(n){return n>=100000?round2(n/100):round2(n);}
+function firstFinite(...values){for(const value of values){if(Number.isFinite(value)&&value>0)return round2(value);}return null;}
 function cleanPrice(value){const n=Number(value);return Number.isFinite(n)&&n>0?round2(n):null;}
 function extractUrl(text){const match=String(text||'').match(/https?:\/\/[^\s\u3000]+/i);return match?match[0].replace(/[)\]}>，。；;！!]+$/g,''):'';}
 function extractId(text){const s=decodeURIComponentSafe(String(text||'')).replace(/&amp;/g,'&');const patterns=[/[?&]id=(\d{6,})/i,/[?&]itemId=(\d{6,})/i,/["']itemId["']\s*[:=]\s*["']?(\d{6,})/i,/\b(\d{10,15})\b/];for(const pattern of patterns){const match=s.match(pattern);if(match)return match[1];}return'';}
 function decodeURIComponentSafe(value){try{return decodeURIComponent(value);}catch{return value;}}
 function parseJsonLike(text){const s=String(text||'').trim();try{return JSON.parse(s);}catch{}const start=s.indexOf('{'),end=s.lastIndexOf('}');if(start>=0&&end>start){try{return JSON.parse(s.slice(start,end+1));}catch{}}return null;}
-function normalizeCurrent(value){const n=toNumber(value);if(n==null)return null;return n>=1000?round2(n/100):n;}
+function normalizeCurrent(value){const n=toNumber(value);if(n==null)return null;return n>=100000?round2(n/100):n;}
 function parsePrice(value){const m=String(value||'').match(/\d+(?:\.\d+)?/);return m?Number(m[0]):NaN;}
 function toNumber(value){const n=Number(value);return Number.isFinite(n)?round2(n):null;}
 function round2(n){return Math.round(n*100)/100;}
