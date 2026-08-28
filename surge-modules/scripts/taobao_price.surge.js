@@ -16,49 +16,64 @@ const consoleLog = false
 const url = $request.url
 
 if (url.indexOf(path1) != -1) {
+    const gatewayHosts = new Set([
+        "trade-acs.m.taobao.com",
+        "guide-acs.m.taobao.com",
+        "acs.m.taobao.com",
+        "h5api.m.taobao.com"
+    ])
+
     if ($tool.isResponse) {
-        const $base64 = new Base64()
-        let body = $response.body
-        let obj = JSON.parse($base64.decode(body))
-        let dns = obj.dns
-        if (dns && dns.length > 0) {
-            let i = dns.length;
-            while (i--) {
-                const element = dns[i];
-                let host = "trade-acs.m.taobao.com"
-                if (element.host == host) {
-                    element.ips = []
-                    if (consoleLog) console.log(JSON.stringify(element))
+        try {
+            const $base64 = new Base64()
+            let body = $response.body
+            let obj = JSON.parse($base64.decode(body))
+            let dns = obj.dns
+            if (dns && dns.length > 0) {
+                for (const element of dns) {
+                    if (element && gatewayHosts.has(element.host)) {
+                        element.ips = []
+                    }
                 }
             }
+            body = $base64.encode(JSON.stringify(obj))
+            $done({ body })
+        } catch (e) {
+            $done({})
         }
-        body = $base64.encode(JSON.stringify(obj))
-        $done({ body })
     } else {
-        let headers = $request.headers
-        let body = $request.body
-        if (headers["User-Agent"].indexOf("%E6%89%8B%E6%9C%BA%E6%B7%98%E5%AE%9D") != -1) {
+        let body = $request.body || ""
+        try {
             let json = Qs2Json(body)
-            let domain = json.domain.split(" ")
-            let i = domain.length;
-            while (i--) {
-                const block = "trade-acs.m.taobao.com"
-                const element = domain[i];
-                if (element == block) {
-                    domain.splice(i, 1);
-                }
+            if (json.domain) {
+                json.domain = json.domain
+                    .split(" ")
+                    .filter(Boolean)
+                    .filter(host => !gatewayHosts.has(host))
+                    .join(" ")
+                body = Json2Qs(json)
             }
-            json.domain = domain.join(" ")
-            body = Json2Qs(json)
-        }
+        } catch (e) {}
         $done({ body })
     }
 }
 
 if (url.indexOf(path2) != -1) {
     const body = $response.body
-    let obj = JSON.parse(body)
-    let item = obj.data.item
+    let obj
+    try {
+        obj = JSON.parse(body)
+    } catch (e) {
+        $tool.notify("淘宝历史比价", "已命中商品详情接口", "返回格式暂不兼容")
+        $done({ body })
+        return
+    }
+    let item = obj && obj.data && obj.data.item
+    if (!item || !item.itemId) {
+        $tool.notify("淘宝历史比价", "已命中商品详情接口", "未读取到商品ID")
+        $done({ body })
+        return
+    }
     let shareUrl = `https://item.taobao.com/item.htm?id=${item.itemId}`
     requestPrice(shareUrl, function (data) {
         if (data) {
