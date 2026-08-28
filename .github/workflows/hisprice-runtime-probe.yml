@@ -10,59 +10,45 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Execute exact HisPrice request
+      - name: Locate HisPrice cookie helpers
         run: |
           mkdir -p /tmp/hp debug
-          curl -fsSL -A 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X)' -c /tmp/hp/cookies.txt 'https://www.hisprice.com/his.php?hisurl=https%3A%2F%2Fdetail.tmall.com%2Fitem.htm%3Fid%3D957929114177' -o /tmp/hp/page.html
-          curl -fsSL -A 'Mozilla/5.0' -e 'https://www.hisprice.com/' 'https://www.hisprice.com/codejs/gs_n1.js?t=1' -o /tmp/hp/gs.js
-          cat >/tmp/hp/probe.mjs <<'JS'
-          import fs from 'fs';
-          import vm from 'vm';
-          const itemUrl='https://detail.tmall.com/item.htm?id=957929114177';
-          const pageUrl='https://www.hisprice.com/his.php?hisurl='+encodeURIComponent(itemUrl);
-          const html=fs.readFileSync('/tmp/hp/page.html','utf8');
-          const gs=fs.readFileSync('/tmp/hp/gs.js','utf8');
-          const hidden={};
-          for(const tag of html.match(/<input\b[^>]*>/gi)||[]){
-            const id=(tag.match(/\bid=["']([^"']*)["']/i)||[])[1]||'';
-            const name=(tag.match(/\bname=["']([^"']*)["']/i)||[])[1]||'';
-            const value=(tag.match(/\bvalue=["']([^"']*)["']/i)||[])[1]||'';
-            if(id) hidden['#'+id]=value;
-            if(name) hidden['#'+name]=hidden['#'+name]||value;
-          }
-          const cookieMap={};
-          for(const x of fs.readFileSync('/tmp/hp/cookies.txt','utf8').split(/\r?\n/).filter(x=>x&&!x.startsWith('#'))){const p=x.split('\t');if(p.length>=7)cookieMap[p[5]]=p[6];}
-          const trace=[]; let captured=null;
-          function jq(sel){const key=String(sel);return {val(v){if(arguments.length){hidden[key]=String(v);return this;}return hidden[key]??'';},text(){return hidden[key]??'';},html(){return this;},show(){return this;},hide(){return this;},append(){return this;},attr(){return '';},width(){return 390;},height(){return 100;},offset(){return {left:0,top:0};},on(){return this;},bind(){return this;},css(){return this;},remove(){return this;},each(){return this;},click(){return this;},hover(){return this;}};}
-          jq.ajax=(o={})=>{captured={url:String(o.url||''),type:String(o.type||''),data:o.data||null,dataType:o.dataType||null};trace.push({kind:'ajax',...captured});return {};};
-          jq.get=jq.post=jq.getJSON=(...args)=>{trace.push({kind:'jqCall',args:args.map(x=>typeof x==='string'?x:'[obj]')});return {};};
-          jq.plot=()=>({getData:()=>[],pointOffset:()=>({left:0,top:0}),width:()=>300,height:()=>200});
-          const noop=()=>{};
-          const getCookie=(name)=>{const value=cookieMap[String(name)]??'';trace.push({kind:'getCookie',name:String(name),value});return value;};
-          const setCookie=(name,value,...rest)=>{cookieMap[String(name)]=String(value);trace.push({kind:'setCookie',name:String(name),value:String(value),rest:rest.map(String)});return true;};
-          const doc={get cookie(){return Object.entries(cookieMap).map(([k,v])=>`${k}=${v}`).join('; ');},set cookie(v){const p=String(v).split(';')[0].split('=');if(p[0])cookieMap[p[0].trim()]=(p.slice(1).join('=')||'').trim();},body:{appendChild:noop},documentElement:{scrollWidth:390},createElement:()=>({style:{}}),getElementById:(id)=>({value:hidden['#'+id]??'',style:{}}),querySelector:()=>null};
-          const ua='Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148';
-          const sandbox={console:{log:noop,warn:noop,error:noop},$:jq,jQuery:jq,getCookie,setCookie,document:doc,navigator:{userAgent:ua,appVersion:ua},location:{href:pageUrl,search:new URL(pageUrl).search,host:'www.hisprice.com'},localStorage:{},sessionStorage:{},alert:noop,open:noop,Image:function(){},XMLHttpRequest:function(){},setTimeout:(fn)=>0,clearTimeout:noop,setInterval:(fn)=>0,clearInterval:noop,atob:s=>Buffer.from(s,'base64').toString('binary'),btoa:s=>Buffer.from(s,'binary').toString('base64'),pako:{inflate:(v)=>v,ungzip:(v)=>v}};
-          sandbox.window=sandbox; vm.createContext(sandbox);
-          let loadError='',preinitError='';
-          try{vm.runInContext(gs,sandbox,{filename:'gs.js',timeout:5000});}catch(e){loadError=String(e?.stack||e).slice(0,2500);}
-          try{if(typeof sandbox.preinit==='function')sandbox.preinit(itemUrl);}catch(e){preinitError=String(e?.stack||e).slice(0,2500);}
-          let api=null;
-          if(captured?.url){
-            const target=new URL(captured.url,'https://www.hisprice.com').href;
-            const body=new URLSearchParams(captured.data||{});
-            const cookie=Object.entries(cookieMap).map(([k,v])=>`${k}=${v}`).join('; ');
-            const r=await fetch(target,{method:'POST',headers:{'user-agent':ua,'referer':pageUrl,'origin':'https://www.hisprice.com','content-type':'application/x-www-form-urlencoded; charset=UTF-8','x-requested-with':'XMLHttpRequest',...(cookie?{'cookie':cookie}:{})},body});
-            const text=await r.text();
-            api={target,status:r.status,contentType:r.headers.get('content-type')||'',length:text.length,text:text.slice(0,50000)};
-          }
-          fs.writeFileSync('debug/hisprice-exact-response.json',JSON.stringify({hidden,cookies:cookieMap,captured,loadError,preinitError,trace:trace.slice(-300),api},null,2));
-          JS
-          node /tmp/hp/probe.mjs
-      - name: Commit exact response
+          PAGE='https://www.hisprice.com/his.php?hisurl=https%3A%2F%2Fdetail.tmall.com%2Fitem.htm%3Fid%3D957929114177'
+          curl -fsSL -A 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X)' "$PAGE" -o /tmp/hp/page.html
+          python - <<'PY'
+          import re,json,urllib.parse,urllib.request,pathlib
+          page=pathlib.Path('/tmp/hp/page.html').read_text(errors='ignore')
+          srcs=[]
+          for m in re.finditer(r'<script\b[^>]*src=["\']([^"\']+)["\']',page,re.I):
+              u=urllib.parse.urljoin('https://www.hisprice.com/',m.group(1))
+              if urllib.parse.urlparse(u).netloc.endswith('hisprice.com'): srcs.append(u)
+          srcs=list(dict.fromkeys(srcs))
+          needles=['function getCookie','getCookie=','function setCookie','setCookie=','shot','JM_SESSION_X','UMID']
+          out={'scripts':srcs,'hits':[]}
+          headers={'User-Agent':'Mozilla/5.0','Referer':'https://www.hisprice.com/'}
+          for u in srcs:
+              try:
+                  req=urllib.request.Request(u,headers=headers); s=urllib.request.urlopen(req,timeout=15).read().decode('utf-8','ignore')
+              except Exception as e:
+                  out['hits'].append({'url':u,'error':str(e)}); continue
+              matches=[]
+              low=s.lower()
+              for key in needles:
+                  pos=0
+                  while True:
+                      i=low.find(key.lower(),pos)
+                      if i<0: break
+                      matches.append({'key':key,'at':i,'excerpt':re.sub(r'\s+',' ',s[max(0,i-700):min(len(s),i+1400)])})
+                      pos=i+len(key)
+                      if len(matches)>=30: break
+                  if len(matches)>=30: break
+              if matches: out['hits'].append({'url':u,'length':len(s),'matches':matches})
+          pathlib.Path('debug/hisprice-cookie-helpers.json').write_text(json.dumps(out,ensure_ascii=False,indent=2))
+          PY
+      - name: Commit helper capture
         run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add debug/hisprice-exact-response.json
-          git diff --cached --quiet || git commit -m 'chore: capture HisPrice exact response [skip ci]'
+          git add debug/hisprice-cookie-helpers.json
+          git diff --cached --quiet || git commit -m 'chore: capture HisPrice cookie helpers [skip ci]'
           git push
