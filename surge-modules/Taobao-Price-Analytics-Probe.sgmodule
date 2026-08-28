@@ -1,0 +1,16 @@
+#!name=淘宝商品ID探测｜埋点版
+#!desc=候选诊断｜不拦截QUIC/AMDC｜仅从淘宝埋点请求中提取当前商品ID
+#!author=doovvip
+#!category=调试
+#!system=ios
+#!version=1.0.0
+#!date=2026-08-28
+
+# 只用于定位当前商品ID；测试完成后关闭。
+# 不修改请求、不阻断淘宝、不读取账号凭据。
+
+[Script]
+淘宝商品ID探测 = type=http-request, pattern=^https?:\/\/h-adashx\.ut\.taobao\.com\/upload, requires-body=true, max-size=-1, timeout=10, script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/scripts/taobao_price_analytics_probe.surge.js, script-update-interval=86400
+
+[MITM]
+hostname = %APPEND% h-adashx.ut.taobao.com
