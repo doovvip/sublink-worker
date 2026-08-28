@@ -1,20 +1,22 @@
-#!name=淘宝商品ID探测｜详情链路版
-#!desc=候选诊断｜V1.8.0｜转向淘宝商品详情链路，不再探测无商品ID的埋点接口
+#!name=淘宝商品ID探测｜并行版
+#!desc=候选诊断｜V1.9.0｜请求+响应+多域名并行探测，减少来回测试次数
 #!author=doovvip
 #!category=调试
 #!system=ios
-#!version=1.8.0
+#!version=1.9.0
 #!date=2026-08-28
 
 # 只用于定位当前商品ID；测试完成后关闭。
-# 不阻断淘宝，不修改主配置。
+# 不修改主配置；不阻断淘宝。
 
 [Panel]
-淘宝商品ID探测面板 = title="淘宝商品ID探测", content="等待淘宝商品详情请求…\n打开商品详情页后刷新此面板", style=info, script-name=淘宝探测面板, update-interval=1
+淘宝商品ID探测面板 = title="淘宝商品ID探测", content="等待并行详情请求…\n打开一个商品详情页即可", style=info, script-name=淘宝探测面板, update-interval=1
 
 [Script]
-淘宝商品详情探测 = type=http-request, pattern=^https?:\/\/(?:[^\/]+\.)?(?:taobao\.com|tmall\.com|tao\.co)\/, requires-body=true, binary-body-mode=true, max-size=-1, timeout=10, script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/scripts/taobao_price_analytics_probe.surge.js?v=1.8.0, script-update-interval=0
-淘宝探测面板 = type=generic, script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/scripts/taobao_price_probe_panel.surge.js?v=1.8.0, script-update-interval=0
+淘宝并行探测.URL = type=http-request, pattern=^https?:\/\/(?:[^\/]+\.)?(?:taobao\.com|tmall\.com|tao\.co)\/, requires-body=false, timeout=10, script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/scripts/taobao_price_analytics_probe.surge.js?v=1.9.0, script-update-interval=0
+淘宝并行探测.REQ = type=http-request, pattern=^https?:\/\/(?:acs\.m\.taobao\.com|trade-acs\.m\.taobao\.com|guide-acs\.m\.taobao\.com|h5api\.m\.taobao\.com|acs\.tao\.co)\/, requires-body=true, binary-body-mode=true, max-size=-1, timeout=10, script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/scripts/taobao_price_analytics_probe.surge.js?v=1.9.0, script-update-interval=0
+淘宝并行探测.RESP = type=http-response, pattern=^https?:\/\/(?:acs\.m\.taobao\.com|trade-acs\.m\.taobao\.com|guide-acs\.m\.taobao\.com|h5api\.m\.taobao\.com|acs\.tao\.co)\/(?:gw\/)?mtop\., requires-body=true, binary-body-mode=true, max-size=-1, timeout=10, script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/scripts/taobao_price_analytics_probe.surge.js?v=1.9.0, script-update-interval=0
+淘宝探测面板 = type=generic, script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/scripts/taobao_price_probe_panel.surge.js?v=1.9.0, script-update-interval=0
 
 [MITM]
-hostname = %APPEND% *.taobao.com, *.tmall.com, *.tao.co
+hostname = %APPEND% acs.m.taobao.com, trade-acs.m.taobao.com, guide-acs.m.taobao.com, h5api.m.taobao.com, acs.tao.co
