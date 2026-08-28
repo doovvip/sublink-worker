@@ -1,27 +1,20 @@
 export default async function handler(req, res) {
   try {
-    const asset = String(req.query?.asset || '');
-    if (asset) {
-      const map = {
-        chart18:'https://www.hisprice.com/codejs/chart18.js?t=19',
-        v:'https://www.hisprice.com/codejs/v.js',
-        gs:'https://www.hisprice.com/codejs/gs_n1.js?t=1'
-      };
-      const target = map[asset];
-      if (!target) return send(res,400,{ok:false,message:'bad asset'});
-      const r = await fetch(target,{headers:{'User-Agent':'Mozilla/5.0','Referer':'https://www.hisprice.com/'}});
-      const js = await r.text();
-      const snippets=[];
-      for(const key of ['ajax','url:','preinit','post','getjson','history','price','chart','data']){
-        let start=0;
-        while(true){const i=js.toLowerCase().indexOf(key,start);if(i<0)break;snippets.push(js.slice(Math.max(0,i-260),Math.min(js.length,i+900)).replace(/\s+/g,' '));start=i+key.length;if(snippets.length>=80)break;}
-        if(snippets.length>=80)break;
-      }
-      const paths=[...js.matchAll(/["'](\/?[^"']*(?:ajax|api|price|history|trend|chart|check|init|data)[^"']*)["']/gi)].map(m=>m[1]).filter(s=>s.length<300);
-      return send(res,200,{ok:true,status:r.status,length:js.length,paths:[...new Set(paths)].slice(0,150),snippets:[...new Set(snippets)].slice(0,80)});
-    }
     const id = String(req.query?.id || '957929114177').replace(/\D/g, '');
     if (!id) return send(res, 400, { ok:false, message:'missing id' });
+
+    const assets = {
+      chart18:'https://www.hisprice.com/codejs/chart18.js?t=19',
+      v:'https://www.hisprice.com/codejs/v.js',
+      gs:'https://www.hisprice.com/codejs/gs_n1.js?t=1'
+    };
+    const assetResult={};
+    for (const [name,target] of Object.entries(assets)) {
+      const r=await fetch(target,{headers:{'User-Agent':'Mozilla/5.0','Referer':'https://www.hisprice.com/'}});
+      const js=await r.text();
+      assetResult[name]={status:r.status,length:js.length,endpoints:extractEndpoints(js),preinit:extractAround(js,'preinit',5000),checkCode:extractAround(js,'checkCode',3500),reqid:extractAround(js,'reqid',3500)};
+    }
+
     const itemUrl = `https://detail.tmall.com/item.htm?id=${id}`;
     const target = `https://www.hisprice.com/his.php?hisurl=${encodeURIComponent(itemUrl)}`;
     const r = await fetch(target, { headers: {
@@ -29,18 +22,26 @@ export default async function handler(req, res) {
       'Accept-Language':'zh-CN,zh;q=0.9'
     }});
     const html = await r.text();
-    const scriptSrcs = [...html.matchAll(/<script[^>]+src=["']([^"']+)["']/gi)].map(m=>absolutize(m[1], target));
-    const ajaxLike = [...html.matchAll(/["']([^"']*(?:ajax|api|price|history|trend|chart)[^"']*)["']/gi)]
-      .map(m=>m[1]).filter(s=>s && s.length<300).slice(0,120);
-    const urls = [...html.matchAll(/https?:\/\/[^"'<>\s]+/gi)].map(m=>m[0]).filter(u=>/hisprice|price|api|ajax|chart|trend/i.test(u)).slice(0,120);
-    const forms = [...html.matchAll(/<form\b[^>]*action=["']?([^"' >]+)/gi)].map(m=>absolutize(m[1], target));
-    const snippets = [];
-    for (const key of ['ajax','price','history','trend','chart','series','data','preinit']) {
-      const i = html.toLowerCase().indexOf(key);
-      if (i >= 0) snippets.push(html.slice(Math.max(0,i-220), Math.min(html.length,i+900)).replace(/\s+/g,' '));
-    }
-    return send(res, 200, {ok:true,status:r.status,length:html.length,scriptSrcs:[...new Set(scriptSrcs)],ajaxLike:[...new Set(ajaxLike)],urls:[...new Set(urls)],forms:[...new Set(forms)],snippets});
+    const hidden={};
+    for(const m of html.matchAll(/<input\b[^>]*(?:id|name)=["']([^"']+)["'][^>]*value=["']([^"']*)["'][^>]*>/gi)) hidden[m[1]]=m[2];
+    for(const m of html.matchAll(/<input\b[^>]*value=["']([^"']*)["'][^>]*(?:id|name)=["']([^"']+)["'][^>]*>/gi)) hidden[m[2]]=m[1];
+    return send(res,200,{ok:true,pageStatus:r.status,pageLength:html.length,hidden,assets:assetResult,pagePreinit:extractAround(html,'preinit',3500),pageCheck:extractAround(html,'checkgen',3500)});
   } catch (e) { return send(res, 500, {ok:false,message:String(e?.message||e)}); }
 }
-function absolutize(v, base){ try{return new URL(v,base).toString()}catch{return v} }
+
+function extractEndpoints(js){
+  const out=[]; const s=String(js||'');
+  const regexes=[
+    /["']([^"']+\.(?:php|json)(?:\?[^"']*)?)["']/gi,
+    /["'](\/[^"']*(?:check|price|his|chart|data|init|query)[^"']*)["']/gi,
+    /(?:url\s*[:=]\s*)["']([^"']+)["']/gi
+  ];
+  for(const re of regexes) for(const m of s.matchAll(re)){const v=m[1];if(v&&v.length<500)out.push(v)}
+  return [...new Set(out)].slice(0,250);
+}
+function extractAround(text,key,radius){
+  const s=String(text||''), low=s.toLowerCase(), k=key.toLowerCase(); const out=[]; let start=0;
+  while(out.length<12){const i=low.indexOf(k,start);if(i<0)break;out.push(s.slice(Math.max(0,i-radius),Math.min(s.length,i+radius)).replace(/\s+/g,' '));start=i+k.length;}
+  return out;
+}
 function send(res,status,obj){res.statusCode=status;res.setHeader('content-type','application/json; charset=utf-8');res.setHeader('cache-control','no-store');res.end(JSON.stringify(obj));}
