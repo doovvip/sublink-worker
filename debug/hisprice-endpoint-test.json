@@ -1,0 +1,20 @@
+{
+  "pageLength": 16256,
+  "reqid": "6624bcf16cfafcbd8cbe53d96814935e",
+  "hasUmid": false,
+  "cookies": [
+    "UMID",
+    "JM_SESSION_X"
+  ],
+  "endpointPath": "/dm/ptinfo.php",
+  "request": {
+    "flg": "1",
+    "cd": "P",
+    "checkCode": "P",
+    "con": "https://detail.tmall.com/item.htm?id=957929114177"
+  },
+  "status": 200,
+  "contentType": "text/html",
+  "length": 5,
+  "textPreview": "error"
+}
