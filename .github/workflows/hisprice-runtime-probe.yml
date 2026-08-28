@@ -10,32 +10,35 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Extract HisPrice source around ptinfo
+      - name: Isolate HisPrice request construction
         run: |
           mkdir -p /tmp/hp debug
-          curl -fsSL -A 'Mozilla/5.0' -e 'https://www.hisprice.com/' 'https://www.hisprice.com/codejs/v.js' -o /tmp/hp/v.js
           curl -fsSL -A 'Mozilla/5.0' -e 'https://www.hisprice.com/' 'https://www.hisprice.com/codejs/chart18.js?t=19' -o /tmp/hp/chart18.js
           curl -fsSL -A 'Mozilla/5.0' -e 'https://www.hisprice.com/' 'https://www.hisprice.com/codejs/gs_n1.js?t=1' -o /tmp/hp/gs.js
+          curl -fsSL -A 'Mozilla/5.0' 'https://www.hisprice.com/his.php?hisurl=https%3A%2F%2Fdetail.tmall.com%2Fitem.htm%3Fid%3D957929114177' -o /tmp/hp/page.html
           python - <<'PY'
           import json,re,pathlib
+          keys=['ptinfo.php','function preinit','preinit=','checkCode','checkCodeId','reqid','mtm','preudParam','localJsPreUrl','taoInfoUrl','$.ajax','$.post']
           out={}
-          for name in ['v.js','chart18.js','gs.js']:
+          for name in ['chart18.js','gs.js','page.html']:
               s=pathlib.Path('/tmp/hp/'+name).read_text(errors='ignore')
-              hits=[]
-              for key in ['ptinfo.php','preinit','preudParam','checkCode','reqid','localJsPreUrl','mtm']:
+              rows=[]
+              for key in keys:
                   pos=0
-                  while len(hits)<40:
+                  while True:
                       i=s.lower().find(key.lower(),pos)
                       if i<0: break
-                      hits.append({'key':key,'excerpt':re.sub(r'\s+',' ',s[max(0,i-2500):min(len(s),i+5000)])})
+                      rows.append({'key':key,'at':i,'excerpt':re.sub(r'\s+',' ',s[max(0,i-900):min(len(s),i+1800)])})
                       pos=i+len(key)
-              out[name]={'length':len(s),'hits':hits}
-          pathlib.Path('debug/hisprice-source.json').write_text(json.dumps(out,ensure_ascii=False,indent=2))
+                      if len(rows)>=80: break
+                  if len(rows)>=80: break
+              out[name]={'length':len(s),'hits':rows}
+          pathlib.Path('debug/hisprice-request-compact.json').write_text(json.dumps(out,ensure_ascii=False,indent=2))
           PY
-      - name: Commit source capture
+      - name: Commit compact capture
         run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add debug/hisprice-source.json
-          git diff --cached --quiet || git commit -m 'chore: capture HisPrice ptinfo source [skip ci]'
+          git add debug/hisprice-request-compact.json
+          git diff --cached --quiet || git commit -m 'chore: capture HisPrice request construction [skip ci]'
           git push
