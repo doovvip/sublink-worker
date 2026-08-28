@@ -1,31 +1,36 @@
 {
-  "logs": [
-    {
-      "kind": "loadError",
-      "file": "chart18.js",
-      "message": "Cannot read properties of undefined (reading 'toLowerCase')"
-    },
-    {
-      "kind": "ajax",
-      "type": "post",
-      "dataType": "json",
-      "url": "/dm/ptinfo.php?ud=&reqid=REQID32CHARS0123456789ABCDEFGH&flg=1&cd=CHECKCODE32CHARS0123456789ABCDEFP&qt=1787932614818&",
-      "data": {
-        "checkCode": "CHECKCODE32CHARS0123456789ABCDEFP",
-        "con": "957929114177"
-      },
-      "jsonp": null
-    },
-    {
-      "kind": "ajax",
-      "type": "post",
-      "dataType": "json",
-      "url": "/dm/ptinfo.php?ud=&reqid=REQID32CHARS0123456789ABCDEFGH&flg=1&cd=CHECKCODE32CHARS0123456789ABCDEFP&qt=1787932614820&",
-      "data": {
-        "checkCode": "CHECKCODE32CHARS0123456789ABCDEFP",
-        "con": "https://detail.tmall.com/item.htm?id=957929114177"
-      },
-      "jsonp": null
-    }
-  ]
+  "pageStatus": 200,
+  "pageLength": 16252,
+  "hidden": {
+    "kValId": "",
+    "hisurl": "",
+    "codeId": "",
+    "tid": "",
+    "checkCodeId": "c634c008ea227dd37a6cd60e3b6e9295",
+    "reqid": "5b36a68982620f39a30962162e5ebf50",
+    "sid": "",
+    "mtm": "1787933823",
+    "dwv": "",
+    "rp": "",
+    "taoInfoUrl": "",
+    "addPramaId": "",
+    "addTitleId": "",
+    "taId": "",
+    "taTitleId": "",
+    "taFlagId": "",
+    "nextYouhuiPage": "1"
+  },
+  "derived": {
+    "reqid": "5b36a68982620f39a30962162e5ebf50",
+    "baseCode": "c634c008ea227dd37a6cd60e3b6e9295",
+    "checkCode": "c634c008ea227dd37a6cd60e3b6e9295P",
+    "ud": "",
+    "apiUrl": "https://www.hisprice.com/dm/ptinfo.php?ud=&reqid=5b36a68982620f39a30962162e5ebf50&flg=1&cd=c634c008ea227dd37a6cd60e3b6e9295P&qt=1787933824222&"
+  },
+  "api": {
+    "status": 200,
+    "contentType": "text/html",
+    "length": 5,
+    "text": "error"
+  }
 }
