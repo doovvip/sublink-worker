@@ -1,21 +1,22 @@
-#!name=淘宝商品ID探测｜分享链路版
-#!desc=候选诊断｜V1.12.0｜改走分享/短链接链路抓商品ID，不再依赖淘宝内部详情接口
+#!name=淘宝历史比价｜复制链接版
+#!desc=候选测试｜V1.13.0｜抓“分享→复制链接”链路商品ID，并直接查询历史价格
 #!author=doovvip
-#!category=调试
+#!category=淘宝
 #!system=ios
-#!version=1.12.0
+#!version=1.13.0
 #!date=2026-08-28
 
-# 不修改主配置；不封IP/QUIC；不再依赖内部详情API。
-# 操作：打开淘宝商品页，点一次“分享”，然后回 Surge 看面板。
+# 不修改主配置；不封IP/QUIC；不依赖淘宝内部详情API。
+# 操作：淘宝商品页 → 分享 → 复制链接，然后回 Surge 看面板。
+# 若捕获商品ID，会直接尝试调用比价狗历史价格接口。
 
 [Panel]
-淘宝商品ID探测面板 = title="淘宝商品ID探测", content="等待分享链路…\n打开商品页后点一次分享", style=info, script-name=淘宝探测面板, update-interval=1
+淘宝商品ID探测面板 = title="淘宝历史比价", content="等待复制链接链路…\n淘宝商品页 → 分享 → 复制链接", style=info, script-name=淘宝探测面板, update-interval=1
 
 [Script]
-淘宝分享探测.REQ = type=http-request, pattern=^https?:\/\/(?:[^\/]+\.)?(?:taobao\.com|tmall\.com|tao\.co|tb\.cn)\/, requires-body=true, binary-body-mode=true, max-size=-1, timeout=10, script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/scripts/taobao_share_probe.surge.js?v=1.12.0, script-update-interval=0
-淘宝分享探测.RESP = type=http-response, pattern=^https?:\/\/(?:[^\/]+\.)?(?:taobao\.com|tmall\.com|tao\.co|tb\.cn)\/, requires-body=true, binary-body-mode=true, max-size=-1, timeout=10, script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/scripts/taobao_share_probe.surge.js?v=1.12.0, script-update-interval=0
-淘宝探测面板 = type=generic, script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/scripts/taobao_price_probe_panel.surge.js?v=1.12.0, script-update-interval=0
+淘宝复制链接.REQ = type=http-request, pattern=^https?:\/\/(?:[^\/]+\.)?(?:taobao\.com|tmall\.com|tao\.co|tb\.cn|m\.tb\.cn)\/, requires-body=true, binary-body-mode=true, max-size=-1, timeout=15, script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/scripts/taobao_copylink_price.surge.js?v=1.13.0, script-update-interval=0
+淘宝复制链接.RESP = type=http-response, pattern=^https?:\/\/(?:[^\/]+\.)?(?:taobao\.com|tmall\.com|tao\.co|tb\.cn|m\.tb\.cn)\/, requires-body=true, binary-body-mode=true, max-size=-1, timeout=15, script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/scripts/taobao_copylink_price.surge.js?v=1.13.0, script-update-interval=0
+淘宝探测面板 = type=generic, script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/scripts/taobao_price_probe_panel.surge.js?v=1.13.0, script-update-interval=0
 
 [MITM]
-hostname = %APPEND% *.taobao.com, *.tmall.com, *.tao.co, *.tb.cn
+hostname = %APPEND% *.taobao.com, *.tmall.com, *.tao.co, *.tb.cn, m.tb.cn
