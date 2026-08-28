@@ -1,25 +1,21 @@
-#!name=淘宝商品ID探测｜并行强制域名版
-#!desc=候选诊断｜V1.11.0｜定向清理AMDC直连IP下发 + 多链路并行抓取，减少测试轮次
+#!name=淘宝商品ID探测｜分享链路版
+#!desc=候选诊断｜V1.12.0｜改走分享/短链接链路抓商品ID，不再依赖淘宝内部详情接口
 #!author=doovvip
 #!category=调试
 #!system=ios
-#!version=1.11.0
+#!version=1.12.0
 #!date=2026-08-28
 
-# 只用于定位当前商品ID；测试完成后关闭。
-# 不修改主配置；不全局封IP/QUIC。
-# 仅针对 trade-acs.m.taobao.com / acs.m.taobao.com 清理 AMDC 直连 IP 下发，促使回落域名 HTTPS。
+# 不修改主配置；不封IP/QUIC；不再依赖内部详情API。
+# 操作：打开淘宝商品页，点一次“分享”，然后回 Surge 看面板。
 
 [Panel]
-淘宝商品ID探测面板 = title="淘宝商品ID探测", content="等待详情链路…\n打开一个商品详情页即可", style=info, script-name=淘宝探测面板, update-interval=1
+淘宝商品ID探测面板 = title="淘宝商品ID探测", content="等待分享链路…\n打开商品页后点一次分享", style=info, script-name=淘宝探测面板, update-interval=1
 
 [Script]
-淘宝AMDC定向回落.REQ = type=http-request, pattern=^http:\/\/.+\/amdc\/mobileDispatch, requires-body=true, max-size=-1, timeout=10, script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/scripts/taobao_amdc_force_domain.surge.js?v=1.11.0, script-update-interval=0
-淘宝AMDC定向回落.RESP = type=http-response, pattern=^http:\/\/.+\/amdc\/mobileDispatch, requires-body=true, max-size=-1, timeout=10, script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/scripts/taobao_amdc_force_domain.surge.js?v=1.11.0, script-update-interval=0
-淘宝并行探测.URL = type=http-request, pattern=^https?:\/\/(?:[^\/]+\.)?(?:taobao\.com|tmall\.com|tao\.co)\/, requires-body=false, timeout=10, script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/scripts/taobao_price_analytics_probe.surge.js?v=1.11.0, script-update-interval=0
-淘宝并行探测.REQ = type=http-request, pattern=^https?:\/\/(?:acs\.m\.taobao\.com|trade-acs\.m\.taobao\.com|guide-acs\.m\.taobao\.com|h5api\.m\.taobao\.com|acs\.tao\.co)\/, requires-body=true, binary-body-mode=true, max-size=-1, timeout=10, script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/scripts/taobao_price_analytics_probe.surge.js?v=1.11.0, script-update-interval=0
-淘宝并行探测.RESP = type=http-response, pattern=^https?:\/\/(?:acs\.m\.taobao\.com|trade-acs\.m\.taobao\.com|guide-acs\.m\.taobao\.com|h5api\.m\.taobao\.com|acs\.tao\.co)\/(?:gw\/)?mtop\., requires-body=true, binary-body-mode=true, max-size=-1, timeout=10, script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/scripts/taobao_price_analytics_probe.surge.js?v=1.11.0, script-update-interval=0
-淘宝探测面板 = type=generic, script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/scripts/taobao_price_probe_panel.surge.js?v=1.11.0, script-update-interval=0
+淘宝分享探测.REQ = type=http-request, pattern=^https?:\/\/(?:[^\/]+\.)?(?:taobao\.com|tmall\.com|tao\.co|tb\.cn)\/, requires-body=true, binary-body-mode=true, max-size=-1, timeout=10, script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/scripts/taobao_share_probe.surge.js?v=1.12.0, script-update-interval=0
+淘宝分享探测.RESP = type=http-response, pattern=^https?:\/\/(?:[^\/]+\.)?(?:taobao\.com|tmall\.com|tao\.co|tb\.cn)\/, requires-body=true, binary-body-mode=true, max-size=-1, timeout=10, script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/scripts/taobao_share_probe.surge.js?v=1.12.0, script-update-interval=0
+淘宝探测面板 = type=generic, script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/scripts/taobao_price_probe_panel.surge.js?v=1.12.0, script-update-interval=0
 
 [MITM]
-hostname = %APPEND% acs.m.taobao.com, trade-acs.m.taobao.com, guide-acs.m.taobao.com, h5api.m.taobao.com, acs.tao.co
+hostname = %APPEND% *.taobao.com, *.tmall.com, *.tao.co, *.tb.cn
