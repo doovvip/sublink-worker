@@ -2,6 +2,10 @@
   "version": 2,
   "rewrites": [
     {
+      "source": "/api/hisprice-probe",
+      "destination": "/api/hisprice-probe"
+    },
+    {
       "source": "/(.*)",
       "destination": "/api/index"
     }
