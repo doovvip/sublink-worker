@@ -1,3 +1,15 @@
+# Surge 正式母版入口
+
+> 当前基准：**2026-08-30 正式最终母版（百度网盘融合版）**
+
+- [Surge 安装导航](./surge-modules/README.md)
+- [GitHub 恢复说明](./surge-modules/RESTORE.md)
+
+> StartUpAds V2.0.0 中的 **百度网盘去开屏广告** 已属于正式母版，不再视为实验残留。  
+> 淘宝比价已放弃，不纳入恢复范围。
+
+---
+
 <div align="center">
   <img src="public/favicon.png" alt="Sublink Worker" width="120" height="120"/>
 
