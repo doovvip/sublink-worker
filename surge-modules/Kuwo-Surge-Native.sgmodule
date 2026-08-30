@@ -75,4 +75,4 @@ kkmusic.vip.13 = type=http-response,pattern=^https?:\/\/appi\.kuwo\.cn\/kuwopay\
 kkmusic.vip.14 = type=http-response,pattern=^https?:\/\/[a-z0-9A-Z]+\.kuwo\.cn\/mobi\.s\?f=kwxs,requires-body=true,max-size=-1,timeout=60,engine=webview,script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/kkmusic.vip.surge-stable.js
 
 [MITM]
-hostname = %APPEND% *.kuwo.cn, *.lrts.me, mc.tencentmusic.com, h5s.kuwo.cn
+hostname = %APPEND% *.kuwo.cn, *.lrts.me, mc.tencentmusic.com
