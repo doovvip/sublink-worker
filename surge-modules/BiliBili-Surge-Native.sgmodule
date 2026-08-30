@@ -1,5 +1,5 @@
 #!name=哔哩哔哩去广告
-#!desc=哔哩哔哩母版｜Surge 原生优化稳定基线｜已实机跑通：完整入口、UI 净化、开屏/推荐/直播/搜索/动态/Proto 去广告正常
+#!desc=哔哩哔哩正式母版｜普通版 + HD/iPad 开屏已实机跑通｜完整入口、UI 净化、推荐/直播/搜索/动态/Proto 去广告正常
 #!author=ddgksf2013, BiliUniverse / Surge native optimization
 #!category=去广告
 #!arguments=Home.Switch:true,Home.Tab:"直播tab,推荐tab,hottopic,bangumi,anime,film,koreavtw",Home.Tab_default:"推荐tab",Home.Top_left:"mine",Home.Top:"消息Top",Bottom:"home,dynamic,ogv,会员购Bottom,我的Bottom",Region.Switch:true,Mine.Switch:true,Mine.iPad.Switch:true,Storage:"Argument",LogLevel:"WARN"
@@ -15,7 +15,7 @@
 # - 未经实机验证的修改，不允许反向覆盖母版。
 #
 # 当前已确认功能：
-# - 开屏广告净化
+# - 开屏广告净化（普通版 + HD/iPad，已实机验证）
 # - 首页推荐流净化
 # - 直播页广告/购物浮层净化
 # - 追番/观影页面净化
@@ -45,7 +45,7 @@
 #    - 目的是减少 Surge 脚本调度次数与重复匹配，降低维护复杂度。
 #
 # 4. 职责分层
-#    - URL Rewrite：处理可直接拒绝的广告/默认词/开屏接口。
+#    - URL Rewrite：处理可直接拒绝的广告/默认词接口；HD/iPad 开屏使用成功响应净化，避免触发本地缓存兜底。
 #    - JSON Script：处理需要读取并修改 JSON 响应的接口。
 #    - Enhanced：负责首页入口、底栏、Mine、Region、Channel 与 UI 结构。
 #    - Proto：只处理 protobuf/gRPC 二进制接口。
@@ -68,7 +68,7 @@
 # 优化原则
 # ============================================================
 # 1. 速度优先于“极限精简”。
-# 2. 能用 URL Rewrite 直接拒绝的，不额外挂脚本。
+# 2. 能用 URL Rewrite 直接拒绝的，不额外挂脚本；HD/iPad 开屏为实机验证例外，保留成功响应净化。
 # 3. 相同脚本、相同处理类型的接口尽量合并为单一正则入口。
 # 4. 不重复执行同一业务逻辑，避免双脚本修改同一响应。
 # 5. 不添加 debug=true，不保留无意义测试规则。
@@ -130,7 +130,7 @@
 # 当前母版策略摘要
 # ============================================================
 # 主线路：Surge 原生结构
-# JSON：墨鱼 bilibili.ads.js
+# JSON：墨鱼 bilibili.ads.js + HD/iPad 开屏成功响应净化脚本
 # UI：BiliUniverse Enhanced
 # Proto：BiliUniverse ADBlock
 # 目标：少入口、少重复、少 MITM、功能完整、可回滚
@@ -143,8 +143,7 @@
 ^https:\/\/api\.bilibili\.com\/pgc\/season\/player\/cards - reject-dict
 ^https?:\/\/api\.bilibili\.com\/pgc\/season\/player\/ogv\/cards - reject-dict
 
-# 开屏｜已吸收 V17 实机跑通规则
-^https?:\/\/app\.bili(?:bili\.com|api\.net)\/x\/v2\/splash\/(?:show|list|event\/list2|brand\/list)(?:\?.*)?$ - reject
+# 开屏｜HD/iPad 实机验证：4 个 splash 接口改由成功响应脚本净化，避免 reject 触发本地缓存兜底
 
 # 漫画
 ^https?:\/\/manga\.bilibili\.com\/twirp\/comic\.v\d\.Comic\/(Flash|ListFlash|GetActivityTab) - reject-dict
@@ -154,7 +153,10 @@
 ^https?:\/\/(app\.bilibili\.com|grpc\.biliapi\.net)\/bilibili\.app\.interface\.v1\.Search\/Default - reject-200
 
 [Script]
-# 墨鱼 JSON：播放页 / 直播 / 开屏 / 画质状态 / 推荐 / 追番 / 观影 / 顶部活动 / 热搜 / 旧 Tab 回退
+# B站 HD/iPad 开屏：4 个 splash 接口统一成功响应净化
+BiliBili.HD.Splash = type=http-response, pattern=^https?:\/\/app\.bili(?:bili\.com|api\.net)\/x\/v2\/splash\/(?:show|list|event\/list2|brand\/list)(?:\?.*)?$, requires-body=true, max-size=-1, timeout=8, script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/scripts/bilibili.hd-splash.js
+
+# 墨鱼 JSON：播放页 / 直播 / 画质状态 / 推荐 / 追番 / 观影 / 顶部活动 / 热搜 / 旧 Tab 回退
 BiliBili.JSON = type=http-response, pattern=^(?:https?:\/\/api\.(?:biliapi|bilibili)\.(?:net|com)\/pgc\/season\/app\/related\/recommend\?|https?:\/\/api\.live\.bilibili\.com\/xlive\/(?:e-commerce-interface\/v\d\/ecommerce-user\/get_shopping_info\?|app-room\/v1\/index\/getInfoByRoom|app-interface\/v2\/index\/feed)|https?:\/\/app\.bilibili\.com\/x\/(?:v2\/(?:account\/myinfo\?|feed\/index|search\/square)|resource\/top\/activity|resource\/show\/tab(?:\?.*)?$)|https?:\/\/api\.(?:bilibili|biliapi)\.(?:com|net)\/pgc\/page\/(?:bangumi|cinema\/tab\?)), requires-body=true, max-size=-1, timeout=20, script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/scripts/bilibili.ads.js
 
 # BiliUniverse Enhanced：完整首页 / Mine / Region / Channel
