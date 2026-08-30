@@ -1,0 +1,51 @@
+# Surge 正式母版｜安装导航
+
+> 当前标准：**2026-08-30 正式最终母版（百度网盘融合版）**
+>
+> 原则：只使用本目录中的正式母版；实验文件、旧版本、淘宝比价均不纳入正式恢复范围。
+
+## 一、主配置
+
+Surge 远程主配置：
+
+`https://surge-remote-profile.vercel.app/srg-7e2b4f91a6c843d0b58f3c7a29e14d65/Surge.conf`
+
+主配置负责：代理、策略组、规则分流及基础 MITM。  
+应用净化功能由下方独立模块负责，不把应用脚本重复塞回主配置。
+
+## 二、正式模块
+
+| 模块 | 当前正式用途 | Raw 安装地址 |
+|---|---|---|
+| YouTube V2.0.1 | 去广告、PIP、后台播放；保留已修复“播放几秒后出错”的 8/30 版本 | https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/YouTube%E5%87%80%E5%8C%96%E5%A2%9E%E5%BC%BA-V2.0.1.sgmodule |
+| BiliBili | 普通版 + HD/iPad 开屏净化、推荐/直播/搜索/动态/Proto 去广告 | https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/BiliBili-Surge-Native.sgmodule |
+| Kuwo | VIP、播放、缓存/下载、广告及开屏净化 | https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/Kuwo-Surge-Native.sgmodule |
+| StartUpAds V2.0.0 | 通用开屏 + 喜马拉雅 + **百度网盘去开屏广告** | https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/StartUpAds-Surge-Native.sgmodule |
+| JD Price History | 京东历史价格功能 | https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/JD-Price-History.sgmodule |
+
+### 安装方式
+
+在 Surge 中添加模块时，使用上表对应的 **Raw 地址**。  
+不要安装同一功能的旧版、测试版或重复模块，以免 URL Rewrite / Script / MITM 重复命中。
+
+## 三、最终母版口径
+
+1. **YouTube**：固定为 2026-08-30 已实机修复版本。
+2. **BiliBili**：固定为 2026-08-30 普通版 + HD/iPad 已实机跑通版本。
+3. **Kuwo**：固定为 2026-08-30 正式清理版。
+4. **StartUpAds**：以 **已经融合百度网盘去开屏广告** 的 V2.0.0 为最终正式母版。
+5. **百度网盘**：已结束实验阶段；已验证的去开屏逻辑属于正式母版，恢复时不得删除。
+6. **淘宝比价**：已放弃，不恢复、不维护、不加入正式母版。
+
+## 四、脚本来源
+
+正式模块优先引用本仓库 `main` 分支下的固定脚本副本。  
+不要随意替换成未经验证的上游最新版；升级必须先测试，再合并正式母版。
+
+## 五、恢复入口
+
+发生误改、模块失效或需要回滚时，请按：
+
+**[GitHub 恢复说明](./RESTORE.md)**
+
+进行恢复。
