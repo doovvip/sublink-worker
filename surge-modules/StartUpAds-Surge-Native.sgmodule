@@ -1,15 +1,16 @@
 #!name=去开屏广告｜V2.0.0
-#!desc=Surge 原生正式母版｜通用开屏广告 + 已实机跑通的喜马拉雅去广告｜保留正常业务与音频封面
+#!desc=Surge 原生正式母版｜百度网盘开屏 + 通用开屏广告 + 已实机跑通的喜马拉雅去广告
 #!author=doovvip integration
 #!category=去广告
 #!system=ios
 #!version=2.0.0
-#!date=2026-08-28
+#!date=2026-08-30
 
 # ============================================================
 # 母版状态
 # ============================================================
 # 当前正式母版。
+# 百度网盘开屏已实机跑通（EXP-3 合并）：广告/点击链路域名 + 新版广告接口/素材入口。
 # 保留原通用开屏广告稳定规则。
 # 已合并“喜马拉雅去广告”实机跑通逻辑（V12 -> 正式版 1.0.0）：
 # - pns/startUp
@@ -40,6 +41,12 @@
 # ============================================================
 
 [Rule]
+# ===== 百度网盘：实机抓到的广告/点击链路 =====
+DOMAIN,mobads-logs.baidu.com,REJECT,pre-matching
+DOMAIN,nsclick.baidu.com,REJECT,pre-matching
+DOMAIN,als.baidu.com,REJECT,pre-matching
+DOMAIN,wn.pos.baidu.com,REJECT,pre-matching
+
 # ===== 喜马拉雅：GSLB / 广告 SDK =====
 DOMAIN,gslbali.ximalaya.com,REJECT,pre-matching
 DOMAIN,gslbtx.ximalaya.com,REJECT,pre-matching
@@ -64,6 +71,15 @@ DOMAIN,v26-be-pack.pglstatp-toutiao.com,REJECT,pre-matching
 [URL Rewrite]
 # ===== 百度网盘 =====
 ^https?:\/\/pan\.baidu\.com\/(?:act\/v\d+\/(?:bchannel|welfare)\/list|rest\/2\.0\/pcs\/ad) - reject-200
+^https?:\/\/pan\.baidu\.com\/rest\/.+\/pcs\/adx(?:\?|$) - reject-200
+^https?:\/\/pan\.baidu\.com\/rest\/2\.0\/pcs\/adv(?:\?|$) - reject-200
+^https?:\/\/pan\.baidu\.com\/pmall\/order\/privilege\/info(?:\?|$) - reject-200
+^https?:\/\/pan\.baidu\.com\/api\/useractivity\/activity(?:\?|$) - reject-200
+^https?:\/\/pan\.baidu\.com\/act\/.+\/bchannel\/list(?:\?|$) - reject-200
+^https?:\/\/pan\.baidu\.com\/component\/view\/(?:1510|1130)\?(?:.*&)?(?:vip|from)(?:=|&|$).* - reject-200
+^https?:\/\/issuecdn\.baidupcs\.com\/issue\/netdisk\/(?:guanggao|ts_ad)(?:\/|\?|$).* - reject-200
+^https?:\/\/ndstatic\.cdn\.bcebos\.com\/activity\/welfare\/(?:js\/.+\.js|index\.html)(?:\?.*)?$ - reject-200
+^https?:\/\/staticsns\.cdn\.bcebos\.com\/amis\/.+\/banner\.png(?:\?.*)?$ - reject-200
 
 # ===== 山姆会员商店 =====
 ^https?:\/\/api-sams\.walmartmobile\.cn\/api\/v1\/sams\/sams-user\/(?:window\/getGoUpPlus|screen_promotion\/get) - reject-200
@@ -145,4 +161,4 @@ DOMAIN,v26-be-pack.pglstatp-toutiao.com,REJECT,pre-matching
 🎧 喜马拉雅.我的 = type=http-response,pattern=^https?:\/\/[^\/]+\.ximalaya\.com\/mobile-user\/v\d+\/homePage(?:\?.*)?$,requires-body=1,max-size=0,timeout=8,script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/scripts/ximalaya_json.js
 
 [MITM]
-hostname = %APPEND% pan.baidu.com, api-sams.walmartmobile.cn, guide-acs.m.taobao.com, api.m.jd.com, bdsp-x.jd.com, dsp-x.jd.com, peisongapi.meituan.com, img.meituan.net, s3plus.meituan.net, flowplus.meituan.net, p*.meituan.net, acs.m.goofish.com, api.pinduoduo.com, api.yangkeduo.com, cn-acs.m.cainiao.com, iyes.youku.com, acs.m.taobao.com, ccsp-egmas.sf-express.com, shopic.sf-express.com, *.ximalaya.com, *.xmcdn.com, 47.100.227.85, 101.89.53.*, 101.91.133.*, 101.91.134.*, 101.91.135.*
+hostname = %APPEND% pan.baidu.com, issuecdn.baidupcs.com, ndstatic.cdn.bcebos.com, staticsns.cdn.bcebos.com, api-sams.walmartmobile.cn, guide-acs.m.taobao.com, api.m.jd.com, bdsp-x.jd.com, dsp-x.jd.com, peisongapi.meituan.com, img.meituan.net, s3plus.meituan.net, flowplus.meituan.net, p*.meituan.net, acs.m.goofish.com, api.pinduoduo.com, api.yangkeduo.com, cn-acs.m.cainiao.com, iyes.youku.com, acs.m.taobao.com, ccsp-egmas.sf-express.com, shopic.sf-express.com, *.ximalaya.com, *.xmcdn.com, 47.100.227.85, 101.89.53.*, 101.91.133.*, 101.91.134.*, 101.91.135.*
