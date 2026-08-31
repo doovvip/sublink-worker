@@ -7,9 +7,9 @@
 #!date=2026-08-28
 
 [Script]
-京东历史比价 = type=http-response, pattern=^https?:\/\/in\.m\.jd\.com\/product\/graphext\/\d+\.html(?:\?.*)?$, requires-body=true, max-size=-1, timeout=60, script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/scripts/jd_price.surge.js, script-update-interval=604800
+京东历史比价 = type=http-response, pattern=^https?:\/\/in\.m\.jd\.com\/product\/graphext\/\d+\.html(?:\?.*)?$, requires-body=true, max-size=-1, timeout=60, script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/scripts/jd_price.surge.js, script-update-interval=259200
 
-慢慢买CK增强抓取 = type=http-request, pattern=^https?:\/\/(?:[^\/]+\.)?manmanbuy\.com\/, requires-body=true, max-size=-1, timeout=20, script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/scripts/jd_price.surge.js, script-update-interval=604800
+慢慢买CK增强抓取 = type=http-request, pattern=^https?:\/\/(?:[^\/]+\.)?manmanbuy\.com\/, requires-body=true, max-size=-1, timeout=20, script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/scripts/jd_price.surge.js, script-update-interval=259200
 
 [MITM]
 hostname = %APPEND% in.m.jd.com, *.manmanbuy.com
