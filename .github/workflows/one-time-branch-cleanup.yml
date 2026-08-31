@@ -4,53 +4,42 @@ on:
   push:
     branches:
       - main
-    paths:
-      - .github/workflows/one-time-branch-cleanup.yml
 
 permissions:
   contents: write
 
 jobs:
   cleanup:
-    if: github.event.head_commit.message == 'chore: delete obsolete branches via cleanup workflow'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
       - name: Delete obsolete branches
         shell: bash
         run: |
-          set -euo pipefail
-          branches=(
-          "7Sageer-patch-1"
-          "backup/bilibili-pre-hd-splash-2026-08-30"
-          "backup/kuwo-pre-cleanup-2026-08-30"
-          "backup/startupads-pre-baidu-fix-2026-08-30"
-          "backup/startupads-pre-baidu-netdisk-2026-08-30"
-          "backup/youtube-pre-playback-fix-2026-08-30"
-          "exp/performance-123-2026-08-31"
-          "exp/session-2026-08-29"
-          "feat/country-group-type"
-          "feature/unified-airports"
-          "surge/ximalaya-selfhost-test-v1"
-          "surge/ximalaya-selfhost-v1"
-          "surge-status-panel-test-2026-08-31"
-          "surge-taobao-stable-price"
-          "taobao-gwdang-probe"
-          "taobao-price-web-candidate"
-          "taobao-qx-stable-price"
-          "ximalaya-test-v6"
-          "ximalaya-test-v7"
-          "ximalaya-test-v8"
-          "ximalaya-test-v9"
-          "ximalaya-test-v10"
-          "ximalaya-test-v11"
-          "ximalaya-test-v12"
-          "youtube-test-v2"
-          "youtube-v2-candidate"
-          )
-          for b in "${branches[@]}"; do
-            echo "Deleting $b"
-            git push origin --delete "$b"
-          done
+          set -e
+          git push origin --delete '7Sageer-patch-1'
+          git push origin --delete 'backup/bilibili-pre-hd-splash-2026-08-30'
+          git push origin --delete 'backup/kuwo-pre-cleanup-2026-08-30'
+          git push origin --delete 'backup/startupads-pre-baidu-fix-2026-08-30'
+          git push origin --delete 'backup/startupads-pre-baidu-netdisk-2026-08-30'
+          git push origin --delete 'backup/youtube-pre-playback-fix-2026-08-30'
+          git push origin --delete 'exp/performance-123-2026-08-31'
+          git push origin --delete 'exp/session-2026-08-29'
+          git push origin --delete 'feat/country-group-type'
+          git push origin --delete 'feature/unified-airports'
+          git push origin --delete 'surge/ximalaya-selfhost-test-v1'
+          git push origin --delete 'surge/ximalaya-selfhost-v1'
+          git push origin --delete 'surge-status-panel-test-2026-08-31'
+          git push origin --delete 'surge-taobao-stable-price'
+          git push origin --delete 'taobao-gwdang-probe'
+          git push origin --delete 'taobao-price-web-candidate'
+          git push origin --delete 'taobao-qx-stable-price'
+          git push origin --delete 'ximalaya-test-v6'
+          git push origin --delete 'ximalaya-test-v7'
+          git push origin --delete 'ximalaya-test-v8'
+          git push origin --delete 'ximalaya-test-v9'
+          git push origin --delete 'ximalaya-test-v10'
+          git push origin --delete 'ximalaya-test-v11'
+          git push origin --delete 'ximalaya-test-v12'
+          git push origin --delete 'youtube-test-v2'
+          git push origin --delete 'youtube-v2-candidate'
