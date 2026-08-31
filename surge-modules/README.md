@@ -22,6 +22,7 @@ Surge 远程主配置：
 | Kuwo | VIP、播放、缓存/下载、广告及开屏净化 | https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/Kuwo-Surge-Native.sgmodule |
 | StartUpAds V2.0.0 | 通用开屏 + 喜马拉雅 + **百度网盘去开屏广告** | https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/StartUpAds-Surge-Native.sgmodule |
 | JD Price History | 京东历史价格功能 | https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/JD-Price-History.sgmodule |
+| MeituXiuxiu Unlock | 美图秀秀/美图系列响应重写；保留已实机验证的现有匹配范围 | https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/MeituXiuxiu-Unlock.sgmodule |
 
 ### 安装方式
 
@@ -36,7 +37,8 @@ Surge 远程主配置：
 3. **Kuwo**：固定为 2026-08-30 正式清理版。
 4. **StartUpAds**：以 **已经融合百度网盘去开屏广告** 的 V2.0.0 为最终正式母版。
 5. **百度网盘**：已结束实验阶段；已验证的去开屏逻辑属于正式母版，恢复时不得删除。
-6. **淘宝比价**：已放弃，不恢复、不维护、不加入正式母版。
+6. **美图秀秀**：2026-08-31 已实机确认可用，正式纳入母版；保留当前 `subs_offer_elg / vip / user` 匹配范围与 MITM 范围，不做功能缩水。
+7. **淘宝比价**：已放弃，不恢复、不维护、不加入正式母版。
 
 ## 四、脚本来源
 
