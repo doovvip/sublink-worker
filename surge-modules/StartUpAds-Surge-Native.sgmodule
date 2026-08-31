@@ -47,6 +47,20 @@ DOMAIN,nsclick.baidu.com,REJECT,pre-matching
 DOMAIN,als.baidu.com,REJECT,pre-matching
 DOMAIN,wn.pos.baidu.com,REJECT,pre-matching
 
+# ===== 美图秀秀：专属广告域名 =====
+DOMAIN-SUFFIX,corp.meitu.com,REJECT,pre-matching
+DOMAIN-SUFFIX,gg.meitu.com,REJECT,pre-matching
+DOMAIN-SUFFIX,message.meitu.com,REJECT,pre-matching
+DOMAIN-SUFFIX,tuiguang.meitu.com,REJECT,pre-matching
+DOMAIN-SUFFIX,xiuxiu.android.dl.meitu.com,REJECT,pre-matching
+DOMAIN-SUFFIX,adui.tg.meitu.com,REJECT,pre-matching
+DOMAIN-SUFFIX,rabbit.tg.meitu.com,REJECT,pre-matching
+DOMAIN-SUFFIX,meitubeauty.meitudata.com,REJECT,pre-matching
+DOMAIN-SUFFIX,xiuxiu.mobile.meitudata.com,REJECT,pre-matching
+DOMAIN-SUFFIX,dc.meitustat.com,REJECT,pre-matching
+DOMAIN-SUFFIX,mdc.meitustat.com,REJECT,pre-matching
+DOMAIN-SUFFIX,rabbit.meitustat.com,REJECT,pre-matching
+
 # ===== 喜马拉雅：GSLB / 广告 SDK =====
 DOMAIN,gslbali.ximalaya.com,REJECT,pre-matching
 DOMAIN,gslbtx.ximalaya.com,REJECT,pre-matching
@@ -80,6 +94,15 @@ DOMAIN,v26-be-pack.pglstatp-toutiao.com,REJECT,pre-matching
 ^https?:\/\/issuecdn\.baidupcs\.com\/issue\/netdisk\/(?:guanggao|ts_ad)(?:\/|\?|$).* - reject-200
 ^https?:\/\/ndstatic\.cdn\.bcebos\.com\/activity\/welfare\/(?:js\/.+\.js|index\.html)(?:\?.*)?$ - reject-200
 ^https?:\/\/staticsns\.cdn\.bcebos\.com\/amis\/.+\/banner\.png(?:\?.*)?$ - reject-200
+
+# 百度网盘：补充开屏/广告链路
+^https?:\/\/pan\.baidu\.com\/api\/certuser\/get(?:\?|$) - reject-200
+^https?:\/\/update\.pan\.baidu\.com\/statistics(?:\?|$) - reject-200
+^https?:\/\/fc-video\.cdn\.bcebos\.com(?:\/|\?|$).* - reject
+^https?:\/\/rp\.hpplay\.cn\/logouts(?:\/|\?|$).* - reject
+
+# ===== 美图秀秀：开屏 =====
+^https?:\/\/mea\.meitudata\.com\/kaiping(?:\/|\?|$).* - reject
 
 # ===== 山姆会员商店 =====
 ^https?:\/\/api-sams\.walmartmobile\.cn\/api\/v1\/sams\/sams-user\/(?:window\/getGoUpPlus|screen_promotion\/get) - reject-200
@@ -152,6 +175,9 @@ DOMAIN,v26-be-pack.pglstatp-toutiao.com,REJECT,pre-matching
 ^https:\/\/pan\.baidu\.com\/(?:act\/api\/activityentry|buy\/ad\/conf\?.*type=splashMode) data-type=text data="{}" status-code=200 header="Content-Type:application/json"
 
 
+# 美图秀秀：广告配置返回空 JSON
+^https?:\/\/adui\.tg\.meitu\.com(?:\/|\?|$).* data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+
 [Script]
 # ===== 喜马拉雅：页面 JSON 净化 =====
 🎧 喜马拉雅.分类 = type=http-response,pattern=^https?:\/\/[^\/]+\.ximalaya\.com\/discovery-category\/customCategories(?:\?.*)?$,requires-body=1,max-size=0,timeout=8,script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/scripts/ximalaya_json.js
@@ -161,4 +187,4 @@ DOMAIN,v26-be-pack.pglstatp-toutiao.com,REJECT,pre-matching
 🎧 喜马拉雅.我的 = type=http-response,pattern=^https?:\/\/[^\/]+\.ximalaya\.com\/mobile-user\/v\d+\/homePage(?:\?.*)?$,requires-body=1,max-size=0,timeout=8,script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/scripts/ximalaya_json.js
 
 [MITM]
-hostname = %APPEND% pan.baidu.com, issuecdn.baidupcs.com, ndstatic.cdn.bcebos.com, staticsns.cdn.bcebos.com, api-sams.walmartmobile.cn, guide-acs.m.taobao.com, api.m.jd.com, bdsp-x.jd.com, dsp-x.jd.com, peisongapi.meituan.com, img.meituan.net, s3plus.meituan.net, flowplus.meituan.net, p*.meituan.net, acs.m.goofish.com, api.pinduoduo.com, api.yangkeduo.com, cn-acs.m.cainiao.com, iyes.youku.com, acs.m.taobao.com, ccsp-egmas.sf-express.com, shopic.sf-express.com, *.ximalaya.com, *.xmcdn.com, 47.100.227.85, 101.89.53.*, 101.91.133.*, 101.91.134.*, 101.91.135.*
+hostname = %APPEND% pan.baidu.com, issuecdn.baidupcs.com, ndstatic.cdn.bcebos.com, staticsns.cdn.bcebos.com, api-sams.walmartmobile.cn, guide-acs.m.taobao.com, api.m.jd.com, bdsp-x.jd.com, dsp-x.jd.com, peisongapi.meituan.com, img.meituan.net, s3plus.meituan.net, flowplus.meituan.net, p*.meituan.net, acs.m.goofish.com, api.pinduoduo.com, api.yangkeduo.com, cn-acs.m.cainiao.com, iyes.youku.com, acs.m.taobao.com, ccsp-egmas.sf-express.com, shopic.sf-express.com, *.ximalaya.com, *.xmcdn.com, 47.100.227.85, 101.89.53.*, 101.91.133.*, 101.91.134.*, 101.91.135.*, update.pan.baidu.com, fc-video.cdn.bcebos.com, rp.hpplay.cn, mea.meitudata.com, adui.tg.meitu.com
