@@ -7,7 +7,7 @@
 
 [Script]
 # 美图秀秀 / 美图系列响应重写
-Meitu_Unlock = type=http-response,pattern=^https?:\/\/.*\.meitu\.com\/.*(subs_offer_elg|vip|user),requires-body=true,max-size=0,script-path=https://raw.githubusercontent.com/zirawell/R-Store/main/Res/Scripts/Unlock/meitu.js, script-update-interval=259200
+Meitu_Unlock = type=http-response,pattern=^https?:\/\/.*\.meitu\.com\/.*(subs_offer_elg|vip|user),requires-body=true,max-size=0,script-path=https://raw.githubusercontent.com/zirawell/R-Store/main/Res/Scripts/Unlock/meitu.js, script-update-interval=86400
 
 [MITM]
 hostname = %APPEND% *.meitu.com, api.xiuxiu.meitu.com
