@@ -3,7 +3,7 @@
 > 恢复基准：**2026-08-30 正式最终母版（百度网盘融合版）**
 >
 > 当前完整模块集的恢复锚点提交：  
-> `cd19f5dc19fde58d78a3401f726f5c626fcedc6e`
+> `ddb9f3ac1b26520dd254c179c4da4c2a1abe397a`
 
 ## 一、恢复原则
 
@@ -26,7 +26,7 @@
 
 如果正式模块被误改，可以从以下 GitHub 提交恢复：
 
-`cd19f5dc19fde58d78a3401f726f5c626fcedc6e`
+`ddb9f3ac1b26520dd254c179c4da4c2a1abe397a`
 
 该提交已处于以下状态之后：
 - YouTube 8/30 播放修复已合入。
@@ -34,6 +34,7 @@
 - BiliBili 旧 splash/list 分支已清理。
 - Kuwo 冗余 MITM 已清理。
 - StartUpAds 已正式融合百度网盘去开屏广告。
+- 百度网盘重复 `bchannel/list` Rewrite 覆盖已清理，功能范围不减少。
 
 ## 三、正式文件清单
 
