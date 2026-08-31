@@ -1,0 +1,22 @@
+HongGuo compatibility integration patch
+
+Target file:
+app/src/main/kotlin/xyz/kejiyu/hongguo/hooks/Hooks.kt
+
+Replace this line:
+
+gNames = TargetNames.namesFor(pkg, detected.first, classLoader)
+
+with:
+
+gNames = CompatTargetResolver.resolve(pkg, detected.first, classLoader)
+
+Optional diagnostic logging immediately after it:
+
+try {
+    CompatTargetResolver.diagnose(pkg, detected.first, classLoader).forEach {
+        LogUtil.info("compat profile=${it.names.profileId} score=${it.score} hits=${it.reason}")
+    }
+} catch (_: Throwable) {}
+
+No other VIP/ad/quality/download Hook logic needs to be changed.
