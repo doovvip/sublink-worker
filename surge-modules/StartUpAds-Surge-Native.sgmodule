@@ -70,7 +70,7 @@ DOMAIN,v26-be-pack.pglstatp-toutiao.com,REJECT,pre-matching
 
 [URL Rewrite]
 # ===== 百度网盘 =====
-^https?:\/\/pan\.baidu\.com\/(?:act\/v\d+\/(?:bchannel|welfare)\/list|rest\/2\.0\/pcs\/ad) - reject-200
+^https?:\/\/pan\.baidu\.com\/(?:act\/v\d+\/welfare\/list|rest\/2\.0\/pcs\/ad) - reject-200
 ^https?:\/\/pan\.baidu\.com\/rest\/.+\/pcs\/adx(?:\?|$) - reject-200
 ^https?:\/\/pan\.baidu\.com\/rest\/2\.0\/pcs\/adv(?:\?|$) - reject-200
 ^https?:\/\/pan\.baidu\.com\/pmall\/order\/privilege\/info(?:\?|$) - reject-200
