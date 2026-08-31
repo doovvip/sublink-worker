@@ -1,12 +1,12 @@
 # Surge 正式母版｜安装导航
 
-> 当前标准：**2026-08-31 正式母版（Surge-1.0 + 6 个正式模块）**
+> 当前标准：**2026-08-31 正式母版（Surge-1.0 + 7 个正式模块）**
 >
 > 备份分支：`backup/surge-modules-2026-08-31`
 >
-> 基线说明：保留 2026-08-30 百度网盘融合正式逻辑，并纳入 2026-08-31 已实机确认的美图秀秀模块。
+> 基线说明：保留 2026-08-30 百度网盘融合正式逻辑，纳入 2026-08-31 已实机确认的美图秀秀模块，并于 2026-08-31 将红果短剧 V1.1.0 精简版转为正式模块。
 >
-> 原则：只使用本目录中的正式母版；实验文件、旧版本、淘宝比价均不纳入正式恢复范围。
+> 原则：只使用本目录中的正式母版；旧版本、淘宝比价及未转正实验文件不纳入正式恢复范围。
 
 ## 一、主配置
 
@@ -27,25 +27,24 @@ Surge 远程主配置：
 | StartUpAds V2.0.0 | 通用开屏 + 喜马拉雅 + **百度网盘去开屏广告** | https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/StartUpAds-Surge-Native.sgmodule |
 | JD Price History | 京东历史价格功能 | https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/JD-Price-History.sgmodule |
 | MeituXiuxiu Unlock | 美图秀秀/美图系列响应重写；保留已实机验证的现有匹配范围 | https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/MeituXiuxiu-Unlock.sgmodule |
+| HongGuo V1.1.0 | 红果短剧去广告正式保留；已移除无效 VIP 响应脚本；下载/画质暂保留现有响应层实现 | https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/HongGuo-Surge-Native.sgmodule |
 
 ### 安装方式
 
 在 Surge 中添加模块时，使用上表对应的 **Raw 地址**。  
 不要安装同一功能的旧版、测试版或重复模块，以免 URL Rewrite / Script / MITM 重复命中。
 
-## 三、实验项目
+## 三、红果后续实验范围
 
 ### 红果短剧
 
-状态：**实验项目**。
+状态：**Surge V1.1.0 已转正；兼容/Hook 研究继续实验**。
 
-- `hongguo-compat/`：Xposed/LSPosed 兼容实验工程与补丁。
-- `surge-modules/HongGuo-Ads-Test.sgmodule`：Surge 去广告测试件。
-- 红果的 VIP、去广告、最高画质、下载限制、版本兼容等后续研究均归入实验范围。
-- 不计入“6 个正式模块”。
-- 不纳入正式恢复清单。
-- 未实机确认前，不并入正式母版、不污染正式安装导航。
-- 转正前必须验证功能、稳定性、速度/缓存影响及可回滚性。
+- `surge-modules/HongGuo-Surge-Native.sgmodule`：当前正式母版文件，纳入正式安装与恢复。
+- `hongguo-compat/`：Xposed/LSPosed 兼容实验工程与补丁，继续保持实验属性。
+- `surge-modules/HongGuo-Ads-Test.sgmodule`：旧 Surge 去广告测试件，不作为正式恢复文件。
+- `surge-modules/HongGuo-Full-Experimental.sgmodule`：V1.1.0 实验历史文件，仅作实验留档，不与正式文件重复安装。
+- VIP 本地 Hook、版本兼容、进一步画质/下载研究继续属于实验范围，未实机确认前不替换正式模块。
 
 ## 四、最终母版口径
 
@@ -55,8 +54,8 @@ Surge 远程主配置：
 4. **StartUpAds**：以 **已经融合百度网盘去开屏广告** 的 V2.0.0 为最终正式母版。
 5. **百度网盘**：已结束实验阶段；已验证的去开屏逻辑属于正式母版，恢复时不得删除。
 6. **美图秀秀**：2026-08-31 已实机确认可用，正式纳入母版；保留当前 `subs_offer_elg / vip / user` 匹配范围与 MITM 范围，不做功能缩水。
-7. **淘宝比价**：已放弃，不恢复、不维护、不加入正式母版。
-8. **红果短剧**：实验项目；默认不进入正式母版和正式恢复范围。
+7. **红果短剧**：2026-08-31 将 V1.1.0 精简版正式纳入母版；保留实机有效去广告，VIP 无效响应脚本不恢复，下载/画质先保留当前实现。
+8. **淘宝比价**：已放弃，不恢复、不维护、不加入正式母版。
 
 ## 五、脚本来源
 
