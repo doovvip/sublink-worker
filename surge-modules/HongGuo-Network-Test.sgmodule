@@ -1,0 +1,44 @@
+#!name=红果短剧｜网络测试版 V1.0.0
+#!desc=Surge 独立测试模块｜去广告 + 被动识别 VIP/画质/下载/广告相关 JSON 字段｜不修改付费权益
+#!author=doovvip integration
+#!category=测试
+#!system=iOS
+#!version=1.0.0
+#!date=2026-08-31
+
+# ============================================================
+# 说明
+# ============================================================
+# 1. 独立测试版，不并入正式母版。
+# 2. 广告部分使用轻量原生 Rule / URL Rewrite。
+# 3. Diagnostic 脚本只读取 JSON 键名并写入 Surge 日志，不修改响应内容。
+# 4. 用于判断红果哪些 VIP / 画质 / 下载限制来自网络下发。
+# 5. 不封整个 snssdk.com / byteimg.com / ixigua.com，避免误伤其它字节系应用。
+# ============================================================
+
+[Rule]
+# 广告签名素材
+DOMAIN,p6-ad-sign.byteimg.com,REJECT,pre-matching
+DOMAIN,p9-ad-sign.byteimg.com,REJECT,pre-matching
+
+# Pangle / 穿山甲广告 SDK
+DOMAIN,api-access.pangolin-sdk-toutiao.com,REJECT,pre-matching
+DOMAIN,api-access.pangolin-sdk-toutiao-b.com,REJECT,pre-matching
+DOMAIN,api-access.pangolin-sdk-toutiao1.com,REJECT,pre-matching
+DOMAIN,log-api.pangolin-sdk-toutiao.com,REJECT,pre-matching
+DOMAIN,log-api.pangolin-sdk-toutiao-b.com,REJECT,pre-matching
+DOMAIN-SUFFIX,pglstatp-toutiao.com,REJECT,pre-matching
+
+[URL Rewrite]
+# 明确广告请求；不做大范围域名封禁
+^https?:\/\/[^\/]+\.pangolin-sdk-toutiao\.com\/api\/ad\/union\/sdk\/(?:get_ads|stats|settings)\/ - reject
+^https?:\/\/[^\/]+\.snssdk\.com\/api\/ad\/.* - reject
+^https?:\/\/[^\/]+\.(?:pglstatp-toutiao|pstatp)\.com\/obj\/ad-pattern\/renderer(?:\/|\?|$).* - reject
+^https?:\/\/[^\/]+\.pstatp\.com\/obj\/mosaic-legacy\/.*[?&]from=ad(?:&|$).* - reject
+
+[Script]
+# 被动网络诊断：仅记录命中的 JSON 键名，不改响应
+HongGuo_Network_Diagnostic = type=http-response,pattern=^https?:\/\/[^\/]+\.(?:snssdk\.com|ixigua\.com|fqnovel\.com)\/.*,requires-body=true,max-size=1572864,script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/scripts/HongGuo-Diagnostic.js
+
+[MITM]
+hostname = %APPEND% *.pangolin-sdk-toutiao.com, *.pglstatp-toutiao.com, *.pstatp.com, *.snssdk.com, *.ixigua.com, *.fqnovel.com
