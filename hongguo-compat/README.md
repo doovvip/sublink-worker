@@ -1,8 +1,10 @@
 # 红果兼容版补丁｜实验项目
 
-> 项目状态：**实验项目**
+> 项目状态：**兼容/Hook 研究继续实验；Surge V1.1.0 已正式转正**
 >
-> 规则：不纳入正式母版、不参与正式恢复、不与正式 Surge 模块混合；所有红果相关 Hook、兼容层、Surge 规则与测试文件，均需先实机验证后再决定是否转正。
+> 当前正式 Surge 文件：`surge-modules/HongGuo-Surge-Native.sgmodule`
+>
+> 本目录规则：仅维护 Xposed/LSPosed 兼容层与 Hook 研究，不参与正式 Surge 恢复；正式 Surge 以 `surge-modules/README.md` 与 `RESTORE.md` 为准。
 
 基于 KEJIYUNB/hongguo 当前源码设计，不删除原有功能。
 
@@ -61,9 +63,10 @@ gNames = CompatTargetResolver.resolve(pkg, detected.first, classLoader)
 
 因此本方案不会伪装成“永久全版本”。它的价值是避免仅因 versionName 更新、但内部结构基本没变时整套模块失效。
 
-## 实验项目纪律
+## 当前转正边界
 
-- 红果项目默认只在 `hongguo-compat/` 与测试文件中维护。
-- 红果相关 Surge 文件一律视为测试件，默认不加入正式安装导航。
-- 未经实机确认，不修改正式母版 README / RESTORE 的正式模块数量和恢复清单。
-- 任何转正必须先完成：功能验证、稳定性验证、速度/缓存影响验证、回滚验证。
+- `surge-modules/HongGuo-Surge-Native.sgmodule`：已正式纳入 2026-08-31 母版。
+- 正式功能主线：实机有效去广告；无效 VIP 响应脚本已移除。
+- 下载/画质：当前 V1.1.0 仍保留响应层实现，后续继续以实机结果决定是否精简。
+- VIP 本地 Hook、Xposed/LSPosed 兼容、未知版本探测等仍属于实验研究，不自动并入正式 Surge 文件。
+- `HongGuo-Ads-Test.sgmodule` 与 `HongGuo-Full-Experimental.sgmodule` 仅作历史/实验留档，不与正式文件重复安装。
