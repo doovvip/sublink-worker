@@ -37,7 +37,7 @@
 - Kuwo 冗余 MITM 已清理。
 - StartUpAds 已正式融合百度网盘去开屏广告。
 - 百度网盘重复 `bchannel/list` Rewrite 覆盖已清理，功能范围不减少。
-- BiliBili Enhanced 与 JD 稳定脚本更新检查周期为 7 天（604800 秒）。
+- BiliBili Enhanced 与 JD 稳定脚本更新检查周期为 3 天（259200 秒）。
 - 美图秀秀已实机确认可用并正式纳入母版。
 - 红果短剧 V1.1.0 已正式纳入母版；去广告保留，VIP 无效响应脚本已移除。
 
