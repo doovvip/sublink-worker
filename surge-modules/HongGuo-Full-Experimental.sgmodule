@@ -1,9 +1,9 @@
-#!name=红果短剧｜全功能实验版 V1.0.0
-#!desc=Surge 实验模块｜去广告 + VIP响应尝试 + 下载限制尝试 + 清晰度权限尝试｜仅实验，不纳入正式母版
+#!name=红果短剧｜实验精简版 V1.1.0
+#!desc=Surge 实验模块｜保留实机有效去广告；下载/画质继续实验；已移除无效 VIP 响应脚本｜不纳入正式母版
 #!author=doovvip integration
 #!category=实验
 #!system=iOS
-#!version=1.0.0
+#!version=1.1.0
 #!date=2026-08-31
 
 [Rule]
@@ -25,7 +25,6 @@ DOMAIN-SUFFIX,pglstatp-toutiao.com,REJECT,pre-matching
 ^https?:\/\/[^\/]+\.byteimg\.com\/(?:ad-app-package|web\.business\.image)(?:\/|\?|$).* - reject
 
 [Script]
-HongGuo_VIP = type=http-response,pattern=^https?:\/\/[^\/]+\.(?:snssdk|ixigua|bytedance)\.com\/.*(?:vip|member|privilege|user|account).*,requires-body=true,max-size=0,script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-scripts/hongguo-vip.js
 HongGuo_Download = type=http-response,pattern=^https?:\/\/[^\/]+\.(?:snssdk|ixigua|bytedance)\.com\/.*(?:download|ssconfig|ab|config).*,requires-body=true,max-size=0,script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-scripts/hongguo-download.js
 HongGuo_Quality = type=http-response,pattern=^https?:\/\/[^\/]+\.(?:snssdk|ixigua|bytedance)\.com\/.*(?:video|play|resolution|quality|config).*,requires-body=true,max-size=0,script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-scripts/hongguo-quality.js
 
@@ -33,7 +32,7 @@ HongGuo_Quality = type=http-response,pattern=^https?:\/\/[^\/]+\.(?:snssdk|ixigu
 hostname = %APPEND% *.pangolin-sdk-toutiao.com, *.pglstatp-toutiao.com, *.pstatp.com, *.snssdk.com, *.ixigua.com, *.bytedance.com
 
 # 说明：
-# 1. 去广告为网络层直接拦截。
-# 2. VIP/下载/画质为响应层“命中特征后修改”，并非 Xposed 本地 Hook 的 1:1 替代。
-# 3. 纯本地方法如 PrivilegeManager.isVip()、TTVideoEngine.configResolution()、xh5.f 构造器等，Surge 无法直接 Hook。
+# 1. 去广告：当前实机测试暂未发现广告，保留。
+# 2. VIP：已确认当前 Surge 响应脚本基本无效，为减少无效 MITM/脚本开销已移除。
+# 3. 下载/画质：仍属实验项，只有命中特征字段时才修改，后续以实机结果决定是否保留。
 # 4. 本模块仅实验使用，不纳入正式母版或正式恢复。
