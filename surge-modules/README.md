@@ -23,18 +23,11 @@ Surge 远程主配置：
 | StartUpAds V2.0.0 | 通用开屏 + 喜马拉雅 + **百度网盘去开屏广告** | https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/StartUpAds-Surge-Native.sgmodule |
 | JD Price History | 京东历史价格功能 | https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/JD-Price-History.sgmodule |
 
-### 辅助工具（不参与流量处理）
-
-| 模块 | 用途 | Raw 安装地址 |
-|---|---|---|
-| Surge Status | 本地状态面板：网络、本机 IP、DNS、Surge 版本、主要策略；仅手动刷新运行 | https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/Surge-Status.sgmodule |
-
 ### 安装方式
 
 在 Surge 中添加模块时，使用上表对应的 **Raw 地址**。  
 不要安装同一功能的旧版、测试版或重复模块，以免 URL Rewrite / Script / MITM 重复命中。
 
-`Surge Status` 为独立辅助工具：不使用 MITM、Rule、URL Rewrite、Cron，也不发起外网请求，不参与正常流量链路。
 
 ## 三、最终母版口径
 
