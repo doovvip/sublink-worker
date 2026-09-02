@@ -1,0 +1,22 @@
+name: Surge one-time retag
+on:
+  push:
+    paths:
+      - '.github/workflows/surge-one-time-retag.yml'
+permissions:
+  contents: write
+jobs:
+  retag:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Retag final clean recovery
+        env:
+          TARGET: 0edfcd8fd843024ce8036e030ec7934c85bf0223
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -fa surge-v1.0-20260902 "$TARGET" -m "Surge clean v1.0 - 2026-09-02"
+          git push origin refs/tags/surge-v1.0-20260902 --force
