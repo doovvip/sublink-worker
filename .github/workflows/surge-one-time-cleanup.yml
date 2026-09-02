@@ -1,0 +1,26 @@
+name: Surge one-time cleanup
+on:
+  push:
+    paths:
+      - '.github/workflows/surge-one-time-cleanup.yml'
+permissions:
+  contents: write
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Delete obsolete branches and retag clean recovery
+        env:
+          TARGET: 88bf116fe8ab3fc677c2a28fdc4a3ba3d81d3371
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          for b in             backup/surge-modules-2026-08-29             backup/surge-modules-2026-08-31             backup/surge-pre-stable-2026-09-02             surge/baidu-netdisk-experiment-v2
+          do
+            git push origin --delete "$b" || true
+          done
+          git tag -fa surge-v1.0-20260902 "$TARGET" -m "Surge clean v1.0 - 2026-09-02"
+          git push origin refs/tags/surge-v1.0-20260902 --force
