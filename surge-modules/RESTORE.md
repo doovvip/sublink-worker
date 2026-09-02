@@ -95,6 +95,8 @@ StartUpAds 的正式母版必须同时满足：
 
 ## 六、主节点资源恢复判定
 
+恢复后必须确认存在 `DOMAIN,surge-remote-profile.vercel.app,DIRECT`。这是新设备/节点为空时的 bootstrap 自举规则，用于防止托管资源请求被送入尚未准备好的 Proxy 组而形成循环超时。
+
 `✈️ 我的节点` 当前正式方式为：Surge 访问 Vercel 节点中转，由 Vercel 服务端读取 Dropbox 节点源文件。恢复时不要重新改回 iOS 端直接访问 Dropbox 的 policy-path；若节点组显示未准备好，依次检查 Vercel 节点中转是否 200、Dropbox 源文件是否存在，再检查节点列表格式。
 
 ## 七、主配置与 GitHub 模块是两条线
