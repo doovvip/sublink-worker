@@ -2,7 +2,7 @@
 
 > 恢复基准：**2026-08-31 正式母版（Surge-1.0 + 7 个正式模块）**
 >
-> 正式备份分支：`backup/surge-modules-2026-08-31`
+> 正式稳定分支：`surge-stable`\n>\n> 迁移前回滚分支：`backup/surge-pre-stable-2026-09-02`\n>\n> 历史正式备份分支：`backup/surge-modules-2026-08-31`
 >
 > 基线说明：2026-08-30 百度网盘融合逻辑继续保留，2026-08-31 美图秀秀与红果短剧 V1.1.0 已纳入正式母版。
 >
@@ -53,7 +53,7 @@
 6. `surge-modules/MeituXiuxiu-Unlock.sgmodule`
 7. `surge-modules/HongGuo-Surge-Native.sgmodule`
 
-以及它们实际引用的本仓库脚本。
+以及它们实际引用的本仓库脚本。正式运行脚本应指向 `surge-stable`；BiliUniverse 已锁定的 GitHub Release 例外。美图脚本使用 `surge-modules/vendor/meitu.js` 的已验证镜像。
 
 ## 四、StartUpAds 恢复判定
 
@@ -96,12 +96,12 @@ GitHub 模块仓库：
 
 1. 主配置能正常拉取。
 2. GitHub 7 个正式模块存在。
-3. 模块引用脚本可访问。
+3. 模块引用脚本可访问，且自托管正式脚本均来自 `surge-stable`。
 4. YouTube / BiliBili / Kuwo 维持正式版本。
 5. StartUpAds 保留百度网盘去开屏。
 6. 美图秀秀模块保持已实机确认可用版本。
 7. 红果短剧保持 V1.1.0 正式精简版，VIP 无效响应脚本不恢复。
-8. 确认没有恢复淘宝比价或旧实验文件。
+8. 确认没有恢复淘宝比价或旧实验文件。\n9. 对照 `UPSTREAM-MANIFEST.md` 检查外部上游是否发生变化，但不得未经验证直接覆盖 stable。
 
 ## 七、禁止“按名字猜版本”
 
