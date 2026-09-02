@@ -1,8 +1,7 @@
 # Surge 正式母版｜安装导航
 
-> 当前标准：**2026-08-31 正式母版（Surge-1.0 + 7 个正式模块）**
->
-> 备份分支：`backup/surge-modules-2026-08-31`
+> 当前标准：**2026-09-02 正式母版（Surge-1.0 + 7 个正式模块 + surge-stable）**
+
 >
 > 基线说明：保留 2026-08-30 百度网盘融合正式逻辑，纳入 2026-08-31 已实机确认的美图秀秀模块，并于 2026-08-31 将红果短剧 V1.1.0 精简版转为正式模块。
 >
@@ -34,17 +33,9 @@ Surge 远程主配置：
 在 Surge 中添加模块时，使用上表对应的 **Raw 地址**。  
 不要安装同一功能的旧版、测试版或重复模块，以免 URL Rewrite / Script / MITM 重复命中。
 
-## 三、红果后续实验范围
+## 三、红果正式边界
 
-### 红果短剧
-
-状态：**Surge V1.1.0 已转正；兼容/Hook 研究继续实验**。
-
-- `surge-modules/HongGuo-Surge-Native.sgmodule`：当前正式母版文件，纳入正式安装与恢复。
-- `hongguo-compat/`：Xposed/LSPosed 兼容实验工程与补丁，继续保持实验属性。
-- `surge-modules/HongGuo-Ads-Test.sgmodule`：旧 Surge 去广告测试件，不作为正式恢复文件。
-- `surge-modules/HongGuo-Full-Experimental.sgmodule`：V1.1.0 实验历史文件，仅作实验留档，不与正式文件重复安装。
-- VIP 本地 Hook、版本兼容、进一步画质/下载研究继续属于实验范围，未实机确认前不替换正式模块。
+红果短剧只保留 `surge-modules/HongGuo-Surge-Native.sgmodule` 作为正式文件。旧去广告测试件、Full Experimental、Network Test、Xposed/LSPosed 兼容实验目录以及无效 VIP 响应脚本均已从正式仓库清理，不参与安装和恢复。后续若继续实验，必须在独立实验区验证后再晋升正式版本。
 
 ## 四、最终母版口径
 
