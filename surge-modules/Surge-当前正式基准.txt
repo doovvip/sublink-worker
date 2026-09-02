@@ -18,7 +18,7 @@ Surge 当前正式基准｜v1.0｜2026-09-02
 - 历史正式备份分支：backup/surge-modules-2026-08-31
 
 【V1–V17 总更新/恢复日志】
-V1 以深巷有喵底座融合 TanZou 主订阅并保留极速云-B、gsscloud-C 备用入口；随后完成 Apple Intelligence 精确分流，普通 Apple/iCloud/App Store 直连，GPT/Gemini/Apple Intelligence 统一为 AI 组（Proxy/美国/日本/韩国/新加坡），Microsoft 与 Game 合并为 MicrosoftGame；中期清理无意义说明/重复项并补全 apple-relay、cp4.cloudflare.com、gateway.icloud.com、guzzoni.apple.com 等 Apple Intelligence 精确规则；后期统一“Surge-日期-V版本号”命名与累计日志，新增 ddgksf2013.top 固定 Proxy 及 force-http-engine-hosts = script.hub, *.script.hub；恢复时按“多订阅底座 → Apple DIRECT + AI 分流 → AI 统一 → MicrosoftGame → Apple Intelligence 精确规则 → 结构精简/命名规范 → Proxy/Script Hub 补充”恢复，原 MITM 证书不更换。V18 编号已移除，不参与正式版本或恢复判断。
+V1 以深巷有喵底座融合 TanZou 主订阅并保留极速云-B、gsscloud-C 备用入口；随后完成 Apple Intelligence 精确分流，普通 Apple/iCloud/App Store 直连，GPT/Gemini/Apple Intelligence 统一为 AI 组（Proxy/美国/日本/韩国/新加坡），Microsoft 与 Game 合并为 MicrosoftGame；中期清理无意义说明/重复项并补全 apple-relay、cp4.cloudflare.com、gateway.icloud.com、guzzoni.apple.com 等 Apple Intelligence 精确规则；后期统一“Surge-日期-V版本号”命名与累计日志，新增 ddgksf2013.top 固定 Proxy 及 force-http-engine-hosts = script.hub, *.script.hub；恢复时按“多订阅底座 → Apple DIRECT + AI 分流 → AI 统一 → MicrosoftGame → Apple Intelligence 精确规则 → 结构精简/命名规范 → Proxy/Script Hub 补充”恢复，原 MITM 证书不更换。托管母版、86400 秒更新与模块化分离直接归入 Surge-1.0 当前架构，不另设历史版本号。
 
 【7 个正式模块】
 1. YouTube净化增强-V2.0.1.sgmodule
