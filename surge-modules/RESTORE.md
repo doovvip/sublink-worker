@@ -2,7 +2,7 @@
 
 > 恢复基准：**2026-09-02 正式母版（Surge-1.0 + 7 个正式模块 + surge-stable）**
 >
-> 正式 Git Tag：`surge-v1.0-20260902`（指向提交 `0272e6fbbaae85b7ffdb959781fa2c3e7a971bea`）
+> 正式 Git Tag：`surge-v1.0-20260902`（2026-09-02 最终恢复点）
 >
 > 正式稳定分支：`surge-stable`
 >
