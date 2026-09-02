@@ -66,4 +66,4 @@ Surge 远程主配置：
 
 ## 七、状态面板
 
-正式母版内置 `Surge-Status` 动态信息面板。面板脚本通过 `surge-stable/surge-scripts/surge-status-panel.js` 运行，打开 Surge 策略选择页时按 60 秒间隔检查母版与节点中转状态，并显示最近实际检查时间。面板不使用 MITM/Rewrite，不改变任何策略组和分流结果。
+正式母版内置 `Surge-Status` 动态信息面板。面板脚本通过 `surge-stable/surge-scripts/surge-status-panel.js` 运行，打开 Surge 策略选择页时按 60 秒间隔检查母版与节点中转状态，并显示母版最后变更时间与最近实际检查时间。面板不使用 MITM/Rewrite，不改变任何策略组和分流结果。
