@@ -2,7 +2,7 @@
 
 > 恢复基准：**2026-08-31 正式母版（Surge-1.0 + 7 个正式模块）**
 >
-> 正式稳定分支：`surge-stable`\n>\n> 迁移前回滚分支：`backup/surge-pre-stable-2026-09-02`\n>\n> 历史正式备份分支：`backup/surge-modules-2026-08-31`
+> 正式稳定分支：`surge-stable`\n>\n> 当前版本恢复分支：`release/surge-v1.0-20260902`\n>\n> 迁移前回滚分支：`backup/surge-pre-stable-2026-09-02`\n>\n> 历史正式备份分支：`backup/surge-modules-2026-08-31`
 >
 > 基线说明：2026-08-30 百度网盘融合逻辑继续保留，2026-08-31 美图秀秀与红果短剧 V1.1.0 已纳入正式母版。
 >
