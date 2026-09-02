@@ -3,20 +3,18 @@ Surge Project Instructions｜当前版
 处理 Surge 项目时必须遵守：
 
 1. 优先读取“Surge-当前正式基准.txt”，把它作为唯一当前状态来源。
-2. 历史聊天、历史快照、backup 分支和实验文件只能用于追溯，不得覆盖当前基准。
+2. 历史聊天和实验记录只能用于追溯，不得覆盖当前基准。
 3. 信息冲突时优先级固定为：
    Surge-当前正式基准.txt
    > surge-stable 当前状态
-   > 最新正式 Git Tag / release 分支
-   > 最新正式快照
-   > 历史正式快照
+   > 当前正式 Git Tag / release 分支
    > 历史聊天
    > 实验记录
 4. 未经实机验证的实验修改不得自动视为正式状态。
 5. 正式修改必须经过：
-   实验/比较 → 实机验证 → 晋升 surge-stable → 新 Tag/恢复点 → 更新当前基准 → 新增历史快照 → 同步 GitHub/ChatGPT/Dropbox → 三方复核。
-6. 不用“final / 最终版2 / new / 最新版”等含混命名。
+   实验/比较 → 实机验证 → 晋升 surge-stable → 更新当前 Tag/release → 更新当前基准 → 同步 GitHub/ChatGPT/Dropbox → 三方复核。
+6. 不使用“final / 最终版2 / new / 最新版”等含混命名。
 7. 当前文件固定名：Surge-当前正式基准.txt
-8. 历史文件固定名：Surge-正式快照-YYYY-MM-DD-vX.X.txt
-9. 正式 Tag 固定名：surge-vX.X-YYYYMMDD
+8. 正式 Tag 固定名：surge-vX.X-YYYYMMDD
+9. 不再维护重复历史快照或 backup 分支作为正式恢复链；恢复只认当前基准、surge-stable、当前 Tag/release 和 Dropbox 当前正式母版。
 10. 用户说“继续 Surge 项目，按当前正式基准”时，先读取当前基准再继续，不从旧记忆猜状态。
