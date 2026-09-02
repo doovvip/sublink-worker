@@ -12,10 +12,8 @@ Surge 当前正式基准｜v1.0｜2026-09-02
 - 正式运行脚本分支：surge-stable
 - main 与 surge-stable 必须保持同频
 - 正式 Git Tag：surge-v1.0-20260902
-- Tag 固定恢复提交：e5d29ff4561134223881d6ee4a90039940350341
 - 当前版本恢复分支：release/surge-v1.0-20260902
-- 迁移前回滚分支：backup/surge-pre-stable-2026-09-02
-- 历史正式备份分支：backup/surge-modules-2026-08-31
+- 正式恢复只保留当前 Tag + release 分支，不再保留 backup 历史分支
 
 【V1–V17 总更新/恢复日志】
 V1 以深巷有喵底座融合 TanZou 主订阅并保留极速云-B、gsscloud-C 备用入口；随后完成 Apple Intelligence 精确分流，普通 Apple/iCloud/App Store 直连，GPT/Gemini/Apple Intelligence 统一为 AI 组（Proxy/美国/日本/韩国/新加坡），Microsoft 与 Game 合并为 MicrosoftGame；中期清理无意义说明/重复项并补全 apple-relay、cp4.cloudflare.com、gateway.icloud.com、guzzoni.apple.com 等 Apple Intelligence 精确规则；后期统一“Surge-日期-V版本号”命名与累计日志，新增 ddgksf2013.top 固定 Proxy 及 force-http-engine-hosts = script.hub, *.script.hub；恢复时按“多订阅底座 → Apple DIRECT + AI 分流 → AI 统一 → MicrosoftGame → Apple Intelligence 精确规则 → 结构精简/命名规范 → Proxy/Script Hub 补充”恢复，原 MITM 证书不更换。托管母版、86400 秒更新与模块化分离直接归入 Surge-1.0 当前架构，不另设历史版本号。
@@ -58,28 +56,18 @@ V1 以深巷有喵底座融合 TanZou 主订阅并保留极速云-B、gsscloud-C
 2. ChatGPT 文件库：Surge-当前正式基准.txt
 3. Dropbox：/Surge配置仓库/当前正式母版/Surge-当前正式基准.txt
 
-【历史快照】
-当前 v1.0 的不可覆盖历史快照：
-Surge-正式快照-2026-09-02-v1.0.txt
-
 【Dropbox 结构】
-当前正式母版：
+只保留当前正式母版：
 /Surge配置仓库/当前正式母版/
 
-历史正式备份：
-/Surge配置仓库/历史正式备份/2026-09-02-v1.0/
 
-旧目录：
-/Surge配置仓库/正式母版备份-2026-08-31/
-/Surge配置仓库/正式母版备份-2026-09-02/
-旧目录保留作审计，不作为以后判断“当前版本”的入口。
+当前正式母版：
+/Surge配置仓库/当前正式母版/
 
 【信息冲突优先级】
 Surge-当前正式基准.txt
 > surge-stable 当前状态
-> 最新正式 Git Tag / release 分支
-> 最新正式快照
-> 历史正式快照
+> 当前正式 Git Tag / release 分支
 > 历史聊天
 > 实验记录
 
@@ -87,8 +75,7 @@ Surge-当前正式基准.txt
 实验/比较
 → 实机验证
 → 晋升 surge-stable
-→ 创建新正式 Tag / release 恢复点
-→ 把旧“当前基准”固化为新的历史快照
+→ 更新当前正式 Tag / release 恢复点
 → 覆盖 Surge-当前正式基准.txt
 → 同步 GitHub / ChatGPT / Dropbox
 → 最终三方逐字比对
