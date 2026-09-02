@@ -134,7 +134,7 @@ GitHub 模块仓库：
 
 ## 九、状态面板恢复判定
 
-当前正式母版包含一个轻量动态面板：`Surge-Status`。其脚本为 `surge-scripts/surge-status-panel.js`，正式运行地址必须指向 `surge-stable`。面板只检查 Vercel 母版入口与节点中转，并显示最近检查时间；不得为了面板新增 MITM、Rewrite 或持续后台轮询。面板异常不应影响代理主链路，恢复时优先保证主配置与节点资源正常，再检查面板脚本。
+当前正式母版包含一个轻量动态面板：`Surge-Status`。其脚本为 `surge-scripts/surge-status-panel.js`，正式脚本内容来自 `surge-stable`，由 Vercel 中转提供给 Surge。面板只检查 Vercel 母版入口与节点中转，并显示最近检查时间；不得为了面板新增 MITM、Rewrite 或持续后台轮询。面板异常不应影响代理主链路，恢复时优先保证主配置与节点资源正常，再检查面板脚本。
 
 ## 十、Dropbox 正式备份
 
