@@ -45,7 +45,7 @@ V1 以深巷有喵底座融合 TanZou 主订阅并保留极速云-B、gsscloud-C
 【状态面板】
 - 正式面板：Surge-1.0 状态。
 - 面板为动态 Information Panel，不新增 MITM、不新增 Rewrite、不改变代理/分流逻辑。
-- 面板脚本：surge-scripts/surge-status-panel.js，通过 surge-stable 正式脚本层运行。
+- 面板脚本：surge-scripts/surge-status-panel.js；Surge 通过 Vercel 中转读取 surge-stable 当前正式脚本，避免 GitHub Raw 缓存延迟。
 - 检查内容：正式版本、母版 HTTP 状态、节点中转 HTTP 状态与节点数、最近实际检查时间、Surge/系统环境。
 - 面板自动刷新间隔：60 秒；仅在策略选择页打开/刷新时触发，不持续后台轮询。
 - 面板脚本远程更新周期：86400 秒（1 天）。
