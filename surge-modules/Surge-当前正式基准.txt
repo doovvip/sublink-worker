@@ -27,6 +27,12 @@ V1 以深巷有喵底座融合 TanZou 主订阅并保留极速云-B、gsscloud-C
 6. MeituXiuxiu-Unlock.sgmodule
 7. HongGuo-Surge-Native.sgmodule（红果短剧 V1.1.0）
 
+【主节点资源】
+- ✈️ 我的节点不再由 Surge 直接访问 Dropbox。
+- 主节点列表经 Vercel 中转读取 Dropbox 源文件，减少 iOS 端 Dropbox 请求超时。
+- 公共母版不再暴露 Dropbox 共享参数；节点源文件本身继续保留在 Dropbox。
+- 节点资源更新周期：86400 秒（1 天）。
+
 【正式依赖治理】
 - 正式自托管脚本只从 surge-stable 读取，不直接从 main 运行。
 - BiliUniverse Enhanced 固定 v0.5.13 Release。
