@@ -11,7 +11,7 @@
 # 2. 保留 QUIC/UDP 拦截，避免 youtubei / googlevideo 绕过 HTTPS 解密。
 # 3. 删除外围 stats/ads 与 pagead URL Rewrite，减少冗余和误伤。
 # 4. MITM 仅保留 *.googlevideo.com 与 youtubei.googleapis.com。
-# 5. 脚本固定镜像到自己的 main 分支，避免上游临时变更直接影响正式母版。
+# 5. 脚本固定镜像到自己的 surge-stable 分支，避免上游临时变更直接影响正式母版。
 # 6. 已实机确认移除 initplayback 请求脚本可修复“播放几秒后出错”，正式母版不再挂载该入口。
 #
 # 上游快照：
@@ -24,10 +24,10 @@ AND,((DOMAIN-SUFFIX,googlevideo.com),(PROTOCOL,UDP)),REJECT
 AND,((DOMAIN,youtubei.googleapis.com),(PROTOCOL,UDP)),REJECT
 
 [Script]
-youtube.response = type=http-response,pattern=^https:\/\/youtubei\.googleapis\.com\/(youtubei\/v1\/(browse|next|player|search|reel\/reel_watch_sequence|guide|account\/get_setting|get_watch|log_event|config))(\?(.*))?$,requires-body=1,max-size=-1,binary-body-mode=1,script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/scripts/youtube.response.maasea.js,argument="{\"captionLang\":\"{{{字幕翻译语言}}}\",\"blockUpload\":{{{屏蔽上传按钮}}},\"blockImmersive\":{{{屏蔽选段按钮}}},\"blockShorts\":{{{屏蔽Shorts按钮}}},\"debug\":{{{启用调试模式}}}}", script-update-interval=86400
+youtube.response = type=http-response,pattern=^https:\/\/youtubei\.googleapis\.com\/(youtubei\/v1\/(browse|next|player|search|reel\/reel_watch_sequence|guide|account\/get_setting|get_watch|log_event|config))(\?(.*))?$,requires-body=1,max-size=-1,binary-body-mode=1,script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/surge-stable/surge-modules/scripts/youtube.response.maasea.js,argument="{\"captionLang\":\"{{{字幕翻译语言}}}\",\"blockUpload\":{{{屏蔽上传按钮}}},\"blockImmersive\":{{{屏蔽选段按钮}}},\"blockShorts\":{{{屏蔽Shorts按钮}}},\"debug\":{{{启用调试模式}}}}", script-update-interval=86400
 
 
-youtube.request.log_event = type=http-request,pattern=^https:\/\/youtubei\.googleapis\.com\/youtubei\/v1\/log_event,requires-body=1,max-size=-1,binary-body-mode=1,script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/main/surge-modules/scripts/youtube.request.maasea.js, script-update-interval=86400
+youtube.request.log_event = type=http-request,pattern=^https:\/\/youtubei\.googleapis\.com\/youtubei\/v1\/log_event,requires-body=1,max-size=-1,binary-body-mode=1,script-path=https://raw.githubusercontent.com/doovvip/sublink-worker/surge-stable/surge-modules/scripts/youtube.request.maasea.js, script-update-interval=86400
 
 [MITM]
 hostname = %APPEND% *.googlevideo.com, youtubei.googleapis.com
