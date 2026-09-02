@@ -1,0 +1,32 @@
+name: Create Final Surge v1.0 Tag
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/create-final-surge-tag-20260902.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  create-final-tag:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create final annotated tag
+        env:
+          TAG_NAME: surge-v1.0-20260902
+          TARGET_SHA: 5eacfe9339c28bf2603eb2d70d3343111bc14c35
+        run: |
+          set -euo pipefail
+          git fetch --tags origin || true
+          git tag -d "$TAG_NAME" || true
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "$TAG_NAME" "$TARGET_SHA" -m "Surge stable v1.0 - 2026-09-02 final"
+          git push --force origin "refs/tags/$TAG_NAME"
