@@ -34,7 +34,6 @@
 | JD price | `surge-modules/scripts/jd_price.surge.js` | `b76e80051e3ca03be622a41bf4b64ade2293b1b1` |
 | HongGuo download | `surge-scripts/hongguo-download.js` | `5fee22a66401a7ea434f4a13b12b75ab219cc263` |
 | HongGuo quality | `surge-scripts/hongguo-quality.js` | `19cbd4d9cf84a772a4faa6b3af2dc9b645ed146f` |
-| Surge status panel | `surge-scripts/surge-status-panel.js` | `3d7fca82c5d4a0f6a8d6d90466c3acc787d7078e` |
 
 ## 晋升流程
 
