@@ -36,5 +36,13 @@
       ]
     }
   },
-  "immutable": true
+  "immutable": false,
+  "status": "candidate",
+  "locked": false,
+  "versioning": {
+    "current": "Surge-1.0",
+    "next": "Surge-1.1",
+    "rule": "常规更新按 1.1、1.2、1.3 连续递增；重大架构变化才升 2.0；旧 Vxx 编号体系归档。"
+  },
+  "changelog_policy": "V1–V17 历史压缩为一条摘要；正式版本从 Surge-1.0 开始连续编号。"
 }
