@@ -1,6 +1,15 @@
 {
   "version": 2,
+  "ignoreCommand": "git diff --quiet HEAD^ HEAD -- . ':(exclude).github/**' ':(exclude)debug/**' ':(exclude)deploy-trigger-*.txt' ':(exclude)deploy-taobao-price-web.txt'",
   "rewrites": [
+    {
+      "source": "/R2-Public.conf",
+      "destination": "/api/r2-public"
+    },
+    {
+      "source": "/Surge-R2.conf",
+      "destination": "/api/surge-r2"
+    },
     {
       "source": "/(.*)",
       "destination": "/api/index"

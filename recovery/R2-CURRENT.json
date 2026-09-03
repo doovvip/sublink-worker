@@ -1,0 +1,12 @@
+{
+  "official_state": "R2_CURRENT",
+  "display_name": "Surge-R2-当前使用版",
+  "mutable": true,
+  "branch": "work/surge-r2-current",
+  "restore_source": {
+    "immutable_main_config_commit": "06c27a9f8823ba61b99b522b5d6c15168234bad3",
+    "permanent_modules_branch": "stable/surge-permanent-modules"
+  },
+  "rule": "daily use and research here; if broken, rebuild from permanent base",
+  "old_restore_points": "history only; not default"
+}

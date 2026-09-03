@@ -1,0 +1,35 @@
+{
+  "name": "Surge-永久冻结-2026-09-03-Surge1.0-7模块",
+  "frozen_at": "2026-09-03",
+  "base_5_module_commit": "cd19f5dc19fde58d78a3401f726f5c626fcedc6e",
+  "module_anchor": "6d3f2a2dfa5ba9a059f35304104e9007584a3c61",
+  "asset_anchor": "c720f256b42c955ba00dad357657ccf08ed67a0c",
+  "authoritative_master": {
+    "version": "Surge-1.0",
+    "github_blob_sha": "6525f351d3f45ca291b88bdfff6aa13fb7db45d4",
+    "vercel_project": "surge-remote-profile",
+    "endpoints": [
+      "https://surge-remote-profile.vercel.app/srg-7e2b4f91a6c843d0b58f3c7a29e14d65.conf",
+      "https://surge-remote-profile.vercel.app/srg-7e2b4f91a6c843d0b58f3c7a29e14d65/Surge.conf"
+    ],
+    "note": "Do not treat surge-config/Surge.conf in the public base tree as the authoritative Surge-1.0 master."
+  },
+  "tanzou": {
+    "dropbox_file_id": "id:nxeADULGW1YAAAAAAAAADA",
+    "dropbox_path": "/TanZouA-Surge订阅.list",
+    "parser_path": "src/tanzouSubscription.js",
+    "parser_blob_sha": "143a32388ee1ac6ea4bc005daa1a04778783c9bc",
+    "api_route": "/tanzou",
+    "runtime_mode": "Frozen Surge-1.0 reads the already-converted Dropbox policy list directly via policy-path; /tanzou is converter/generator logic."
+  },
+  "modules": [
+    "surge-modules/YouTube净化增强-V2.0.1.sgmodule",
+    "surge-modules/BiliBili-Surge-Native.sgmodule",
+    "surge-modules/Kuwo-Surge-Native.sgmodule",
+    "surge-modules/StartUpAds-Surge-Native.sgmodule",
+    "surge-modules/JD-Price-History.sgmodule",
+    "surge-modules/MeituXiuxiu-Unlock.sgmodule",
+    "surge-modules/HongGuo-Surge-Native.sgmodule"
+  ],
+  "immutable": true
+}
