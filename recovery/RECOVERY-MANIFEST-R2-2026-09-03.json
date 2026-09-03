@@ -1,0 +1,40 @@
+{
+  "name": "Surge-永久冻结-2026-09-03-Surge1.0-7模块-R2",
+  "frozen_at": "2026-09-03",
+  "based_on_previous_freeze": "f6623fdd695ab8639285b7dbea322b041679ed76",
+  "surge_master": "Surge-1.0",
+  "unchanged": [
+    "TanZou frozen policy list and parsing logic",
+    "YouTube净化增强-V2.0.1.sgmodule",
+    "Kuwo-Surge-Native.sgmodule",
+    "JD-Price-History.sgmodule",
+    "MeituXiuxiu-Unlock.sgmodule",
+    "HongGuo-Surge-Native.sgmodule"
+  ],
+  "upgraded": {
+    "BiliBili-Surge-Native.sgmodule": {
+      "source": "release/surge-v1.0-20260902",
+      "source_blob": "e5df751033b4307e2da63bf9148f41132e12798c",
+      "pinned_internal_scripts_commit": "9ff23a1d130ccf8b43d8aecb0e3427d825f0f63d",
+      "features": [
+        "普通版+HD/iPad开屏净化",
+        "完整JSON入口",
+        "首页/直播/搜索/动态净化",
+        "Proto净化",
+        "完整UI入口"
+      ]
+    },
+    "StartUpAds-Surge-Native.sgmodule": {
+      "source": "release/surge-v1.0-20260902",
+      "source_blob": "df584663f9f72c5b425f0006e250545c5d208f34",
+      "pinned_internal_scripts_commit": "9ff23a1d130ccf8b43d8aecb0e3427d825f0f63d",
+      "features": [
+        "百度网盘补充开屏/广告链路",
+        "美图开屏/广告域名",
+        "喜马拉雅更完整入口",
+        "通用开屏规则"
+      ]
+    }
+  },
+  "immutable": true
+}
