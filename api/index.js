@@ -4,7 +4,6 @@ import { Readable } from 'stream';
 import { createVercelRuntime } from '../src/runtime/vercel.js';
 import { handleSurgeModule, handleSurgeModuleCenter } from '../src/surgeModules.js';
 import { handleTanzouSubscription } from '../src/tanzouSubscription.js';
-import { handleUnifiedSubscription } from '../src/unifiedSubscription.js';
 import 'hono/jsx/jsx-runtime';
 
 const runtime = createVercelRuntime(process.env);
@@ -61,13 +60,14 @@ export default async function handler(req, res) {
             response = await handleSurgeModule(request);
         } else if (url.pathname === '/r2/tanzou.list') {
             response = await handleR2Tanzou(request, url);
-        } else if (url.pathname === '/tanzou') {
-            response = await handleTanzouSubscription(request, process.env);
-        } else if (url.pathname === '/all') {
-            response = await handleUnifiedSubscription(request, process.env);
-            if (response.ok) {
-                response.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=86400');
-            }
+        } else if (url.pathname === '/tanzou' || url.pathname === '/all') {
+            response = new Response('Not Found', {
+                status: 404,
+                headers: {
+                    'Content-Type': 'text/plain; charset=utf-8',
+                    'Cache-Control': 'no-store'
+                }
+            });
         } else {
             const app = await appPromise;
             response = await app.fetch(request);
