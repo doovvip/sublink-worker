@@ -1,4 +1,5 @@
 import { createRequire } from 'module';
+import { createHash, timingSafeEqual } from 'crypto';
 import { Readable } from 'stream';
 import { createVercelRuntime } from '../src/runtime/vercel.js';
 import { handleSurgeModule, handleSurgeModuleCenter } from '../src/surgeModules.js';
@@ -8,6 +9,8 @@ import 'hono/jsx/jsx-runtime';
 
 const runtime = createVercelRuntime(process.env);
 const appPromise = loadCreateApp().then((createApp) => createApp(runtime));
+
+const R2_TANZOU_TOKEN_SHA256 = 'b58da2a0e3b80caf2b5464c236b56fa2492e026bed368f23ce12b04fd395f105';
 
 async function loadCreateApp() {
     try {
@@ -56,6 +59,8 @@ export default async function handler(req, res) {
             response = handleSurgeModuleCenter(request);
         } else if (url.pathname === '/surge-module') {
             response = await handleSurgeModule(request);
+        } else if (url.pathname === '/r2/tanzou.list') {
+            response = await handleR2Tanzou(request, url);
         } else if (url.pathname === '/tanzou') {
             response = await handleTanzouSubscription(request, process.env);
         } else if (url.pathname === '/all') {
@@ -76,6 +81,35 @@ export default async function handler(req, res) {
         }
         res.end('Internal Server Error');
     }
+}
+
+async function handleR2Tanzou(request, url) {
+    const token = url.searchParams.get('token') || '';
+    const actual = createHash('sha256').update(token).digest();
+    const expected = Buffer.from(R2_TANZOU_TOKEN_SHA256, 'hex');
+
+    if (actual.length !== expected.length || !timingSafeEqual(actual, expected)) {
+        return new Response('Not Found', {
+            status: 404,
+            headers: {
+                'Content-Type': 'text/plain; charset=utf-8',
+                'Cache-Control': 'no-store'
+            }
+        });
+    }
+
+    const internalUrl = new URL(request.url);
+    internalUrl.pathname = '/tanzou';
+    internalUrl.search = '';
+    internalUrl.searchParams.set('key', String(process.env.TANZOU_ACCESS_KEY || ''));
+
+    const internalRequest = new Request(internalUrl, {
+        method: 'GET',
+        headers: request.headers
+    });
+    const response = await handleTanzouSubscription(internalRequest, process.env);
+    response.headers.set('Cache-Control', 'no-store');
+    return response;
 }
 
 const HOP_BY_HOP_HEADERS = new Set([
