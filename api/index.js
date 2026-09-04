@@ -10,6 +10,15 @@ const runtime = createVercelRuntime(process.env);
 const appPromise = loadCreateApp().then((createApp) => createApp(runtime));
 
 const R2_TANZOU_TOKEN_SHA256 = 'b58da2a0e3b80caf2b5464c236b56fa2492e026bed368f23ce12b04fd395f105';
+const RETIRED_PATHS = new Set([
+    '/tanzou',
+    '/all',
+    '/R2-Public.conf',
+    '/Surge-R2.conf',
+    '/api/all-clean',
+    '/api/r2-public',
+    '/api/surge-r2'
+]);
 
 async function loadCreateApp() {
     try {
@@ -60,7 +69,7 @@ export default async function handler(req, res) {
             response = await handleSurgeModule(request);
         } else if (url.pathname === '/r2/tanzou.list') {
             response = await handleR2Tanzou(request, url);
-        } else if (url.pathname === '/tanzou' || url.pathname === '/all') {
+        } else if (RETIRED_PATHS.has(url.pathname)) {
             response = new Response('Not Found', {
                 status: 404,
                 headers: {
