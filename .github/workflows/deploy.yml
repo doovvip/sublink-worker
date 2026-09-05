@@ -1,10 +1,7 @@
-name: Deploy Worker
+name: Deploy Worker (Manual Legacy)
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
 
 permissions:
   contents: read
