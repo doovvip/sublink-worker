@@ -14,7 +14,7 @@
     "dev:node": "npm run build:node && node dist/node-server.cjs"
   },
   "devDependencies": {
-    "@cloudflare/vitest-pool-workers": "^0.16.8",
+    "@cloudflare/vitest-pool-workers": "^0.22.0",
     "esbuild": "^0.28.1",
     "vitest": "^4.1.7",
     "wrangler": "^4.51.0"
