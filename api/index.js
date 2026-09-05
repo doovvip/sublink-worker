@@ -2,6 +2,7 @@ import { createRequire } from 'module';
 import { Readable } from 'stream';
 import { createVercelRuntime } from '../src/runtime/vercel.js';
 import { handleSurgeModule, handleSurgeModuleCenter } from '../src/surgeModules.js';
+import { handlePrivateSurge } from './privateSurge.js';
 import 'hono/jsx/jsx-runtime';
 
 const runtime = createVercelRuntime(process.env);
@@ -53,7 +54,10 @@ export default async function handler(req, res) {
         const url = new URL(request.url);
 
         let response;
-        if (url.pathname === '/health') {
+        const privateResponse = await handlePrivateSurge(request);
+        if (privateResponse) {
+            response = privateResponse;
+        } else if (url.pathname === '/health') {
             response = new Response('OK', {
                 status: 200,
                 headers: {
