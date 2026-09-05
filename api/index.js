@@ -1,3 +1,4 @@
+// Security-sensitive configuration stays in environment variables.
 import { createRequire } from 'module';
 import { Readable } from 'stream';
 import { createVercelRuntime } from '../src/runtime/vercel.js';
