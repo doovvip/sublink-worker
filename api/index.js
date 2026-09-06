@@ -116,6 +116,7 @@ async function optimizeR2ServicePolicies(url, response) {
     for (const [name, choices] of R2_SERVICE_CHOICES) {
         text = replaceSelectPolicyLine(text, name, choices);
     }
+    text = prioritizeCorePolicyGroups(text);
 
     const headers = new Headers(response.headers);
     headers.delete('content-length');
@@ -130,6 +131,22 @@ function replaceSelectPolicyLine(text, name, choices) {
     const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const pattern = new RegExp(`^${escapedName}\\s*=\\s*select,.*?(,\\s*icon-url=.*)$`, 'm');
     return text.replace(pattern, `${name} = select, ${choices.join(', ')}$1`);
+}
+
+function prioritizeCorePolicyGroups(text) {
+    const sectionPattern = /(\[Proxy Group\]\r?\n)([\s\S]*?)(?=\r?\n\[[^\]]+\]|$)/;
+    return text.replace(sectionPattern, (full, header, body) => {
+        const eol = body.includes('\r\n') ? '\r\n' : '\n';
+        const lines = body.split(/\r?\n/);
+        const myNodeLine = lines.find((line) => /我的节点\s*=/.test(line));
+        const proxyLine = lines.find((line) => /^\s*Proxy\s*=/.test(line));
+        if (!myNodeLine || !proxyLine) {
+            return full;
+        }
+
+        const rest = lines.filter((line) => line !== myNodeLine && line !== proxyLine);
+        return `${header}${[myNodeLine, proxyLine, ...rest].join(eol)}`;
+    });
 }
 
 const HOP_BY_HOP_HEADERS = new Set([
