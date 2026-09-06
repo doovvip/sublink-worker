@@ -1,0 +1,96 @@
+export const config = {
+  runtime: 'nodejs'
+};
+
+const MAX_MESSAGE_CHARS = 8000;
+const CAPTURE_SENTINEL = '__CAPTURE_ONLY__';
+
+async function readJsonBody(req) {
+  if (req.body && typeof req.body === 'object') return req.body;
+  if (typeof req.body === 'string' && req.body.length) {
+    try { return JSON.parse(req.body); } catch { return { _raw: req.body }; }
+  }
+
+  let raw = '';
+  try {
+    for await (const chunk of req) {
+      raw += Buffer.isBuffer(chunk) ? chunk.toString('utf8') : String(chunk);
+      if (raw.length > 100000) break;
+    }
+  } catch {
+    return {};
+  }
+
+  if (!raw) return {};
+  try { return JSON.parse(raw); } catch { return { _raw: raw }; }
+}
+
+function compactMessage(message) {
+  const content = typeof message?.content === 'string'
+    ? message.content.slice(0, MAX_MESSAGE_CHARS)
+    : message?.content ?? null;
+  return { role: message?.role ?? null, content };
+}
+
+function latestUserText(messages) {
+  for (let i = messages.length - 1; i >= 0; i -= 1) {
+    if (messages[i]?.role === 'user' && typeof messages[i]?.content === 'string') {
+      return messages[i].content.slice(0, MAX_MESSAGE_CHARS);
+    }
+  }
+  return null;
+}
+
+function openAIStyle(content, model) {
+  return {
+    id: 'miyou-capture',
+    object: 'chat.completion',
+    created: Math.floor(Date.now() / 1000),
+    model: model || 'miyou-capture',
+    choices: [{
+      index: 0,
+      message: { role: 'assistant', content },
+      finish_reason: 'stop'
+    }]
+  };
+}
+
+export default async function handler(req, res) {
+  res.setHeader('Cache-Control', 'no-store');
+  res.setHeader('Content-Type', 'application/json; charset=utf-8');
+
+  if (req.method === 'GET' || req.method === 'HEAD') {
+    res.statusCode = 200;
+    return res.end(JSON.stringify({
+      ok: true,
+      service: 'MiYou WeChat capture bridge',
+      mode: 'sentinel',
+      sentinel: CAPTURE_SENTINEL
+    }));
+  }
+
+  if (req.method !== 'POST') {
+    res.statusCode = 405;
+    return res.end(JSON.stringify({ error: 'Method Not Allowed' }));
+  }
+
+  const body = await readJsonBody(req);
+  const messages = Array.isArray(body?.messages) ? body.messages : [];
+  const wxid = req.headers?.wxid || req.headers?.['x-wxid'] || '';
+
+  console.log(JSON.stringify({
+    marker: 'MIYOU_CAPTURE',
+    time: new Date().toISOString(),
+    model: body?.model ?? null,
+    messageCount: messages.length,
+    wxidPresent: Boolean(wxid),
+    latestUserText: latestUserText(messages),
+    messages: messages.map(compactMessage)
+  }));
+
+  // MiYouCaptureOnly.dylib suppresses this exact marker at the final WeChat
+  // message boundary. The response stays valid OpenAI-compatible JSON so MiYou
+  // treats the request as successful and does not enter its parse-error retry.
+  res.statusCode = 200;
+  return res.end(JSON.stringify(openAIStyle(CAPTURE_SENTINEL, body?.model)));
+}
