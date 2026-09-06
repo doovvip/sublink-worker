@@ -2,22 +2,7 @@ export const config = {
   runtime: 'nodejs'
 };
 
-const MAX_HEADER_VALUE = 500;
-const MAX_BODY_LOG = 20000;
-
-function sanitizeHeaders(headers = {}) {
-  const out = {};
-  for (const [key, value] of Object.entries(headers)) {
-    const lower = key.toLowerCase();
-    if (lower === 'authorization' || lower === 'cookie' || lower === 'set-cookie') {
-      out[key] = '[REDACTED]';
-      continue;
-    }
-    const text = Array.isArray(value) ? value.join(', ') : String(value ?? '');
-    out[key] = text.slice(0, MAX_HEADER_VALUE);
-  }
-  return out;
-}
+const MAX_MESSAGE_CHARS = 8000;
 
 async function readJsonBody(req) {
   if (req.body && typeof req.body === 'object') return req.body;
@@ -58,6 +43,16 @@ function openAIStyle(content) {
   };
 }
 
+function compactMessage(message) {
+  const content = typeof message?.content === 'string'
+    ? message.content.slice(0, MAX_MESSAGE_CHARS)
+    : message?.content ?? null;
+  return {
+    role: message?.role ?? null,
+    content
+  };
+}
+
 export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
   res.setHeader('Content-Type', 'application/json; charset=utf-8');
@@ -83,30 +78,17 @@ export default async function handler(req, res) {
   const wxid = req.headers?.wxid || req.headers?.['x-wxid'] || '';
 
   const capture = {
-    marker: 'MIYOU_PROBE',
+    marker: 'MIYOU_MESSAGES',
     time: new Date().toISOString(),
-    method: req.method,
-    wxid,
     model: body?.model ?? null,
     messageCount: messages.length,
-    roles: messages.map((m) => m?.role ?? null),
-    headers: sanitizeHeaders(req.headers),
-    body
+    wxidPresent: Boolean(wxid),
+    headerNames: Object.keys(req.headers || {}).map((k) => k.toLowerCase()).sort(),
+    messages: messages.map(compactMessage)
   };
+  console.log(JSON.stringify(capture));
 
-  let logText;
-  try {
-    logText = JSON.stringify(capture);
-  } catch {
-    logText = JSON.stringify({ marker: 'MIYOU_PROBE', error: 'capture serialization failed' });
-  }
-
-  if (logText.length > MAX_BODY_LOG) {
-    logText = `${logText.slice(0, MAX_BODY_LOG)}...[TRUNCATED]`;
-  }
-  console.log(logText);
-
-  const label = wxid ? `｜wxid 已收到` : '｜未收到 wxid';
+  const label = wxid ? '｜wxid 已收到' : '｜未收到 wxid';
   const reply = `MiYou Bridge 测试成功｜收到 ${messages.length} 条上下文${label}`;
 
   res.statusCode = 200;
