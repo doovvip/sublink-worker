@@ -24,16 +24,6 @@ async function readJsonBody(req) {
   try { return JSON.parse(raw); } catch { return { _raw: raw }; }
 }
 
-function openAIStyle(content) {
-  return {
-    id: 'miyou-capture',
-    object: 'chat.completion',
-    created: Math.floor(Date.now() / 1000),
-    model: 'miyou-capture',
-    choices: [{ index: 0, message: { role: 'assistant', content }, finish_reason: 'stop' }]
-  };
-}
-
 function compactMessage(message) {
   const content = typeof message?.content === 'string'
     ? message.content.slice(0, MAX_MESSAGE_CHARS)
@@ -52,14 +42,15 @@ function latestUserText(messages) {
 
 export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
-  res.setHeader('Content-Type', 'application/json; charset=utf-8');
 
   if (req.method === 'GET' || req.method === 'HEAD') {
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
     res.statusCode = 200;
-    return res.end(JSON.stringify({ ok: true, service: 'MiYou WeChat capture bridge', mode: 'capture-only' }));
+    return res.end(JSON.stringify({ ok: true, service: 'MiYou WeChat capture bridge', mode: 'capture-only-204' }));
   }
 
   if (req.method !== 'POST') {
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
     res.statusCode = 405;
     return res.end(JSON.stringify({ error: 'Method Not Allowed' }));
   }
@@ -78,10 +69,8 @@ export default async function handler(req, res) {
     messages: messages.map(compactMessage)
   }));
 
-  // MiYou treats an empty assistant content as an error. Return a single
-  // invisible separator so the OpenAI-compatible response is non-empty.
-  // This is only a compatibility probe; if WeChat renders/sends a blank bubble,
-  // we will revert and use a different capture path.
-  res.statusCode = 200;
-  return res.end(JSON.stringify(openAIStyle('\u2063')));
+  // Capture succeeded. Return HTTP 204 with no message body so MiYou has
+  // nothing it can forward into the WeChat conversation.
+  res.statusCode = 204;
+  return res.end();
 }
