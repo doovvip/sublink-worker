@@ -78,6 +78,10 @@ export default async function handler(req, res) {
     messages: messages.map(compactMessage)
   }));
 
+  // MiYou treats an empty assistant content as an error. Return a single
+  // invisible separator so the OpenAI-compatible response is non-empty.
+  // This is only a compatibility probe; if WeChat renders/sends a blank bubble,
+  // we will revert and use a different capture path.
   res.statusCode = 200;
-  return res.end(JSON.stringify(openAIStyle('')));
+  return res.end(JSON.stringify(openAIStyle('\u2063')));
 }
