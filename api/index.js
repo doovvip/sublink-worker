@@ -29,7 +29,7 @@ const R2_SERVICE_CHOICES = new Map([
     ['YouTube', ['"🇭🇰 香港节点"', '"🇯🇵 日本节点"', '"🇸🇬 新加坡节点"', '"🇺🇸 美国节点"', '"🇰🇷 韩国节点"']],
     ['Spotify', ['"🇺🇸 美国节点"', '"🇯🇵 日本节点"', '"🇭🇰 香港节点"', '"🇸🇬 新加坡节点"', '"🇰🇷 韩国节点"']],
     ['TikTok', ['"🇯🇵 日本节点"', '"🇸🇬 新加坡节点"', '"🇺🇸 美国节点"', '"🇰🇷 韩国节点"', '"🇭🇰 香港节点"']],
-    ['BiliBili', ['DIRECT', '"🇭🇰 香港节点"', '"🇨🇳 台湾节点"']],
+    ['BiliBili', ['DIRECT', '"🇭🇰 香港节点"', '"🇹🇼 台湾节点"']],
     ['GlobalMedia', ['"🇭🇰 香港节点"', '"🇯🇵 日本节点"', '"🇸🇬 新加坡节点"', '"🇺🇸 美国节点"', '"🇰🇷 韩国节点"']],
     ['MicrosoftGame', ['DIRECT', '"🇯🇵 日本节点"', '"🇭🇰 香港节点"', '"🇺🇸 美国节点"', '"🇸🇬 新加坡节点"', '"🇰🇷 韩国节点"']]
 ]);
@@ -140,12 +140,13 @@ function prioritizeCorePolicyGroups(text) {
         const lines = body.split(/\r?\n/);
         const myNodeLine = lines.find((line) => /我的节点\s*=/.test(line));
         const proxyLine = lines.find((line) => /^\s*Proxy\s*=/.test(line));
-        if (!myNodeLine || !proxyLine) {
+        const biliLine = lines.find((line) => /^\s*BiliBili\s*=/.test(line));
+        if (!myNodeLine || !proxyLine || !biliLine) {
             return full;
         }
 
-        const rest = lines.filter((line) => line !== myNodeLine && line !== proxyLine);
-        return `${header}${[myNodeLine, proxyLine, ...rest].join(eol)}`;
+        const rest = lines.filter((line) => line !== myNodeLine && line !== proxyLine && line !== biliLine);
+        return `${header}${[myNodeLine, proxyLine, biliLine, ...rest].join(eol)}`;
     });
 }
 
