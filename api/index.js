@@ -20,6 +20,10 @@ const RETIRED_PATHS = new Set([
     '/api/surge-r2'
 ]);
 
+const R2_PRIVATE_SURGE_PATH = '/private/rRWjhKLO58smxmI9p_70s9px/Surge.conf';
+const R2_AI_WITH_PROXY = 'AI = select, Proxy, "🇺🇸 美国节点", "🇯🇵 日本节点", "🇰🇷 韩国节点", "🇸🇬 新加坡节点", icon-url=https://raw.githubusercontent.com/Rabbit-Spec/Surge/Master/Conf/icon/ChatGPT.png';
+const R2_AI_DIRECT_COUNTRIES = 'AI = select, "🇺🇸 美国节点", "🇯🇵 日本节点", "🇰🇷 韩国节点", "🇸🇬 新加坡节点", icon-url=https://raw.githubusercontent.com/Rabbit-Spec/Surge/Master/Conf/icon/ChatGPT.png';
+
 async function loadCreateApp() {
     try {
         const mod = await import('../dist/vercel/createApp.js');
@@ -57,7 +61,7 @@ export default async function handler(req, res) {
         let response;
         const privateResponse = await handlePrivateSurge(request);
         if (privateResponse) {
-            response = privateResponse;
+            response = await optimizeR2AiPolicy(url, privateResponse);
         } else if (url.pathname === '/health') {
             response = new Response('OK', {
                 status: 200,
@@ -91,6 +95,29 @@ export default async function handler(req, res) {
         }
         res.end('Internal Server Error');
     }
+}
+
+async function optimizeR2AiPolicy(url, response) {
+    if (url.pathname !== R2_PRIVATE_SURGE_PATH || response.status !== 200 || !response.body) {
+        return response;
+    }
+
+    const text = await response.text();
+    if (!text.includes(R2_AI_WITH_PROXY)) {
+        return new Response(text, {
+            status: response.status,
+            statusText: response.statusText,
+            headers: new Headers(response.headers)
+        });
+    }
+
+    const headers = new Headers(response.headers);
+    headers.delete('content-length');
+    return new Response(text.replace(R2_AI_WITH_PROXY, R2_AI_DIRECT_COUNTRIES), {
+        status: response.status,
+        statusText: response.statusText,
+        headers
+    });
 }
 
 const HOP_BY_HOP_HEADERS = new Set([
