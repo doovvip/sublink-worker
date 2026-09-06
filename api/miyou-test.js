@@ -26,20 +26,11 @@ async function readJsonBody(req) {
 
 function openAIStyle(content) {
   return {
-    id: 'miyou-test',
+    id: 'miyou-capture',
     object: 'chat.completion',
     created: Math.floor(Date.now() / 1000),
-    model: 'miyou-test',
-    choices: [
-      {
-        index: 0,
-        message: {
-          role: 'assistant',
-          content
-        },
-        finish_reason: 'stop'
-      }
-    ]
+    model: 'miyou-capture',
+    choices: [{ index: 0, message: { role: 'assistant', content }, finish_reason: 'stop' }]
   };
 }
 
@@ -47,10 +38,16 @@ function compactMessage(message) {
   const content = typeof message?.content === 'string'
     ? message.content.slice(0, MAX_MESSAGE_CHARS)
     : message?.content ?? null;
-  return {
-    role: message?.role ?? null,
-    content
-  };
+  return { role: message?.role ?? null, content };
+}
+
+function latestUserText(messages) {
+  for (let i = messages.length - 1; i >= 0; i -= 1) {
+    if (messages[i]?.role === 'user' && typeof messages[i]?.content === 'string') {
+      return messages[i].content.slice(0, MAX_MESSAGE_CHARS);
+    }
+  }
+  return null;
 }
 
 export default async function handler(req, res) {
@@ -59,13 +56,7 @@ export default async function handler(req, res) {
 
   if (req.method === 'GET' || req.method === 'HEAD') {
     res.statusCode = 200;
-    return res.end(JSON.stringify({
-      ok: true,
-      service: 'MiYou WeChat Assistant probe',
-      mode: 'capture-only',
-      ai: false,
-      usage: 'POST OpenAI-compatible JSON here'
-    }));
+    return res.end(JSON.stringify({ ok: true, service: 'MiYou WeChat capture bridge', mode: 'capture-only' }));
   }
 
   if (req.method !== 'POST') {
@@ -77,20 +68,16 @@ export default async function handler(req, res) {
   const messages = Array.isArray(body?.messages) ? body.messages : [];
   const wxid = req.headers?.wxid || req.headers?.['x-wxid'] || '';
 
-  const capture = {
-    marker: 'MIYOU_MESSAGES',
+  console.log(JSON.stringify({
+    marker: 'MIYOU_CAPTURE',
     time: new Date().toISOString(),
     model: body?.model ?? null,
     messageCount: messages.length,
     wxidPresent: Boolean(wxid),
-    headerNames: Object.keys(req.headers || {}).map((k) => k.toLowerCase()).sort(),
+    latestUserText: latestUserText(messages),
     messages: messages.map(compactMessage)
-  };
-  console.log(JSON.stringify(capture));
-
-  const label = wxid ? '｜wxid 已收到' : '｜未收到 wxid';
-  const reply = `MiYou Bridge 测试成功｜收到 ${messages.length} 条上下文${label}`;
+  }));
 
   res.statusCode = 200;
-  return res.end(JSON.stringify(openAIStyle(reply)));
+  return res.end(JSON.stringify(openAIStyle('')));
 }
