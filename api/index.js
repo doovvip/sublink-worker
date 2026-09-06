@@ -21,8 +21,18 @@ const RETIRED_PATHS = new Set([
 ]);
 
 const R2_PRIVATE_SURGE_PATH = '/private/rRWjhKLO58smxmI9p_70s9px/Surge.conf';
-const R2_AI_WITH_PROXY = 'AI = select, Proxy, "🇺🇸 美国节点", "🇯🇵 日本节点", "🇰🇷 韩国节点", "🇸🇬 新加坡节点", icon-url=https://raw.githubusercontent.com/Rabbit-Spec/Surge/Master/Conf/icon/ChatGPT.png';
-const R2_AI_DIRECT_COUNTRIES = 'AI = select, "🇺🇸 美国节点", "🇯🇵 日本节点", "🇰🇷 韩国节点", "🇸🇬 新加坡节点", icon-url=https://raw.githubusercontent.com/Rabbit-Spec/Surge/Master/Conf/icon/ChatGPT.png';
+const R2_SERVICE_CHOICES = new Map([
+    ['AI', ['"🇯🇵 日本节点"', '"🇺🇸 美国节点"', '"🇸🇬 新加坡节点"', '"🇰🇷 韩国节点"']],
+    ['Telegram', ['"🇭🇰 香港节点"', '"🇯🇵 日本节点"', '"🇸🇬 新加坡节点"', '"🇺🇸 美国节点"', '"🇰🇷 韩国节点"']],
+    ['Netflix', ['"🇺🇸 美国节点"', '"🇯🇵 日本节点"', '"🇭🇰 香港节点"', '"🇸🇬 新加坡节点"', '"🇰🇷 韩国节点"']],
+    ['Disney+', ['"🇭🇰 香港节点"', '"🇺🇸 美国节点"', '"🇯🇵 日本节点"', '"🇸🇬 新加坡节点"', '"🇰🇷 韩国节点"']],
+    ['YouTube', ['"🇭🇰 香港节点"', '"🇯🇵 日本节点"', '"🇸🇬 新加坡节点"', '"🇺🇸 美国节点"', '"🇰🇷 韩国节点"']],
+    ['Spotify', ['"🇺🇸 美国节点"', '"🇯🇵 日本节点"', '"🇭🇰 香港节点"', '"🇸🇬 新加坡节点"', '"🇰🇷 韩国节点"']],
+    ['TikTok', ['"🇯🇵 日本节点"', '"🇸🇬 新加坡节点"', '"🇺🇸 美国节点"', '"🇰🇷 韩国节点"', '"🇭🇰 香港节点"']],
+    ['BiliBili', ['DIRECT', '"🇭🇰 香港节点"', '"🇨🇳 台湾节点"']],
+    ['GlobalMedia', ['"🇭🇰 香港节点"', '"🇯🇵 日本节点"', '"🇸🇬 新加坡节点"', '"🇺🇸 美国节点"', '"🇰🇷 韩国节点"']],
+    ['MicrosoftGame', ['DIRECT', '"🇯🇵 日本节点"', '"🇭🇰 香港节点"', '"🇺🇸 美国节点"', '"🇸🇬 新加坡节点"', '"🇰🇷 韩国节点"']]
+]);
 
 async function loadCreateApp() {
     try {
@@ -61,7 +71,7 @@ export default async function handler(req, res) {
         let response;
         const privateResponse = await handlePrivateSurge(request);
         if (privateResponse) {
-            response = await optimizeR2AiPolicy(url, privateResponse);
+            response = await optimizeR2ServicePolicies(url, privateResponse);
         } else if (url.pathname === '/health') {
             response = new Response('OK', {
                 status: 200,
@@ -97,27 +107,29 @@ export default async function handler(req, res) {
     }
 }
 
-async function optimizeR2AiPolicy(url, response) {
+async function optimizeR2ServicePolicies(url, response) {
     if (url.pathname !== R2_PRIVATE_SURGE_PATH || response.status !== 200 || !response.body) {
         return response;
     }
 
-    const text = await response.text();
-    if (!text.includes(R2_AI_WITH_PROXY)) {
-        return new Response(text, {
-            status: response.status,
-            statusText: response.statusText,
-            headers: new Headers(response.headers)
-        });
+    let text = await response.text();
+    for (const [name, choices] of R2_SERVICE_CHOICES) {
+        text = replaceSelectPolicyLine(text, name, choices);
     }
 
     const headers = new Headers(response.headers);
     headers.delete('content-length');
-    return new Response(text.replace(R2_AI_WITH_PROXY, R2_AI_DIRECT_COUNTRIES), {
+    return new Response(text, {
         status: response.status,
         statusText: response.statusText,
         headers
     });
+}
+
+function replaceSelectPolicyLine(text, name, choices) {
+    const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const pattern = new RegExp(`^${escapedName}\\s*=\\s*select,.*?(,\\s*icon-url=.*)$`, 'm');
+    return text.replace(pattern, `${name} = select, ${choices.join(', ')}$1`);
 }
 
 const HOP_BY_HOP_HEADERS = new Set([
