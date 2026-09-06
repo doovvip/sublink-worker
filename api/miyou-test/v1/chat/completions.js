@@ -1,1 +1,1 @@
-export { config, default } from '../../miyou-test.js';
+export { config, default } from '../../../miyou-test.js';
