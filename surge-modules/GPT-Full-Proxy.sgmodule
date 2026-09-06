@@ -1,8 +1,0 @@
-#!name = GPT全量分流
-#!desc = 将 ChatGPT/OpenAI 及相关 AI 服务统一交给“✈️ 我的节点”策略组
-#!author = doovvip
-#!category = 分流
-#!date = 2026-09-06
-
-[Rule]
-RULE-SET,https://raw.githubusercontent.com/Rabbit-Spec/Surge/Master/Rules/AIGC.list,✈️ 我的节点
