@@ -1,0 +1,32 @@
+name: Build MiYouLiteAI dylib
+
+on:
+  push:
+    branches:
+      - miyou-lite-ai-0.1
+    paths:
+      - 'miyou-lite-ai/**'
+      - '.github/workflows/build-miyou-lite.yml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build arm64 iOS dylib
+        run: bash miyou-lite-ai/scripts/build.sh
+      - name: Inspect binary
+        run: |
+          otool -L miyou-lite-ai/dist/MiYouLiteAI.dylib
+          lipo -info miyou-lite-ai/dist/MiYouLiteAI.dylib
+          codesign -dvv miyou-lite-ai/dist/MiYouLiteAI.dylib 2>&1 || true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: MiYouLiteAI-0.1.0
+          path: |
+            miyou-lite-ai/dist/MiYouLiteAI.dylib
+            miyou-lite-ai/dist/MiYouLiteAI.dylib.sha256
+          if-no-files-found: error
