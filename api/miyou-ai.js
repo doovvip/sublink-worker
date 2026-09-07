@@ -65,7 +65,12 @@ function parseReplies(text) {
 
 export default async function handler(req, res) {
   if (req.method === 'GET' || req.method === 'HEAD') {
-    return send(res, 200, { ok: true, service: 'miyou-ai', model: process.env.MIYOU_OPENAI_MODEL || DEFAULT_MODEL });
+    return send(res, 200, {
+      ok: true,
+      service: 'miyou-ai',
+      model: process.env.MIYOU_OPENAI_MODEL || DEFAULT_MODEL,
+      openaiConfigured: Boolean(process.env.OPENAI_API_KEY)
+    });
   }
   if (req.method !== 'POST') return send(res, 405, { error: 'Method Not Allowed' });
 
