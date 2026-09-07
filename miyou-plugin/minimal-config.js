@@ -4,10 +4,10 @@ export const MIYOU_MINIMAL = {
     dbReader: true,
     unrepliedScan: true,
     presets: true,
-    manualSend: true,
-    ocrFallback: true
+    manualSend: true
   },
   disable: [
+    'ocr',
     'voiceVideo',
     'groupAssistant',
     'messagePreviewFold',
