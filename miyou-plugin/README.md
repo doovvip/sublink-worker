@@ -1,44 +1,86 @@
-# MiYou Plugin 0.6.3 Slim Refactor
+# MiYou Plugin 0.6.4 Integrated Slim Build
 
 Branch: `miyou-refactor-0.6`
 
-## Target
+## Final integrated target
 
-Reuse MiYou's existing chat toolbar and native `快捷回复` UI instead of creating a new floating window or a second reply interface.
+Reuse MiYou's existing chat toolbar and native `快捷回复` UI. Do not create a second floating window or duplicate reply interface.
 
 Normal flow:
 
 1. Local WeChat DB Reader identifies the current contact and recent messages.
 2. Message direction is taken from DB fields (`direction`, `isSend` / `fromMe`, sender wxid mapping).
-3. MiYou native `快捷回复` button requests 3 AI drafts.
+3. MiYou native `快捷回复` button requests 3 GPT drafts.
 4. The selected draft is inserted into WeChat's input box.
 5. The user manually sends it.
 
 No OCR is used in the normal path and AI never triggers the final send action.
 
-## Keep-only feature profile
+## Integrated feature bundle
 
-The slim build keeps:
+`miyou-plugin/integration.js` is the single integration layer. It combines:
 
-- AI bridge
+- GPT / AI request flow
 - local DB Reader
+- current-contact context
 - unreplied-message scan
 - GPT preset
-- manual send
-- chat toolbar
 - native `快捷回复`
 - native `快捷回复列表`
+- 3 AI suggestions
+- regenerate
+- fill input box only
+- manual send
 - Message Settings shell
   - `常驻后台`
   - `消息防撤回`
-- `秘友设置` — preserve the whole section for now
-- `文件管理` — preserve the whole section for now
+- `秘友设置` — preserve whole section
+- `文件管理` — preserve whole section
 
-Everything outside this whitelist is disabled by default in `minimal-config.js`.
+## Chat toolbar
 
-## Native quick reply behavior
+The MiYou chat toolbar keeps only one item:
 
-`miyou-plugin/quick-reply.js` is the small adapter between the native MiYou UI and the AI endpoint.
+- `快捷回复`
+
+MiYou toolbar entries for photo, camera, file and add are removed from the slim feature profile. This does not remove WeChat's own native media/file functions.
+
+## Feature-code pruning list
+
+The integrated profile marks these feature families for removal/disable when their native implementation is available:
+
+- voice/video enhancements
+- group assistant
+- message preview/fold enhancements
+- group chat grouping
+- other group extras
+- transfer tools
+- location modification
+- step-count modification
+- forced official-account follow
+- mass-message assistant
+- keyword auto reply
+- OCR
+- MiYou toolbar photo
+- MiYou toolbar camera
+- MiYou toolbar file
+- MiYou toolbar add
+
+## Dependency-safe pruning rule
+
+Dependencies are not slimmed.
+
+Keep all shared dependencies, common hooks, storage/network layers and framework code required by any retained feature. Only remove:
+
+1. the unwanted feature entry,
+2. code proven to belong exclusively to that unwanted feature,
+3. resources proven to belong exclusively to that unwanted feature.
+
+If a dependency is uncertain or shared, keep it.
+
+## Native quick reply adapter
+
+`miyou-plugin/quick-reply.js` bridges the native MiYou UI to the AI endpoint.
 
 - Keeps at most 30 recent text messages.
 - Uses DB-derived incoming/outgoing direction only.
@@ -46,7 +88,7 @@ Everything outside this whitelist is disabled by default in `minimal-config.js`.
 - Requests 3 reply drafts.
 - Selecting a draft only fills the input box.
 - `autoSend` is permanently false in this profile.
-- The native list can expose a `重新生成` action without changing the chat toolbar layout.
+- The native list can expose a `重新生成` action.
 
 ## AI endpoint
 
@@ -59,8 +101,6 @@ Everything outside this whitelist is disabled by default in `minimal-config.js`.
 - Returns up to 3 reply drafts: `自然直接`, `轻松推进`, `简短稳重`.
 - Does not log the full chat transcript or preset.
 
-The ChatGPT subscription and OpenAI API billing are separate; this server route needs its own OpenAI API credential in the deployment environment.
-
 ## Identity / direction rule
 
 Direction is never inferred from bubble position.
@@ -72,7 +112,7 @@ Priority:
 3. `senderWxid` compared with known self / peer wxid
 4. otherwise mark the message direction as unknown
 
-If the latest message direction is unknown, unreplied classification should stay uncertain rather than guessing.
+If the latest message direction is unknown, unreplied classification stays uncertain rather than guessing.
 
 ## Deliberately excluded
 
