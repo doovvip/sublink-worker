@@ -3,7 +3,7 @@ name: Build MiYouStandaloneAI dylib
 on:
   push:
     branches:
-      - miyou-standalone-0.2
+      - miyou-standalone-0.4
     paths:
       - 'miyou-standalone/**'
       - '.github/workflows/build-miyou-standalone.yml'
@@ -23,7 +23,7 @@ jobs:
           codesign -dvv miyou-standalone/dist/MiYouStandaloneAI.dylib 2>&1 || true
       - uses: actions/upload-artifact@v4
         with:
-          name: MiYouStandaloneAI-0.2.0
+          name: MiYouStandaloneAI-0.4.0
           path: |
             miyou-standalone/dist/MiYouStandaloneAI.dylib
             miyou-standalone/dist/MiYouStandaloneAI.dylib.sha256
