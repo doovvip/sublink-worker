@@ -5,7 +5,7 @@ export const config = {
 const MAX_MESSAGE_CHARS = 8000;
 const MAX_MESSAGES = 100;
 const CAPTURE_SENTINEL = '__CAPTURE_ONLY__';
-const VERSION = '0.6.0';
+const VERSION = '0.6.1';
 
 async function readJsonBody(req) {
   if (req.body && typeof req.body === 'object') return req.body;
@@ -33,10 +33,11 @@ function safeText(value, limit = MAX_MESSAGE_CHARS) {
 
 function compactMessage(message) {
   return {
-    id: message?.id ?? message?.msgId ?? null,
+    id: message?.id ?? message?.msgId ?? message?.localId ?? null,
     role: message?.role ?? null,
     direction: message?.direction ?? null,
-    sender: message?.sender ?? null,
+    isSend: message?.isSend ?? message?.fromMe ?? null,
+    senderWxid: safeText(message?.senderWxid ?? message?.sender, 256),
     timestamp: message?.timestamp ?? null,
     content: safeText(message?.content)
   };
@@ -77,11 +78,11 @@ function bridgeEnvelope(body, req) {
     : {};
 
   return {
-    marker: 'MIYOU_CAPTURE_V2',
+    marker: 'MIYOU_CAPTURE_V3',
     version: VERSION,
     time: new Date().toISOString(),
-    mode: bridge.mode || body?.mode || 'ai_capture',
-    source: bridge.source || 'unknown',
+    mode: 'db_reader',
+    source: bridge.source || 'local_db',
     contact: {
       wxid: safeText(bridge?.contact?.wxid || req.headers?.wxid || req.headers?.['x-wxid'] || '', 256),
       displayName: safeText(bridge?.contact?.displayName, 256),
@@ -90,8 +91,7 @@ function bridgeEnvelope(body, req) {
     identity: {
       selfWxid: safeText(bridge?.identity?.selfWxid, 256),
       peerWxid: safeText(bridge?.identity?.peerWxid, 256),
-      confidence: Number.isFinite(bridge?.identity?.confidence) ? bridge.identity.confidence : null,
-      verifiedBy: Array.isArray(bridge?.identity?.verifiedBy) ? bridge.identity.verifiedBy.slice(0, 5) : []
+      source: 'db'
     },
     unread: bridge?.unread && typeof bridge.unread === 'object'
       ? {
@@ -101,14 +101,7 @@ function bridgeEnvelope(body, req) {
           lastMessageAt: bridge.unread.lastMessageAt || null
         }
       : null,
-    ocr: bridge?.ocr && typeof bridge.ocr === 'object'
-      ? {
-          enabled: Boolean(bridge.ocr.enabled),
-          contactName: safeText(bridge.ocr.contactName, 256),
-          bubbleDirection: bridge.ocr.bubbleDirection || null,
-          confidence: Number.isFinite(bridge.ocr.confidence) ? bridge.ocr.confidence : null
-        }
-      : null,
+    presetId: safeText(bridge?.presetId, 128),
     model: body?.model ?? null,
     messageCount: messages.length,
     latestUserText: latestUserText(messages),
@@ -126,8 +119,8 @@ export default async function handler(req, res) {
       ok: true,
       service: 'MiYou WeChat bridge',
       version: VERSION,
-      modes: ['ai_capture', 'db_reader', 'ocr_0.3', 'hybrid'],
-      features: ['ai_passthrough', 'identity_verification', 'unreplied_scan_metadata', 'ocr_0.3_metadata'],
+      mode: 'db_reader',
+      features: ['ai_passthrough', 'db_identity', 'unreplied_scan_metadata', 'preset_id'],
       sentinel: CAPTURE_SENTINEL
     }));
   }
@@ -140,13 +133,10 @@ export default async function handler(req, res) {
   const body = await readJsonBody(req);
   const envelope = bridgeEnvelope(body, req);
 
-  // Keep cloud logging intentionally compact. The local bridge owns the full
-  // database/index; the server receives only the context required for AI.
+  // The local Reader owns the full database and preset text. The server only
+  // receives bounded chat context plus DB-derived identity metadata.
   console.log(JSON.stringify(envelope));
 
-  // Existing MiYou AI behavior is preserved. Capture-only builds suppress this
-  // sentinel at the final message boundary; normal AI builds can continue to
-  // use the OpenAI-compatible response shape unchanged.
   res.statusCode = 200;
   return res.end(JSON.stringify(openAIStyle(CAPTURE_SENTINEL, body?.model)));
 }
