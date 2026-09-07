@@ -1,23 +1,31 @@
 export const MIYOU_MINIMAL = {
-  keep: {
-    ai: true,
-    dbReader: true,
-    unrepliedScan: true,
-    presets: true,
-    manualSend: true
+  version: '0.6.2',
+  mode: 'keep-only',
+
+  keepOnly: [
+    'ai',
+    'dbReader',
+    'unrepliedScan',
+    'presets',
+    'manualSend',
+    'quickReply',
+    'messageSettings',
+    'backgroundResident',
+    'antiRecall'
+  ],
+
+  quickReply: {
+    reuseNativeToolbar: true,
+    reuseNativeList: true,
+    aiSuggestions: 3,
+    insertToInput: true,
+    autoSend: false
   },
-  disable: [
-    'ocr',
-    'voiceVideo',
-    'groupAssistant',
-    'messagePreviewFold',
-    'groupChatGrouping',
-    'groupExtras',
-    'transferTools',
-    'locationSpoof',
-    'stepCountModify',
-    'forceFollowOfficialAccount',
-    'massMessageAssistant',
-    'keywordAutoReply'
-  ]
+
+  messageSettings: {
+    backgroundResident: true,
+    antiRecall: true
+  },
+
+  disableByDefault: true
 };
