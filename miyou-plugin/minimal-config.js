@@ -1,9 +1,8 @@
 export const MIYOU_MINIMAL = {
-  version: '0.6.3',
-  mode: 'keep-only',
+  version: '0.6.4',
+  mode: 'integrated-slim',
 
-  // Only these feature families belong in the slim build.
-  // Everything not listed here is disabled by default.
+  // Keep the feature families required by the final MiYou AI build.
   keepOnly: [
     'ai',
     'dbReader',
@@ -11,20 +10,24 @@ export const MIYOU_MINIMAL = {
     'presets',
     'manualSend',
 
-    // Reuse MiYou's native chat toolbar and quick-reply UI.
+    // Native chat toolbar remains, but it exposes only Quick Reply.
     'chatToolbar',
     'quickReply',
     'quickReplyList',
 
-    // Keep the Message Settings page, but only the two items below.
+    // Keep Message Settings shell with only these two user-facing items.
     'messageSettings',
     'backgroundResident',
     'antiRecall',
 
-    // Preserve these MiYou sections as-is for now.
+    // Preserve these MiYou sections as-is.
     'secretFriendSettings',
     'fileManagement'
   ],
+
+  toolbar: {
+    keepOnly: ['quickReply']
+  },
 
   quickReply: {
     reuseNativeToolbar: true,
@@ -43,9 +46,24 @@ export const MIYOU_MINIMAL = {
   },
 
   preserveWhole: [
+    'ai',
+    'dbReader',
+    'unrepliedScan',
+    'presets',
+    'manualSend',
     'secretFriendSettings',
     'fileManagement'
   ],
+
+  pruningPolicy: {
+    preserveDependencies: true,
+    preserveSharedCode: true,
+    preserveCommonHooks: true,
+    preserveStorageAndNetworkLayers: true,
+    removeOnlyExclusiveFeatureImplementation: true,
+    removeOnlyFeatureEntryAndResources: true,
+    unknownDependencyAction: 'keep'
+  },
 
   disableByDefault: true
 };
