@@ -2,6 +2,7 @@
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 SRC="$ROOT/native/MiYouStandaloneAI.m"
+UI_SRC="$ROOT/native/MiYouStandaloneUI.m"
 BUILD_SRC="$ROOT/native/.MiYouStandaloneAI.build.m"
 OUT="$ROOT/dist"
 mkdir -p "$OUT"
@@ -34,6 +35,7 @@ CLANG="$(xcrun --sdk iphoneos --find clang)"
   -Wl,-dead_strip \
   -Os \
   "$BUILD_SRC" \
+  "$UI_SRC" \
   -o "$OUT/MiYouStandaloneAI.dylib"
 
 codesign --force --sign - --timestamp=none "$OUT/MiYouStandaloneAI.dylib"
