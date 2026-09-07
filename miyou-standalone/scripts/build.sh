@@ -2,8 +2,20 @@
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 SRC="$ROOT/native/MiYouStandaloneAI.m"
+BUILD_SRC="$ROOT/native/.MiYouStandaloneAI.build.m"
 OUT="$ROOT/dist"
 mkdir -p "$OUT"
+
+python3 - "$SRC" "$BUILD_SRC" <<'PY'
+from pathlib import Path
+import sys
+src = Path(sys.argv[1]).read_text()
+src = src.replace('return [NSString stringWithFormat:@"%@\\u001f%@", contact ?: @"", [context componentsJoinedByString:@"\\u001e"]];',
+                  'return [NSString stringWithFormat:@"%@|%@", contact ?: @"", [context componentsJoinedByString:@"\\n"]];')
+Path(sys.argv[2]).write_text(src)
+PY
+trap 'rm -f "$BUILD_SRC"' EXIT
+
 SDK="$(xcrun --sdk iphoneos --show-sdk-path)"
 CLANG="$(xcrun --sdk iphoneos --find clang)"
 "$CLANG" \
@@ -21,7 +33,7 @@ CLANG="$(xcrun --sdk iphoneos --find clang)"
   -framework QuartzCore \
   -Wl,-dead_strip \
   -Os \
-  "$SRC" \
+  "$BUILD_SRC" \
   -o "$OUT/MiYouStandaloneAI.dylib"
 
 codesign --force --sign - --timestamp=none "$OUT/MiYouStandaloneAI.dylib"
