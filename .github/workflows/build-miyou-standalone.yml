@@ -1,0 +1,29 @@
+name: Build MiYouStandaloneAI dylib
+
+on:
+  push:
+    branches:
+      - miyou-standalone-0.2
+    paths:
+      - 'miyou-standalone/**'
+      - '.github/workflows/build-miyou-standalone.yml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build arm64 iOS dylib
+        run: bash miyou-standalone/scripts/build.sh
+      - name: Inspect binary
+        run: |
+          file miyou-standalone/dist/MiYouStandaloneAI.dylib
+          lipo -info miyou-standalone/dist/MiYouStandaloneAI.dylib
+          codesign -dvv miyou-standalone/dist/MiYouStandaloneAI.dylib 2>&1 || true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: MiYouStandaloneAI-0.2.0
+          path: |
+            miyou-standalone/dist/MiYouStandaloneAI.dylib
+            miyou-standalone/dist/MiYouStandaloneAI.dylib.sha256
