@@ -1,0 +1,29 @@
+name: Build MiYouQuickReplyAI dylib
+
+on:
+  push:
+    branches:
+      - miyou-direct-quickreply-0.3
+    paths:
+      - 'miyou-direct-quickreply/**'
+      - '.github/workflows/build-miyou-direct-quickreply.yml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build arm64 iOS dylib
+        run: bash miyou-direct-quickreply/scripts/build.sh
+      - name: Inspect binary
+        run: |
+          file miyou-direct-quickreply/dist/MiYouQuickReplyAI.dylib
+          lipo -info miyou-direct-quickreply/dist/MiYouQuickReplyAI.dylib
+          codesign -dvv miyou-direct-quickreply/dist/MiYouQuickReplyAI.dylib 2>&1 || true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: MiYouQuickReplyAI-0.3.0
+          path: |
+            miyou-direct-quickreply/dist/MiYouQuickReplyAI.dylib
+            miyou-direct-quickreply/dist/MiYouQuickReplyAI.dylib.sha256
