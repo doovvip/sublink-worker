@@ -46,7 +46,8 @@ jobs:
           strings -a MiYouSlimRuntime.dylib | grep -q 'MiYouSettingViewController'
           strings -a MiYouSlimRuntime.dylib | grep -q 'settingBakgrunnur:'
           strings -a MiYouSlimRuntime.dylib | grep -q 'settingRevokeMsg:'
-          strings -a MiYouSlimRuntime.dylib | grep -q 'addMessageToolBarSection'
+          strings -a MiYouSlimRuntime.dylib | grep -q 'addMessageManageSection'
+          strings -a MiYouSlimRuntime.dylib | grep -q 'addGroupHelperSection'
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
