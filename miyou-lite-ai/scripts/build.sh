@@ -15,6 +15,7 @@ CLANG="$(xcrun --sdk iphoneos --find clang)"
   -install_name @rpath/MiYouLiteAI.dylib \
   -framework Foundation \
   -framework UIKit \
+  -framework CoreGraphics \
   -Wl,-dead_strip \
   -Os \
   "$SRC" \
