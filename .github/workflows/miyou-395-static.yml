@@ -1,0 +1,98 @@
+name: MiYou 3.9-5 static analysis
+
+on:
+  push:
+    paths:
+      - '.github/workflows/miyou-395-static.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download MiYou 3.9-5
+        run: |
+          set -euxo pipefail
+          curl -fL --retry 3 --connect-timeout 20 \
+            'https://apt.25mao.com/debs/364.deb' \
+            -o MiYou_3.9-5.deb
+          sha256sum MiYou_3.9-5.deb | tee deb-sha256.txt
+          stat -c '%n %s bytes' MiYou_3.9-5.deb | tee deb-size.txt
+
+      - name: Extract deb
+        run: |
+          set -euxo pipefail
+          mkdir -p extracted
+          dpkg-deb -x MiYou_3.9-5.deb extracted
+          dpkg-deb -e MiYou_3.9-5.deb control
+          find extracted -maxdepth 8 -type f -printf '%p\t%s bytes\n' | sort > file-list.txt
+          find control -maxdepth 3 -type f -print > control-files.txt
+          cat control/control > control.txt || true
+
+      - name: Locate dylibs and plists
+        run: |
+          set -euxo pipefail
+          find extracted -type f \( -name '*.dylib' -o -name '*.plist' -o -name '*.bundle' \) -print > key-files.txt
+          DYLIB="$(find extracted -type f -name 'MiYou*.dylib' | head -n1 || true)"
+          if [ -z "$DYLIB" ]; then DYLIB="$(find extracted -type f -name '*.dylib' | head -n1 || true)"; fi
+          echo "$DYLIB" | tee dylib-path.txt
+          test -n "$DYLIB"
+          file "$DYLIB" | tee dylib-file.txt
+          sha256sum "$DYLIB" | tee dylib-sha256.txt
+          stat -c '%n %s bytes' "$DYLIB" | tee dylib-size.txt
+
+      - name: Extract strings and symbols
+        run: |
+          set -euxo pipefail
+          DYLIB="$(cat dylib-path.txt)"
+          strings -a -n 4 "$DYLIB" > strings-all.txt
+          strings -a -n 4 "$DYLIB" | grep -Eai 'MiYou|微信|密友|群|消息|语音|视频|转账|定位|步数|公众号|群发|关键词|自动回复|折叠|分组|预览|助手|版本|version|3\.9' > strings-interesting.txt || true
+          strings -a -n 4 "$DYLIB" | grep -E '^[A-Za-z_][A-Za-z0-9_.$]{2,}$' | sort -u > ascii-identifiers.txt || true
+          nm -a "$DYLIB" > nm.txt 2>&1 || true
+          objdump -x "$DYLIB" > objdump-x.txt 2>&1 || true
+          llvm-objdump --macho --private-headers "$DYLIB" > macho-headers.txt 2>&1 || true
+          llvm-objdump --macho --objc-meta-data "$DYLIB" > objc-meta.txt 2>&1 || true
+          llvm-nm "$DYLIB" > llvm-nm.txt 2>&1 || true
+
+      - name: Build focused report
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          wanted = ['语音','视频','群助手','消息预览','折叠','群聊','分组','群功能','转账','定位','步数','公众号','群发','关键词','自动回复','密友','微信助手','MiYou']
+          lines = Path('strings-all.txt').read_text(errors='ignore').splitlines()
+          out=[]
+          for w in wanted:
+              hits=[x for x in lines if w.lower() in x.lower()][:100]
+              out.append(f'## {w} ({len(hits)} shown)')
+              out.extend(hits or ['<no direct string hit>'])
+              out.append('')
+          Path('feature-string-map.md').write_text('\n'.join(out))
+          PY
+
+      - name: Upload static-analysis artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: miyou-3.9-5-static-analysis
+          path: |
+            deb-sha256.txt
+            deb-size.txt
+            control.txt
+            control-files.txt
+            file-list.txt
+            key-files.txt
+            dylib-path.txt
+            dylib-file.txt
+            dylib-sha256.txt
+            dylib-size.txt
+            strings-interesting.txt
+            feature-string-map.md
+            ascii-identifiers.txt
+            nm.txt
+            llvm-nm.txt
+            objdump-x.txt
+            macho-headers.txt
+            objc-meta.txt
+          retention-days: 7
