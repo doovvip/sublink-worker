@@ -1,100 +1,85 @@
-# MiYou Plugin 0.6 Refactor
+# MiYou Plugin 0.6.3 Slim Refactor
 
 Branch: `miyou-refactor-0.6`
 
-## Goal
+## Target
 
-Keep all existing AI behavior, add the 0.3 OCR path back as a fallback, keep the local DB Reader as the primary source, and add a local unreplied-message scan with stronger identity verification.
+Reuse MiYou's existing chat toolbar and native `快捷回复` UI instead of creating a new floating window or a second reply interface.
 
-## Data flow
+Normal flow:
 
-1. Local DB Reader (primary)
-2. OCR 0.3 (fallback / cross-check)
-3. Identity verifier
-4. Local message index
-5. Unreplied scanner
-6. Minimal context bridge to MiYou AI
-7. User-confirmed send
+1. Local WeChat DB Reader identifies the current contact and recent messages.
+2. Message direction is taken from DB fields (`direction`, `isSend` / `fromMe`, sender wxid mapping).
+3. MiYou native `快捷回复` button requests 3 AI drafts.
+4. The selected draft is inserted into WeChat's input box.
+5. The user manually sends it.
 
-## Required plugin features
+No OCR is used in the normal path and AI never triggers the final send action.
 
-- `db_reader`: read/consume locally parsed WeChat messages and contact mapping.
-- `ocr_0.3`: recognize current contact and bubble direction when DB identity is uncertain.
-- `identity_verifier`: never decide self/peer from a single ambiguous flag; combine wxid mapping, message direction and OCR evidence.
-- `unreplied_scan`: per contact, inspect the latest valid message. If the latest direction is incoming, mark it as waiting for reply.
-- `context_builder`: send only the selected contact's necessary recent context to the AI endpoint.
-- `ai_keep`: preserve all existing AI reply generation features.
-- `manual_send`: AI may generate text, but final WeChat sending remains user-confirmed.
+## Keep-only feature profile
 
-## Unreplied result model
+The slim build keeps:
 
-```json
-{
-  "contact": {
-    "wxid": "wxid_xxx",
-    "displayName": "name",
-    "remarkName": "remark"
-  },
-  "waitingReply": true,
-  "consecutiveIncoming": 2,
-  "lastDirection": "incoming",
-  "lastMessageAt": 0,
-  "lastMessagePreview": "...",
-  "identityConfidence": 0.98
-}
-```
+- AI bridge
+- local DB Reader
+- unreplied-message scan
+- GPT preset
+- manual send
+- chat toolbar
+- native `快捷回复`
+- native `快捷回复列表`
+- Message Settings shell
+  - `常驻后台`
+  - `消息防撤回`
+- `秘友设置` — preserve the whole section for now
+- `文件管理` — preserve the whole section for now
 
-## Identity rules
+Everything outside this whitelist is disabled by default in `minimal-config.js`.
 
-1. Prefer a verified self wxid / peer wxid mapping.
-2. Normalize every message to `incoming` or `outgoing` before business logic.
-3. OCR bubble position is supporting evidence only, not the sole source when DB data is available.
-4. If DB and OCR disagree, lower confidence and exclude the contact from automatic unreplied classification until another signal resolves it.
-5. Keep raw direction/source fields locally for debugging, but do not upload the full database.
+## Native quick reply behavior
 
-## Bridge payload
+`miyou-plugin/quick-reply.js` is the small adapter between the native MiYou UI and the AI endpoint.
 
-The server endpoint accepts optional `miyou_bridge` metadata:
+- Keeps at most 30 recent text messages.
+- Uses DB-derived incoming/outgoing direction only.
+- Sends the configured GPT preset plus bounded recent context.
+- Requests 3 reply drafts.
+- Selecting a draft only fills the input box.
+- `autoSend` is permanently false in this profile.
+- The native list can expose a `重新生成` action without changing the chat toolbar layout.
 
-```json
-{
-  "model": "existing-ai-model",
-  "messages": [],
-  "miyou_bridge": {
-    "mode": "hybrid",
-    "source": "local_db",
-    "contact": {
-      "wxid": "wxid_xxx",
-      "displayName": "name",
-      "remarkName": "remark"
-    },
-    "identity": {
-      "selfWxid": "wxid_self",
-      "peerWxid": "wxid_xxx",
-      "confidence": 0.99,
-      "verifiedBy": ["contact_map", "db_direction", "ocr_0.3"]
-    },
-    "unread": {
-      "waitingReply": true,
-      "consecutiveIncoming": 1,
-      "lastDirection": "incoming",
-      "lastMessageAt": 0
-    },
-    "ocr": {
-      "enabled": true,
-      "contactName": "name",
-      "bubbleDirection": "incoming",
-      "confidence": 0.92
-    }
-  }
-}
-```
+## AI endpoint
 
-## What is deliberately not added
+`api/miyou-quick-reply.js`
 
-- full automatic WeChat sending
-- full chat database upload
-- stealth/injection logic intended to conceal the plugin from WeChat
-- duplicate OCR/DB pipelines that both own message history
+- `GET`: health/status information.
+- `POST`: accepts current contact, preset and bounded recent messages.
+- Calls OpenAI Responses API using server-side `OPENAI_API_KEY`.
+- Model is selected by `MIYOU_OPENAI_MODEL`; default is `gpt-5.6-luna` for low-latency reply generation.
+- Returns up to 3 reply drafts: `自然直接`, `轻松推进`, `简短稳重`.
+- Does not log the full chat transcript or preset.
 
-The DB Reader owns history. OCR 0.3 is a fallback and identity cross-check.
+The ChatGPT subscription and OpenAI API billing are separate; this server route needs its own OpenAI API credential in the deployment environment.
+
+## Identity / direction rule
+
+Direction is never inferred from bubble position.
+
+Priority:
+
+1. explicit DB `direction`
+2. DB `isSend` / `fromMe`
+3. `senderWxid` compared with known self / peer wxid
+4. otherwise mark the message direction as unknown
+
+If the latest message direction is unknown, unreplied classification should stay uncertain rather than guessing.
+
+## Deliberately excluded
+
+- automatic WeChat sending
+- OCR in the normal path
+- uploading the full WeChat database
+- duplicate chat-history pipelines
+- stealth/evasion behavior intended to hide injection from WeChat
+
+The local DB Reader owns chat history; cloud receives only the bounded context needed for a reply request.
