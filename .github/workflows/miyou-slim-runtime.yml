@@ -1,0 +1,59 @@
+name: Build MiYou Slim Runtime
+
+on:
+  push:
+    branches:
+      - miyou-refactor-0.6
+    paths:
+      - 'miyou-native/MiYouSlimRuntime.m'
+      - '.github/workflows/miyou-slim-runtime.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build arm64 iOS dylib
+        run: |
+          set -euxo pipefail
+          SDK="$(xcrun --sdk iphoneos --show-sdk-path)"
+          xcrun --sdk iphoneos clang \
+            -arch arm64 \
+            -dynamiclib \
+            -fobjc-arc \
+            -Os \
+            -isysroot "$SDK" \
+            -miphoneos-version-min=15.0 \
+            -framework Foundation \
+            -install_name '@rpath/MiYouSlimRuntime.dylib' \
+            -Wl,-dead_strip \
+            miyou-native/MiYouSlimRuntime.m \
+            -o MiYouSlimRuntime.dylib
+
+          codesign -f -s - MiYouSlimRuntime.dylib
+          file MiYouSlimRuntime.dylib
+          shasum -a 256 MiYouSlimRuntime.dylib | tee MiYouSlimRuntime.sha256
+          stat -f '%N %z bytes' MiYouSlimRuntime.dylib | tee MiYouSlimRuntime.size.txt
+
+      - name: Verify expected symbols
+        run: |
+          set -euxo pipefail
+          strings -a MiYouSlimRuntime.dylib | grep -q 'MiYouSettingViewController'
+          strings -a MiYouSlimRuntime.dylib | grep -q 'settingBakgrunnur:'
+          strings -a MiYouSlimRuntime.dylib | grep -q 'settingRevokeMsg:'
+          strings -a MiYouSlimRuntime.dylib | grep -q 'addMessageToolBarSection'
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: miyou-slim-runtime-arm64
+          path: |
+            MiYouSlimRuntime.dylib
+            MiYouSlimRuntime.sha256
+            MiYouSlimRuntime.size.txt
+          retention-days: 14
