@@ -43,6 +43,9 @@ jobs:
           file "$DYLIB" | tee dylib-file.txt
           sha256sum "$DYLIB" | tee dylib-sha256.txt
           stat -c '%n %s bytes' "$DYLIB" | tee dylib-size.txt
+          cp "$DYLIB" MiYou-3.9-5.dylib
+          PLIST="$(find extracted -type f -name 'MiYou.plist' | head -n1 || true)"
+          if [ -n "$PLIST" ]; then cp "$PLIST" MiYou-3.9-5.plist; fi
 
       - name: Extract strings and symbols
         run: |
@@ -95,4 +98,13 @@ jobs:
             objdump-x.txt
             macho-headers.txt
             objc-meta.txt
+          retention-days: 7
+
+      - name: Upload MiYou binary artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: miyou-3.9-5-binary
+          path: |
+            MiYou-3.9-5.dylib
+            MiYou-3.9-5.plist
           retention-days: 7
