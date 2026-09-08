@@ -1,0 +1,7 @@
+#!name=SpeedTest-Network
+#!desc=Surge 极速测试：仅调整 system DNS + IPv6。关闭模块即可恢复原配置。
+
+[General]
+dns-server = system
+ipv6 = true
+ipv6-vif = auto
