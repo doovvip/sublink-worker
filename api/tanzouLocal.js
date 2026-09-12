@@ -10,6 +10,7 @@ const ALLOWED_HOSTS = new Set([
 ]);
 
 const URI_RE = /^(ss|vmess|vless|trojan|hysteria|hysteria2|hy2|tuic):\/\//i;
+const LOCAL_HOSTS = new Set(['127.0.0.1', '0.0.0.0', 'localhost', '::1']);
 
 export default async function handler(req, res) {
   try {
@@ -44,7 +45,7 @@ export default async function handler(req, res) {
         usable: lines.length,
         skipped,
         duplicates,
-        errors
+        errors: errors.slice(0, 20)
       }, null, 2));
     }
 
@@ -78,7 +79,7 @@ async function flattenParsed(parsed, ua, out, errors, depth = 0) {
     const line = parsed.trim();
     if (!URI_RE.test(line)) return;
     try {
-      const one = await ProxyParser.parse(line, ua);
+      const one = await parseUriCompat(line, ua);
       await flattenParsed(one, ua, out, errors, depth + 1);
     } catch (error) {
       errors.push(error?.message || String(error));
@@ -94,6 +95,106 @@ async function flattenParsed(parsed, ua, out, errors, depth = 0) {
   }
 }
 
+async function parseUriCompat(line, ua) {
+  if (/^vmess:\/\//i.test(line)) {
+    try {
+      return await ProxyParser.parse(line, ua);
+    } catch {
+      return parseShadowrocketLegacyVmess(line);
+    }
+  }
+  return ProxyParser.parse(line, ua);
+}
+
+function parseShadowrocketLegacyVmess(uri) {
+  let body = uri.replace(/^vmess:\/\//i, '');
+  let fragment = '';
+  const hashIndex = body.indexOf('#');
+  if (hashIndex >= 0) {
+    fragment = safeDecode(body.slice(hashIndex + 1));
+    body = body.slice(0, hashIndex);
+  }
+
+  let query = '';
+  const queryIndex = body.indexOf('?');
+  if (queryIndex >= 0) {
+    query = body.slice(queryIndex + 1);
+    body = body.slice(0, queryIndex);
+  }
+
+  const decoded = decodeBase64Url(body).trim();
+  const at = decoded.lastIndexOf('@');
+  if (at <= 0) throw new Error('Legacy VMess payload missing @');
+
+  const credential = decoded.slice(0, at);
+  const serverPart = decoded.slice(at + 1);
+  const firstColon = credential.indexOf(':');
+  if (firstColon < 0) throw new Error('Legacy VMess credential malformed');
+  const uuid = credential.slice(firstColon + 1);
+
+  const { host, port } = splitHostPort(serverPart);
+  if (!host || !port || !uuid) throw new Error('Legacy VMess endpoint malformed');
+
+  const params = new URLSearchParams(query);
+  const tag = safeDecode(params.get('remarks') || params.get('remark') || fragment || 'VMess');
+  const obfs = String(params.get('obfs') || 'none').toLowerCase();
+  const tlsEnabled = truthy(params.get('tls')) || String(params.get('security') || '').toLowerCase() === 'tls';
+  const sni = params.get('peer') || params.get('sni') || params.get('serverName') || '';
+
+  let transport;
+  if (['websocket', 'ws'].includes(obfs)) {
+    transport = {
+      type: 'ws',
+      path: params.get('path') || '/',
+      headers: { host: params.get('obfsParam') || params.get('host') || sni || undefined }
+    };
+  } else if (!['none', ''].includes(obfs)) {
+    throw new Error(`Legacy VMess obfs ${obfs} is not safely convertible`);
+  }
+
+  return {
+    tag,
+    type: 'vmess',
+    server: host,
+    server_port: port,
+    uuid,
+    alter_id: 0,
+    security: 'auto',
+    transport,
+    tls: tlsEnabled ? {
+      enabled: true,
+      server_name: sni || undefined,
+      insecure: truthy(params.get('allowInsecure') || params.get('insecure'))
+    } : undefined
+  };
+}
+
+function splitHostPort(value) {
+  const text = String(value || '').trim();
+  if (text.startsWith('[')) {
+    const end = text.indexOf(']');
+    if (end < 0 || text[end + 1] !== ':') return { host: '', port: 0 };
+    return { host: text.slice(1, end), port: Number(text.slice(end + 2)) };
+  }
+  const colon = text.lastIndexOf(':');
+  if (colon < 1) return { host: '', port: 0 };
+  return { host: text.slice(0, colon), port: Number(text.slice(colon + 1)) };
+}
+
+function decodeBase64Url(value) {
+  let normalized = String(value || '').trim().replace(/-/g, '+').replace(/_/g, '/');
+  while (normalized.length % 4) normalized += '=';
+  return Buffer.from(normalized, 'base64').toString('utf8');
+}
+
+function safeDecode(value) {
+  try { return decodeURIComponent(String(value || '')); } catch { return String(value || ''); }
+}
+
+function truthy(value) {
+  return /^(1|true|yes|on|tls)$/i.test(String(value || '').trim());
+}
+
 function convertAll(objects) {
   const seenConnections = new Set();
   const usedNames = new Map();
@@ -102,6 +203,7 @@ function convertAll(objects) {
   let duplicates = 0;
 
   for (const proxy of objects) {
+    if (shouldSkip(proxy)) { skipped++; continue; }
     const converted = convertProxy(proxy);
     if (!converted) { skipped++; continue; }
 
@@ -117,6 +219,12 @@ function convertAll(objects) {
     lines.push(`${name} = ${suffix}`);
   }
   return { lines, skipped, duplicates };
+}
+
+function shouldSkip(proxy) {
+  const server = String(proxy?.server || '').toLowerCase();
+  const name = String(proxy?.tag || '');
+  return LOCAL_HOSTS.has(server) || /防失联|失联备用/i.test(name);
 }
 
 function cleanName(value) {
@@ -180,7 +288,6 @@ function convertProxy(proxy) {
       return s;
     }
     case 'tuic': {
-      // The repo parser models modern TUIC links as uuid + password, i.e. TUIC v5.
       if (proxy.uuid && proxy.password != null) {
         let s = `x = tuic-v5, ${server}, ${port}, uuid=${proxy.uuid}, password=${escapeValue(proxy.password)}`;
         s += tlsOptions(proxy.tls);
@@ -194,7 +301,6 @@ function convertProxy(proxy) {
       return null;
     }
     default:
-      // VLESS/Reality and any protocol not native to Surge are intentionally skipped.
       return null;
   }
 }
