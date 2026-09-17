@@ -1,0 +1,11 @@
+.env*
+.git/
+node_modules/
+.vercel/
+test/
+docs/
+*.log
+*.pem
+*.key
+*.p12
+private-data/
