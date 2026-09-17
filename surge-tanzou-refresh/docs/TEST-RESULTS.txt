@@ -1,0 +1,316 @@
+TanZou candidate local verification
+Runtime: v22.16.0
+Date: 2026-09-17
+All tests use synthetic data; no production deployment or live-node acceptance.
+
+
+> surge-tanzou-refresh@1.1.0-rc.1 verify
+> npm run check && npm test
+
+
+> surge-tanzou-refresh@1.1.0-rc.1 check
+> node scripts/check.mjs
+
+Syntax/JSON/package-boundary checks passed (9 JavaScript files).
+
+> surge-tanzou-refresh@1.1.0-rc.1 test
+> node --test test/*.test.js
+
+TAP version 13
+# Subtest: Node/Vercel adapter exposes health without leaking origin headers
+ok 1 - Node/Vercel adapter exposes health without leaking origin headers
+  ---
+  duration_ms: 23.947433
+  type: 'test'
+  ...
+# Subtest: Node/Vercel adapter denies anonymous subscription requests
+ok 2 - Node/Vercel adapter denies anonymous subscription requests
+  ---
+  duration_ms: 0.730855
+  type: 'test'
+  ...
+# Subtest: preserves existing AES-GCM source/token contract with WebCrypto sealed fixture
+ok 3 - preserves existing AES-GCM source/token contract with WebCrypto sealed fixture
+  ---
+  duration_ms: 1.441049
+  type: 'test'
+  ...
+# Subtest: authenticated request converts a dynamically supplied subscription
+ok 4 - authenticated request converts a dynamically supplied subscription
+  ---
+  duration_ms: 27.148866
+  type: 'test'
+  ...
+# Subtest: missing/short/wrong/duplicated token never triggers an upstream request
+ok 5 - missing/short/wrong/duplicated token never triggers an upstream request
+  ---
+  duration_ms: 1.415962
+  type: 'test'
+  ...
+# Subtest: missing env, malformed sealed source and changed ciphertext fail closed
+ok 6 - missing env, malformed sealed source and changed ciphertext fail closed
+  ---
+  duration_ms: 1.121335
+  type: 'test'
+  ...
+# Subtest: no arbitrary origin, HTTP, credentials, fragment, redirect or unknown source parameter
+ok 7 - no arbitrary origin, HTTP, credentials, fragment, redirect or unknown source parameter
+  ---
+  duration_ms: 11.210494
+  type: 'test'
+  ...
+# Subtest: auth before method check, authenticated POST is 405
+ok 8 - auth before method check, authenticated POST is 405
+  ---
+  duration_ms: 0.433012
+  type: 'test'
+  ...
+# Subtest: unrecognized paths do not expose the subscription
+ok 9 - unrecognized paths do not expose the subscription
+  ---
+  duration_ms: 0.362318
+  type: 'test'
+  ...
+# Subtest: health is not advertised as a node connectivity check and never fetches upstream
+ok 10 - health is not advertised as a node connectivity check and never fetches upstream
+  ---
+  duration_ms: 0.392543
+  type: 'test'
+  ...
+# Subtest: upstream non-200, redirect, empty and malformed bodies fail without a 200 empty list
+ok 11 - upstream non-200, redirect, empty and malformed bodies fail without a 200 empty list
+  ---
+  duration_ms: 3.438886
+  type: 'test'
+  ...
+# Subtest: oversized declared and streamed bodies both fail
+ok 12 - oversized declared and streamed bodies both fail
+  ---
+  duration_ms: 1.450874
+  type: 'test'
+  ...
+# Subtest: upstream timeout aborts the request
+ok 13 - upstream timeout aborts the request
+  ---
+  duration_ms: 15.877733
+  type: 'test'
+  ...
+# Subtest: timeout covers body streaming, not just response headers
+ok 14 - timeout covers body streaming, not just response headers
+  ---
+  duration_ms: 16.037014
+  type: 'test'
+  ...
+# Subtest: environment is read at request time and compatibility can be turned off without rebuilding
+ok 15 - environment is read at request time and compatibility can be turned off without rebuilding
+  ---
+  duration_ms: 1.6834
+  type: 'test'
+  ...
+# Subtest: failure responses do not disclose UUID, source URL, sealed env or token
+ok 16 - failure responses do not disclose UUID, source URL, sealed env or token
+  ---
+  duration_ms: 0.407555
+  type: 'test'
+  ...
+# Subtest: HK: compatible endpoint only; preserve name, UUID, dynamic port
+ok 17 - HK: compatible endpoint only; preserve name, UUID, dynamic port
+  ---
+  duration_ms: 1.947161
+  type: 'test'
+  ...
+# Subtest: JP: compatible endpoint only; preserve name, UUID, dynamic port
+ok 18 - JP: compatible endpoint only; preserve name, UUID, dynamic port
+  ---
+  duration_ms: 0.306405
+  type: 'test'
+  ...
+# Subtest: US: compatible endpoint only; preserve name, UUID, dynamic port
+ok 19 - US: compatible endpoint only; preserve name, UUID, dynamic port
+  ---
+  duration_ms: 0.142111
+  type: 'test'
+  ...
+# Subtest: TW: compatible endpoint only; preserve name, UUID, dynamic port
+ok 20 - TW: compatible endpoint only; preserve name, UUID, dynamic port
+  ---
+  duration_ms: 0.233657
+  type: 'test'
+  ...
+# Subtest: KR: compatible endpoint only; preserve name, UUID, dynamic port
+ok 21 - KR: compatible endpoint only; preserve name, UUID, dynamic port
+  ---
+  duration_ms: 0.305123
+  type: 'test'
+  ...
+# Subtest: SG: compatible endpoint only; preserve name, UUID, dynamic port
+ok 22 - SG: compatible endpoint only; preserve name, UUID, dynamic port
+  ---
+  duration_ms: 0.453002
+  type: 'test'
+  ...
+# Subtest: compatibility is opt-in, official default is not silently rewritten
+ok 23 - compatibility is opt-in, official default is not silently rewritten
+  ---
+  duration_ms: 0.320966
+  type: 'test'
+  ...
+# Subtest: board sharing a regional port remains a distinct unmodified node
+ok 24 - board sharing a regional port remains a distinct unmodified node
+  ---
+  duration_ms: 0.281127
+  type: 'test'
+  ...
+# Subtest: access/traffic entry is preserved without compatibility changes
+ok 25 - access/traffic entry is preserved without compatibility changes
+  ---
+  duration_ms: 0.618308
+  type: 'test'
+  ...
+# Subtest: traffic information cannot gain compatibility rewriting by a regional host
+ok 26 - traffic information cannot gain compatibility rewriting by a regional host
+  ---
+  duration_ms: 0.389388
+  type: 'test'
+  ...
+# Subtest: loopback and unspecified placeholders are skipped before validating credentials
+ok 27 - loopback and unspecified placeholders are skipped before validating credentials
+  ---
+  duration_ms: 0.233917
+  type: 'test'
+  ...
+# Subtest: all-placeholder or only informational responses fail instead of returning an empty list
+ok 28 - all-placeholder or only informational responses fail instead of returning an empty list
+  ---
+  duration_ms: 0.346314
+  type: 'test'
+  ...
+# Subtest: unknown domain and hostname lookalikes are not rewritten
+ok 29 - unknown domain and hostname lookalikes are not rewritten
+  ---
+  duration_ms: 0.167939
+  type: 'test'
+  ...
+# Subtest: TLS endpoints are never redirected, SNI and verification setting are preserved
+ok 30 - TLS endpoints are never redirected, SNI and verification setting are preserved
+  ---
+  duration_ms: 0.153568
+  type: 'test'
+  ...
+# Subtest: explicit insecure TLS setting is preserved, not enabled by a truthy string bug
+ok 31 - explicit insecure TLS setting is preserved, not enabled by a truthy string bug
+  ---
+  duration_ms: 0.129632
+  type: 'test'
+  ...
+# Subtest: WebSocket transport/host/path remain unchanged, not redirected
+ok 32 - WebSocket transport/host/path remain unchanged, not redirected
+  ---
+  duration_ms: 0.156963
+  type: 'test'
+  ...
+# Subtest: legacy nonzero alterId is not forcibly converted to AEAD
+ok 33 - legacy nonzero alterId is not forcibly converted to AEAD
+  ---
+  duration_ms: 0.115461
+  type: 'test'
+  ...
+# Subtest: AES/ChaCha/auto are accepted, ChaCha spelling is converted for Surge
+ok 34 - AES/ChaCha/auto are accepted, ChaCha spelling is converted for Surge
+  ---
+  duration_ms: 0.226727
+  type: 'test'
+  ...
+# Subtest: unsupported transport and cipher fail closed rather than dropping parameters
+ok 35 - unsupported transport and cipher fail closed rather than dropping parameters
+  ---
+  duration_ms: 0.256811
+  type: 'test'
+  ...
+# Subtest: duplicate original endpoints are deduplicated, distinct same-name nodes get stable suffixes
+ok 36 - duplicate original endpoints are deduplicated, distinct same-name nodes get stable suffixes
+  ---
+  duration_ms: 0.146778
+  type: 'test'
+  ...
+# Subtest: dynamic node counts are not fixed to 83 or a pair of sample ports
+ok 37 - dynamic node counts are not fixed to 83 or a pair of sample ports
+  ---
+  duration_ms: 2.396418
+  type: 'test'
+  ...
+# Subtest: raw and outer-base64 subscriptions have identical results
+ok 38 - raw and outer-base64 subscriptions have identical results
+  ---
+  duration_ms: 0.158636
+  type: 'test'
+  ...
+# Subtest: base64url and missing padding are accepted
+ok 39 - base64url and missing padding are accepted
+  ---
+  duration_ms: 0.112217
+  type: 'test'
+  ...
+# Subtest: URI fragment name is decoded like the original parser
+ok 40 - URI fragment name is decoded like the original parser
+  ---
+  duration_ms: 0.114971
+  type: 'test'
+  ...
+# Subtest: name control characters cannot inject a Surge rule or section
+ok 41 - name control characters cannot inject a Surge rule or section
+  ---
+  duration_ms: 0.142241
+  type: 'test'
+  ...
+# Subtest: bad ports, UUIDs, booleans, and unsafe host/WS option data are rejected
+ok 42 - bad ports, UUIDs, booleans, and unsafe host/WS option data are rejected
+  ---
+  duration_ms: 0.421916
+  type: 'test'
+  ...
+# Subtest: empty, HTML, corrupt base64, malformed JSON and mixed unsupported records are rejected
+ok 43 - empty, HTML, corrupt base64, malformed JSON and mixed unsupported records are rejected
+  ---
+  duration_ms: 0.229581
+  type: 'test'
+  ...
+# Subtest: oversized feed is rejected
+ok 44 - oversized feed is rejected
+  ---
+  duration_ms: 0.955759
+  type: 'test'
+  ...
+# Subtest: compatibility can be disabled and does not mutate the parsed input
+ok 45 - compatibility can be disabled and does not mutate the parsed input
+  ---
+  duration_ms: 0.175561
+  type: 'test'
+  ...
+# Subtest: invalid mode and fixed-IP compatibility target are rejected
+ok 46 - invalid mode and fixed-IP compatibility target are rejected
+  ---
+  duration_ms: 0.162051
+  type: 'test'
+  ...
+# Subtest: multiple ALPN protocols are quoted in Surge output
+ok 47 - multiple ALPN protocols are quoted in Surge output
+  ---
+  duration_ms: 0.146547
+  type: 'test'
+  ...
+# Subtest: full synthetic 83-record feed keeps all 80 real nodes, including all board nodes
+ok 48 - full synthetic 83-record feed keeps all 80 real nodes, including all board nodes
+  ---
+  duration_ms: 1.207603
+  type: 'test'
+  ...
+1..48
+# tests 48
+# suites 0
+# pass 48
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 142.949158
