@@ -3,3 +3,12 @@ node_modules/
 .env.*
 !.env.example
 .vercel/
+*.pem
+*.key
+*.p12
+*.pfx
+*.log
+coverage/
+secrets*
+credentials*
+private-data/
