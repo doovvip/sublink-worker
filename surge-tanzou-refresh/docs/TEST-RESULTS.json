@@ -1,0 +1,17 @@
+{
+  "version": "1.1.0-rc.1",
+  "verification_date": "2026-09-17",
+  "runtime": "v22.16.0",
+  "unit_and_adapter_tests": 48,
+  "passed": 48,
+  "failed": 0,
+  "syntax_and_json_checks": "passed",
+  "known_sensitive_content_scan": "no matches",
+  "live_subscription_fetched_this_build": false,
+  "real_vmess_test_this_build": false,
+  "github_pushed": false,
+  "vercel_deployed": false,
+  "change_scope": "surge-tanzou-refresh/ only",
+  "compatibility_mode_default": "official; verified-regions must be explicitly enabled",
+  "important": "Local mock/contract tests are not production or device connectivity acceptance."
+}
