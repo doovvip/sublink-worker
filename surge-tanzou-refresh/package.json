@@ -1,0 +1,14 @@
+{
+  "name": "surge-tanzou-refresh",
+  "version": "1.1.0-rc.1",
+  "private": true,
+  "type": "module",
+  "description": "Isolated TanZou subscription compatibility candidate; not automatically deployed",
+  "engines": { "node": ">=22 <25" },
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "check": "node scripts/check.mjs",
+    "verify": "npm run check && npm test",
+    "start": "node scripts/dev.mjs"
+  }
+}
