@@ -52,10 +52,11 @@ def test_combo(n,host,cipher,url,timeout):
 def load_cache(path):
     try: return json.loads(path.read_text())
     except (FileNotFoundError,json.JSONDecodeError): return {"version":1,"nodes":{}}
-def valid_lkg(prior):
+def valid_lkg(prior,n):
     h=prior.get("best_host"); c=prior.get("cipher")
-    if h and c in CIPHERS: return {"host":h,"cipher":c,"latency_ms":prior.get("latency_ms")}
-    return None
+    if prior.get("port")!=n["port"] or prior.get("original_host")!=n["original_host"]: return None
+    if h not in (n["original_host"],COMPAT_HOST) or c not in CIPHERS or not prior.get("last_success"): return None
+    return {"host":h,"cipher":c,"latency_ms":prior.get("latency_ms")}
 def main():
     ap=argparse.ArgumentParser(); ap.add_argument("--source-file"); ap.add_argument("--cache",required=True); ap.add_argument("--url",default="https://cp.cloudflare.com/generate_204"); ap.add_argument("--timeout",type=int,default=8); a=ap.parse_args()
     if a.source_file: text=pathlib.Path(a.source_file).read_text()
@@ -75,8 +76,8 @@ def main():
         if best:
             failures=0; successes+=1; last_success=result["generated_at"]; latency=best["latency_ms"]
         else:
-            best=valid_lkg(prior); failures=int(prior.get("consecutive_failures",0))+1; last_success=prior.get("last_success"); latency=prior.get("latency_ms")
-        result["nodes"][nid]={"name":n["name"],"original_host":n["original_host"],"best_host":best["host"] if best else None,"port":n["port"],"cipher":best["cipher"] if best else None,"last_success":last_success,"latency_ms":latency,"consecutive_failures":failures}
+            best=valid_lkg(prior,n); failures=int(prior.get("consecutive_failures",0))+1; last_success=prior.get("last_success") if best else None; latency=prior.get("latency_ms") if best else None
+        result["nodes"][nid]={"node_id":nid,"name":n["name"],"original_host":n["original_host"],"best_host":best["host"] if best else None,"port":n["port"],"cipher":best["cipher"] if best else None,"last_success":last_success,"latency_ms":latency,"consecutive_failures":failures}
     path.parent.mkdir(parents=True,exist_ok=True); tmp=path.with_suffix(path.suffix+".tmp"); tmp.write_text(json.dumps(result,ensure_ascii=False,indent=2)+"\n"); os.replace(tmp,path)
     print(json.dumps({"real_nodes":len(nodes),"successful_nodes":successes,"failed_nodes":[v["name"] for v in result["nodes"].values() if v["consecutive_failures"]],"cache":str(path)},ensure_ascii=False))
 if __name__=="__main__": main()
