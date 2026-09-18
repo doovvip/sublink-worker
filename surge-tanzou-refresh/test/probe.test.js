@@ -6,3 +6,6 @@ test('probe does not embed subscription secrets or UUIDs',()=>{ assert.doesNotMa
 test('probe requires real VMess via sing-box and HTTP 204',()=>{ assert.match(src,/sing-box/); assert.match(src,/generate_204/); assert.match(src,/stdout\.strip\(\)=="204"/); });
 test('probe tests only decoded feed endpoints and fixed compatibility host',()=>{ assert.match(src,/for n in nodes/); assert.match(src,/xd-sh\.mimonode-client\.com/); });
 test('probe persists LKG fields without UUID',()=>{ for(const k of ['original_host','best_host','port','cipher','last_success','latency_ms','consecutive_failures']) assert.match(src,new RegExp(k)); assert.doesNotMatch(src,/result\["nodes"\].*uuid/); });
+test('LKG restores from persisted best_host and cipher',()=>{ assert.match(src,/prior\.get\("best_host"\)/); assert.match(src,/prior\.get\("cipher"\)/); assert.doesNotMatch(src,/prior\.get\("best"\)/); });
+test('LKG is probed first and probing stops on first success',()=>{ assert.match(src,/ordered=\[lkg\]\+/); assert.match(src,/if trial\["ok"\]: best=trial; break/); assert.doesNotMatch(src,/trials=\[test_combo/); });
+test('auto can never be probed or saved as best cipher',()=>{ assert.match(src,/CIPHERS=\("aes-128-gcm","chacha20-ietf-poly1305"\)/); assert.match(src,/c in CIPHERS/); assert.doesNotMatch(src,/original_cipher|sing_cipher\(c\).*auto|return "auto"/); });
