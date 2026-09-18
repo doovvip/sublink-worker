@@ -38,6 +38,26 @@ test('board sharing a regional port remains a distinct unmodified node', () => {
   assert.equal(result.nodes[1].host, board.add);
   assert.equal(result.nodes[1].cipher, 'auto');
 });
+test('board sharing a regional port remains distinct and is rewritten without forcing a cipher', () => {
+  const board = { ...base, ps: 'VIP3 巴林01 倍率x2', add: BOARD_HOST, port: '22007' };
+  const kr = { ...base, ps: 'VIP2 韩国01 倍率x1', add: 'tanz-kr.kunlun01dns.com', port: '22007' };
+  const result = convertSubscription(feed([kr, board]), cfg);
+  assert.equal(result.nodes.length, 2);
+  assert.equal(result.rewritten, 2);
+  assert.equal(result.nodes[0].cipher, 'chacha20-ietf-poly1305');
+  assert.equal(result.nodes[1].host, 'xd-sh.mimonode-client.com');
+  assert.equal(result.nodes[1].cipher, 'auto');
+  assert.equal(result.nodes[1].port, 22007);
+  assert.equal(result.nodes[1].uuid, UUID);
+});
+test('board preserves an explicit provider cipher during endpoint compatibility rewrite', () => {
+  const board = { ...base, ps: 'VIP3 board AES', add: BOARD_HOST, port: '22140', scy: 'aes-128-gcm' };
+  const result = convertSubscription(feed([board]), cfg);
+  assert.equal(result.rewritten, 1);
+  assert.equal(result.nodes[0].host, 'xd-sh.mimonode-client.com');
+  assert.equal(result.nodes[0].cipher, 'aes-128-gcm');
+  assert.match(result.text, /encrypt-method=aes-128-gcm/);
+});
 test('access/traffic entry is preserved without compatibility changes', () => {
   const info = { ...base, add: 'access.tanzcloud.com', ps: '剩余流量：test', port: '10086' };
   const result = convertSubscription(feed([base, info]), cfg);
