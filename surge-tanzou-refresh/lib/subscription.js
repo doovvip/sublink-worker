@@ -7,6 +7,7 @@ export const REGION_HOSTS = Object.freeze({
   'tanz-us.kunlun01dns.com': 'US', 'tanz-tw.kunlun01dns.com': 'TW',
   'tanz-kr.kunlun01dns.com': 'KR', 'tanz-sg.kunlun01dns.com': 'SG'
 });
+export const BOARD_HOST = 'tanz-board.kunlun01dns.com';
 const UUID = /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i;
 const BLOCKED = new Set(['localhost', '::', '::1', '0.0.0.0']);
 const INFO = /(?:剩余|流量|到期|过期|有效期|官网|公告|套餐|traffic|expire)/i;
@@ -133,7 +134,8 @@ export function normalizeNodes(nodes, { mode = 'official', compatHost = 'xd-sh.m
     if (endpointKeys.has(key)) continue;
     endpointKeys.add(key);
     const copy = { ...node, alpn: [...node.alpn] };
-    const eligible = Object.hasOwn(REGION_HOSTS, node.host) && !node.informational &&
+    const providerCompatHost = Object.hasOwn(REGION_HOSTS, node.host) || node.host === BOARD_HOST;
+    const eligible = providerCompatHost && !node.informational &&
       node.network === 'tcp' && ['none', 'tcp'].includes(node.type) && !node.tls && node.aid === 0;
     if (mode === 'verified-regions' && eligible) {
       copy.host = compatHost;
