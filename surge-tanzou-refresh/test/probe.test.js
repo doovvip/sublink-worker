@@ -11,7 +11,7 @@ test('LKG is probed first and probing stops on first success',()=>{ assert.match
 test('auto can never be probed or saved as best cipher',()=>{ assert.match(src,/CIPHERS=\("aes-128-gcm","chacha20-ietf-poly1305"\)/); assert.match(src,/c in CIPHERS/); assert.doesNotMatch(src,/original_cipher|sing_cipher\(c\).*auto|return "auto"/); });
 
 test('daily automation uses existing real VMess probe and only commits safe cache', () => {
-  const workflow = fs.readFileSync(new URL('../../.github/workflows/rc2-2-probe-cache.yml', import.meta.url), 'utf8');
+  const workflow = readFileSync(new URL('../../.github/workflows/rc2-2-probe-cache.yml', import.meta.url), 'utf8');
   assert.match(workflow, /schedule:/);
   assert.match(workflow, /vmess_probe\.py --cache probe-cache\.preview\.json/);
   assert.match(workflow, /secrets\.TANZOU_SOURCE_URL/);
@@ -19,8 +19,8 @@ test('daily automation uses existing real VMess probe and only commits safe cach
   assert.doesNotMatch(workflow, /git add -A|git add \./);
 });
 test('single probe failure preserves only a validated LKG', () => {
-  assert.match(script, /def valid_lkg\(prior,n\)/);
-  assert.match(script, /prior\.get\("port"\)!=n\["port"\]/);
-  assert.match(script, /prior\.get\("original_host"\)!=n\["original_host"\]/);
-  assert.match(script, /h not in \(n\["original_host"\],COMPAT_HOST\)/);
+  assert.match(src, /def valid_lkg\(prior,n\)/);
+  assert.match(src, /prior\.get\("port"\)!=n\["port"\]/);
+  assert.match(src, /prior\.get\("original_host"\)!=n\["original_host"\]/);
+  assert.match(src, /h not in \(n\["original_host"\],COMPAT_HOST\)/);
 });
