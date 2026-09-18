@@ -1,5 +1,6 @@
 import { sourceForToken } from './auth.js';
 import { convertSubscription, MAX_BYTES } from './subscription.js';
+import previewProbeCache from '../probe-cache.preview.json' with { type: 'json' };
 
 const HEADERS = Object.freeze({
   'Content-Type': 'text/plain; charset=utf-8',
@@ -59,18 +60,11 @@ export function createService({ env = () => process.env, fetchImpl = globalThis.
         headers: { 'User-Agent': 'Shadowrocket', 'Accept': 'text/plain,*/*', 'Cache-Control': 'no-cache' }
       });
       const text = await readBounded(response);
-      let probeCache = null;
-      // Preview-only opt-in reader. Cache failure must never break or alter the RC2.1 fallback.
-      if (config.TANZOU_PROBE_CACHE_URL) {
-        try {
-          const cacheUrl = new URL(config.TANZOU_PROBE_CACHE_URL);
-          if (cacheUrl.protocol !== 'https:') throw new Error('Invalid cache URL');
-          const cacheResponse = await fetchImpl(cacheUrl, { method: 'GET', redirect: 'error', cache: 'no-store', signal: controller.signal });
-          const rawCache = await readBounded(cacheResponse);
-          const parsed = JSON.parse(rawCache);
-          if (parsed && parsed.version === 1 && parsed.nodes && typeof parsed.nodes === 'object' && !Array.isArray(parsed.nodes)) probeCache = parsed;
-        } catch { probeCache = null; }
-      }
+      // RC2.2 branch-local Preview snapshot: no external HTTP dependency.
+      // Production/main do not contain this branch-only reader.
+      const probeCache = previewProbeCache?.version === 1 &&
+        previewProbeCache.nodes && typeof previewProbeCache.nodes === 'object' && !Array.isArray(previewProbeCache.nodes)
+        ? previewProbeCache : null;
       const converted = convertSubscription(text, {
         mode: config.TANZOU_COMPAT_MODE || 'official',
         compatHost: config.TANZOU_COMPAT_HOST || 'xd-sh.mimonode-client.com',
