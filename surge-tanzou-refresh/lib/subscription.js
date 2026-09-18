@@ -134,12 +134,15 @@ export function normalizeNodes(nodes, { mode = 'official', compatHost = 'xd-sh.m
     if (endpointKeys.has(key)) continue;
     endpointKeys.add(key);
     const copy = { ...node, alpn: [...node.alpn] };
-    const providerCompatHost = Object.hasOwn(REGION_HOSTS, node.host) || node.host === BOARD_HOST;
-    const eligible = providerCompatHost && !node.informational &&
+    const regionalCompatHost = Object.hasOwn(REGION_HOSTS, node.host);
+    const boardCompatHost = node.host === BOARD_HOST;
+    const eligible = (regionalCompatHost || boardCompatHost) && !node.informational &&
       node.network === 'tcp' && ['none', 'tcp'].includes(node.type) && !node.tls && node.aid === 0;
     if (mode === 'verified-regions' && eligible) {
       copy.host = compatHost;
-      copy.cipher = 'chacha20-ietf-poly1305';
+      // Region endpoints were live-verified with ChaCha. Board endpoints were not; preserve
+      // the provider's VMess cipher (usually auto) instead of forcing an unverified cipher.
+      if (regionalCompatHost) copy.cipher = 'chacha20-ietf-poly1305';
       rewritten++;
     }
     let count = 2;
