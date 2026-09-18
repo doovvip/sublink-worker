@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { convertSubscription, parseSubscription, REGION_HOSTS, BOARD_HOST, MAX_BYTES } from '../lib/subscription.js';
+import { convertSubscription, parseSubscription, REGION_HOSTS, BOARD_HOST, MAX_BYTES, probeNodeId } from '../lib/subscription.js';
 
 // Deliberately fictional UUID; never a working account credential.
 const UUID = '00000000-0000-4000-8000-000000000001';
@@ -175,4 +175,32 @@ test('full synthetic 83-record feed keeps all 80 real nodes, including all board
   assert.equal(result.nodes.filter(n => !n.informational).length, 80);
   assert.equal(result.nodes.filter(n => n.host === BOARD_HOST).length, 0);
   assert.equal(result.nodes.length, 81);
+});
+
+test('RC2.2 successful probe cache overrides only host/cipher by original identity', () => {
+  const parsed = parseSubscription(feed([base]))[0];
+  const id = probeNodeId(parsed);
+  const probeCache = { version: 1, nodes: { [id]: { name: parsed.name, original_host: parsed.host, best_host: parsed.host, port: parsed.port, cipher: 'aes-128-gcm', last_success: '2026-09-18T00:00:00Z', consecutive_failures: 0 } } };
+  const result = convertSubscription(feed([base]), { ...cfg, probeCache });
+  assert.equal(result.nodes.length, 1);
+  assert.equal(result.nodes[0].host, base.add);
+  assert.equal(result.nodes[0].cipher, 'aes-128-gcm');
+  assert.equal(result.nodes[0].port, Number(base.port));
+  assert.equal(result.nodes[0].uuid, UUID);
+});
+test('RC2.2 invalid, failed or absent cache preserves exact RC2.1 output and never deletes nodes', () => {
+  const baseline = convertSubscription(feed([base]), cfg);
+  const id = probeNodeId(parseSubscription(feed([base]))[0]);
+  const bad = [
+    null,
+    { version: 1, nodes: { [id]: { best_host: 'evil.example', port: Number(base.port), cipher: 'aes-128-gcm', last_success: 'x', consecutive_failures: 0 } } },
+    { version: 1, nodes: { [id]: { best_host: base.add, port: 9999, cipher: 'aes-128-gcm', last_success: 'x', consecutive_failures: 0 } } },
+    { version: 1, nodes: { [id]: { best_host: base.add, port: Number(base.port), cipher: 'auto', last_success: 'x', consecutive_failures: 0 } } },
+    { version: 1, nodes: { [id]: { best_host: base.add, port: Number(base.port), cipher: 'aes-128-gcm', last_success: 'x', consecutive_failures: 1 } } }
+  ];
+  for (const probeCache of bad) {
+    const result = convertSubscription(feed([base]), { ...cfg, probeCache });
+    assert.equal(result.text, baseline.text);
+    assert.equal(result.nodes.length, baseline.nodes.length);
+  }
 });
