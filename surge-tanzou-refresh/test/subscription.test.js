@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { convertSubscription, parseSubscription, REGION_HOSTS, MAX_BYTES } from '../lib/subscription.js';
+import { convertSubscription, parseSubscription, REGION_HOSTS, BOARD_HOST, MAX_BYTES } from '../lib/subscription.js';
 
 // Deliberately fictional UUID; never a working account credential.
 const UUID = '00000000-0000-4000-8000-000000000001';
@@ -28,15 +28,6 @@ test('compatibility is opt-in, official default is not silently rewritten', () =
   assert.equal(result.rewritten, 0);
   assert.match(result.text, /tanz-jp\.kunlun01dns\.com/);
   assert.doesNotMatch(result.text, /encrypt-method=/);
-});
-test('board sharing a regional port remains a distinct unmodified node', () => {
-  const board = { ...base, ps: 'VIP3 巴林01 倍率x2', add: 'tanz-board.kunlun01dns.com', port: '22007' };
-  const kr = { ...base, ps: 'VIP2 韩国01 倍率x1', add: 'tanz-kr.kunlun01dns.com', port: '22007' };
-  const result = convertSubscription(feed([kr, board]), cfg);
-  assert.equal(result.nodes.length, 2);
-  assert.equal(result.rewritten, 1);
-  assert.equal(result.nodes[1].host, board.add);
-  assert.equal(result.nodes[1].cipher, 'auto');
 });
 test('board sharing a regional port remains distinct and is rewritten without forcing a cipher', () => {
   const board = { ...base, ps: 'VIP3 巴林01 倍率x2', add: BOARD_HOST, port: '22007' };
@@ -175,13 +166,13 @@ test('multiple ALPN protocols are quoted in Surge output', () => {
 test('full synthetic 83-record feed keeps all 80 real nodes, including all board nodes', () => {
   const regionRecords = Object.entries(REGION_HOSTS).flatMap(([host, region]) =>
     Array.from({ length: region === 'HK' ? 10 : 4 }, (_, i) => ({ ...base, ps: `Fixture ${region} ${i}`, add: host, port: 24000 + i })));
-  const boardRecords = Array.from({ length: 50 }, (_, i) => ({ ...base, ps: `Fixture board ${i}`, add: 'tanz-board.kunlun01dns.com', port: 26000 + i }));
+  const boardRecords = Array.from({ length: 50 }, (_, i) => ({ ...base, ps: `Fixture board ${i}`, add: BOARD_HOST, port: 26000 + i }));
   const info = { ...base, add: 'access.tanzcloud.com', ps: '剩余流量：fixture', port: 10086 };
   const records = [...regionRecords, ...boardRecords, info, info, { add: '127.0.0.1' }];
   assert.equal(records.length, 83);
   const result = convertSubscription(feed(records), cfg);
-  assert.equal(result.rewritten, 30);
+  assert.equal(result.rewritten, 80);
   assert.equal(result.nodes.filter(n => !n.informational).length, 80);
-  assert.equal(result.nodes.filter(n => n.host === 'tanz-board.kunlun01dns.com').length, 50);
+  assert.equal(result.nodes.filter(n => n.host === BOARD_HOST).length, 0);
   assert.equal(result.nodes.length, 81);
 });
