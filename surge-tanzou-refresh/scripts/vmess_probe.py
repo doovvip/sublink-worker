@@ -4,7 +4,7 @@ import argparse, base64, hashlib, json, os, pathlib, socket, subprocess, tempfil
 from datetime import datetime, timezone
 COMPAT_HOST="xd-sh.mimonode-client.com"
 CIPHERS=("aes-128-gcm","chacha20-ietf-poly1305")
-INFO_WORDS=("剩余","流量","到期","过期","有效期","官网","公告","套餐")
+INFO_WORDS=("剩余","流量","到期","过期","有效期","官网","公告","套餐","防失联","发布页","发布地址")
 def b64(s):
     s=s.strip().replace("-","+").replace("_","/")
     return base64.b64decode(s+"="*((4-len(s)%4)%4))
