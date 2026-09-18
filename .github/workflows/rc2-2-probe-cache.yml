@@ -1,0 +1,57 @@
+name: RC2.2 Probe Cache
+
+on:
+  schedule:
+    - cron: '17 16 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    if: github.ref == 'refs/heads/rc2-2-auto-probe' || github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: surge-tanzou-refresh
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: rc2-2-auto-probe
+      - name: Install sing-box
+        run: |
+          curl -fsSL https://sing-box.app/install.sh | sudo sh
+          sing-box version
+      - name: Fetch source and probe
+        env:
+          TANZOU_SOURCE_URL: ${{ secrets.TANZOU_SOURCE_URL }}
+        run: |
+          test -n "$TANZOU_SOURCE_URL"
+          python3 scripts/vmess_probe.py --cache probe-cache.preview.json
+      - name: Validate safe cache
+        run: |
+          python3 - <<'PY'
+          import json,re
+          p='probe-cache.preview.json'
+          raw=open(p,encoding='utf-8').read()
+          d=json.loads(raw)
+          assert d.get('generated_at')
+          assert d.get('version') == 1
+          assert set(d) == {'version','generated_at','ttl_seconds','nodes'}
+          allowed={'node_id','name','original_host','best_host','port','cipher','last_success','latency_ms','consecutive_failures'}
+          for nid,n in d['nodes'].items():
+              assert set(n) <= allowed
+              assert n.get('node_id') == nid
+              assert n.get('best_host') in (n.get('original_host'),'xd-sh.mimonode-client.com',None)
+              assert n.get('cipher') in ('aes-128-gcm','chacha20-ietf-poly1305',None)
+          assert not re.search(r'uuid|token|source_url|source url|vmess://',raw,re.I)
+          PY
+      - name: Commit cache only when changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add probe-cache.preview.json
+          git diff --cached --quiet && exit 0
+          git commit -m "data: refresh RC2.2 probe cache"
+          git push origin HEAD:rc2-2-auto-probe
