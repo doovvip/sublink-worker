@@ -59,9 +59,22 @@ export function createService({ env = () => process.env, fetchImpl = globalThis.
         headers: { 'User-Agent': 'Shadowrocket', 'Accept': 'text/plain,*/*', 'Cache-Control': 'no-cache' }
       });
       const text = await readBounded(response);
+      let probeCache = null;
+      // Preview-only opt-in reader. Cache failure must never break or alter the RC2.1 fallback.
+      if (config.TANZOU_PROBE_CACHE_URL) {
+        try {
+          const cacheUrl = new URL(config.TANZOU_PROBE_CACHE_URL);
+          if (cacheUrl.protocol !== 'https:') throw new Error('Invalid cache URL');
+          const cacheResponse = await fetchImpl(cacheUrl, { method: 'GET', redirect: 'error', cache: 'no-store', signal: controller.signal });
+          const rawCache = await readBounded(cacheResponse);
+          const parsed = JSON.parse(rawCache);
+          if (parsed && parsed.version === 1 && parsed.nodes && typeof parsed.nodes === 'object' && !Array.isArray(parsed.nodes)) probeCache = parsed;
+        } catch { probeCache = null; }
+      }
       const converted = convertSubscription(text, {
         mode: config.TANZOU_COMPAT_MODE || 'official',
-        compatHost: config.TANZOU_COMPAT_HOST || 'xd-sh.mimonode-client.com'
+        compatHost: config.TANZOU_COMPAT_HOST || 'xd-sh.mimonode-client.com',
+        probeCache
       });
       return reply(converted.text, 200);
     } catch {
