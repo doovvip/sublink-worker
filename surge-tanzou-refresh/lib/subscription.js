@@ -117,7 +117,18 @@ export function parseSubscription(input) {
   return nodes;
 }
 
-export function normalizeNodes(nodes, { mode = 'official', compatHost = 'xd-sh.mimonode-client.com' } = {}) {
+import { createHash } from 'node:crypto';
+
+export function probeNodeId(node) {
+  return createHash('sha256').update(`${node.name}\0${node.host}\0${node.port}`).digest('hex').slice(0, 20);
+}
+function validProbeOverride(node, entry, compatHost) {
+  if (!entry || entry.consecutive_failures !== 0 || !entry.last_success) return false;
+  if (entry.port !== node.port || ![node.host, compatHost].includes(entry.best_host)) return false;
+  return ['aes-128-gcm', 'chacha20-ietf-poly1305'].includes(entry.cipher);
+}
+
+export function normalizeNodes(nodes, { mode = 'official', compatHost = 'xd-sh.mimonode-client.com', probeCache = null } = {}) {
   if (!['official', 'verified-regions'].includes(mode)) throw new Error('Invalid compatibility mode');
   compatHost = validateHost(compatHost);
   if (BLOCKED.has(compatHost) || /^\d+(?:\.\d+){3}$/.test(compatHost) || !compatHost.includes('.')) {
@@ -140,10 +151,14 @@ export function normalizeNodes(nodes, { mode = 'official', compatHost = 'xd-sh.m
       node.network === 'tcp' && ['none', 'tcp'].includes(node.type) && !node.tls && node.aid === 0;
     if (mode === 'verified-regions' && eligible) {
       copy.host = compatHost;
-      // Region endpoints were live-verified with ChaCha. Board endpoints were not; preserve
-      // the provider's VMess cipher (usually auto) instead of forcing an unverified cipher.
+      // RC2.1 fallback remains authoritative unless a strictly validated successful probe exists.
       if (regionalCompatHost) copy.cipher = 'chacha20-ietf-poly1305';
       rewritten++;
+      const entry = probeCache?.nodes?.[probeNodeId(node)];
+      if (validProbeOverride(node, entry, compatHost)) {
+        copy.host = entry.best_host;
+        copy.cipher = entry.cipher;
+      }
     }
     let count = 2;
     while (nameSet.has(copy.name)) copy.name = `${node.name} (${count++})`;
