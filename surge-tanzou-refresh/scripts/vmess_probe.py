@@ -63,7 +63,7 @@ def main():
     else:
         source=os.environ.get("TANZOU_SOURCE_URL")
         if not source: raise SystemExit("TANZOU_SOURCE_URL is required")
-        with urllib.request.urlopen(source,timeout=20) as r: text=r.read(2_000_001).decode()
+        req=urllib.request.Request(source,headers={"User-Agent":"Shadowrocket","Accept":"text/plain,*/*","Cache-Control":"no-cache"})\n        with urllib.request.urlopen(req,timeout=20) as r: text=r.read(2_000_001).decode()
     nodes=parse_feed(text); path=pathlib.Path(a.cache); old=load_cache(path); result={"version":1,"generated_at":datetime.now(timezone.utc).isoformat(),"ttl_seconds":86400,"nodes":{}}
     successes=0
     for n in nodes:
