@@ -20,7 +20,8 @@ jobs:
           ref: rc2-2-auto-probe
       - name: Install sing-box
         run: |
-          curl -fsSL https://sing-box.app/install.sh | sudo sh
+          curl -fL --retry 3 -o /tmp/sing-box.deb https://github.com/SagerNet/sing-box/releases/download/v1.14.1/sing-box_1.14.1_linux_amd64.deb
+          sudo dpkg -i /tmp/sing-box.deb
           sing-box version
       - name: Fetch source and probe
         env:
