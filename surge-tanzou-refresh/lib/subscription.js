@@ -122,10 +122,25 @@ import { createHash } from 'node:crypto';
 export function probeNodeId(node) {
   return createHash('sha256').update(`${node.name}\0${node.host}\0${node.port}`).digest('hex').slice(0, 20);
 }
-function validProbeOverride(node, entry, compatHost) {
-  if (!entry || entry.consecutive_failures !== 0 || !entry.last_success) return false;
+function validProbeOverride(node, entry, compatHost, probeCache) {
+  if (!entry || !entry.last_success) return false;
   if (entry.port !== node.port || ![node.host, compatHost].includes(entry.best_host)) return false;
-  return ['aes-128-gcm', 'chacha20-ietf-poly1305'].includes(entry.cipher);
+  if (!['aes-128-gcm', 'chacha20-ietf-poly1305'].includes(entry.cipher)) return false;
+  const ttlSeconds = Number(probeCache?.ttl_seconds);
+  const generatedAt = Date.parse(probeCache?.generated_at || '');
+  const lastSuccess = Date.parse(entry.last_success);
+  const now = Date.now();
+  if (!Number.isFinite(ttlSeconds) || ttlSeconds <= 0 ||
+      !Number.isFinite(generatedAt) || !Number.isFinite(lastSuccess)) return false;
+  const ttlMs = ttlSeconds * 1000;
+  // Refuse a stale cache entirely. One transient daily probe miss may keep its LKG
+  // for one extra TTL; two consecutive misses fall back to the RC2.1 behavior.
+  if (generatedAt > now + 5 * 60_000 || now - generatedAt > ttlMs) return false;
+  if (!Number.isInteger(entry.consecutive_failures) || entry.consecutive_failures < 0 ||
+      entry.consecutive_failures > 1) return false;
+  const maxHistoryMs = ttlMs * (entry.consecutive_failures === 0 ? 1 : 2);
+  if (lastSuccess > generatedAt + 5 * 60_000 || generatedAt - lastSuccess > maxHistoryMs) return false;
+  return true;
 }
 
 export function normalizeNodes(nodes, { mode = 'official', compatHost = 'xd-sh.mimonode-client.com', probeCache = null } = {}) {
@@ -155,7 +170,7 @@ export function normalizeNodes(nodes, { mode = 'official', compatHost = 'xd-sh.m
       if (regionalCompatHost) copy.cipher = 'chacha20-ietf-poly1305';
       rewritten++;
       const entry = probeCache?.nodes?.[probeNodeId(node)];
-      if (validProbeOverride(node, entry, compatHost)) {
+      if (validProbeOverride(node, entry, compatHost, probeCache)) {
         copy.host = entry.best_host;
         copy.cipher = entry.cipher;
       }

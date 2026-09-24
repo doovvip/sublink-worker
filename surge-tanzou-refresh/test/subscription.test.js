@@ -180,7 +180,8 @@ test('full synthetic 83-record feed keeps all 80 real nodes, including all board
 test('RC2.2 successful probe cache overrides only host/cipher by original identity', () => {
   const parsed = parseSubscription(feed([base]))[0];
   const id = probeNodeId(parsed);
-  const probeCache = { version: 1, nodes: { [id]: { name: parsed.name, original_host: parsed.host, best_host: parsed.host, port: parsed.port, cipher: 'aes-128-gcm', last_success: '2026-09-18T00:00:00Z', consecutive_failures: 0 } } };
+  const generatedAt = new Date().toISOString();
+  const probeCache = { version: 1, generated_at: generatedAt, ttl_seconds: 86400, nodes: { [id]: { name: parsed.name, original_host: parsed.host, best_host: parsed.host, port: parsed.port, cipher: 'aes-128-gcm', last_success: generatedAt, consecutive_failures: 0 } } };
   const result = convertSubscription(feed([base]), { ...cfg, probeCache });
   assert.equal(result.nodes.length, 1);
   assert.equal(result.nodes[0].host, base.add);
@@ -188,15 +189,29 @@ test('RC2.2 successful probe cache overrides only host/cipher by original identi
   assert.equal(result.nodes[0].port, Number(base.port));
   assert.equal(result.nodes[0].uuid, UUID);
 });
-test('RC2.2 invalid, failed or absent cache preserves exact RC2.1 output and never deletes nodes', () => {
+test('RC2.2 keeps a fresh LKG through one transient daily probe miss', () => {
+  const parsed = parseSubscription(feed([base]))[0];
+  const id = probeNodeId(parsed);
+  const generatedAt = new Date().toISOString();
+  const lastSuccess = new Date(Date.now() - 23 * 60 * 60 * 1000).toISOString();
+  const probeCache = { version: 1, generated_at: generatedAt, ttl_seconds: 86400, nodes: { [id]: { name: parsed.name, original_host: parsed.host, best_host: parsed.host, port: parsed.port, cipher: 'aes-128-gcm', last_success: lastSuccess, consecutive_failures: 1 } } };
+  const result = convertSubscription(feed([base]), { ...cfg, probeCache });
+  assert.equal(result.nodes[0].host, base.add);
+  assert.equal(result.nodes[0].cipher, 'aes-128-gcm');
+});
+test('RC2.2 invalid, stale or repeatedly failed cache preserves exact RC2.1 output and never deletes nodes', () => {
   const baseline = convertSubscription(feed([base]), cfg);
   const id = probeNodeId(parseSubscription(feed([base]))[0]);
+  const generatedAt = new Date().toISOString();
+  const recent = generatedAt;
+  const meta = { version: 1, generated_at: generatedAt, ttl_seconds: 86400 };
   const bad = [
     null,
-    { version: 1, nodes: { [id]: { best_host: 'evil.example', port: Number(base.port), cipher: 'aes-128-gcm', last_success: 'x', consecutive_failures: 0 } } },
-    { version: 1, nodes: { [id]: { best_host: base.add, port: 9999, cipher: 'aes-128-gcm', last_success: 'x', consecutive_failures: 0 } } },
-    { version: 1, nodes: { [id]: { best_host: base.add, port: Number(base.port), cipher: 'auto', last_success: 'x', consecutive_failures: 0 } } },
-    { version: 1, nodes: { [id]: { best_host: base.add, port: Number(base.port), cipher: 'aes-128-gcm', last_success: 'x', consecutive_failures: 1 } } }
+    { ...meta, nodes: { [id]: { best_host: 'evil.example', port: Number(base.port), cipher: 'aes-128-gcm', last_success: recent, consecutive_failures: 0 } } },
+    { ...meta, nodes: { [id]: { best_host: base.add, port: 9999, cipher: 'aes-128-gcm', last_success: recent, consecutive_failures: 0 } } },
+    { ...meta, nodes: { [id]: { best_host: base.add, port: Number(base.port), cipher: 'auto', last_success: recent, consecutive_failures: 0 } } },
+    { ...meta, nodes: { [id]: { best_host: base.add, port: Number(base.port), cipher: 'aes-128-gcm', last_success: recent, consecutive_failures: 2 } } },
+    { version: 1, generated_at: new Date(Date.now() - 25 * 60 * 60 * 1000).toISOString(), ttl_seconds: 86400, nodes: { [id]: { best_host: base.add, port: Number(base.port), cipher: 'aes-128-gcm', last_success: new Date(Date.now() - 26 * 60 * 60 * 1000).toISOString(), consecutive_failures: 1 } } }
   ];
   for (const probeCache of bad) {
     const result = convertSubscription(feed([base]), { ...cfg, probeCache });
