@@ -159,7 +159,7 @@ export function normalizeNodes(nodes, { mode = 'official', compatHost = 'xd-sh.m
       node.network, node.type, node.tls, node.sni, node.insecure, node.alpn, node.path, node.wsHost]);
     if (endpointKeys.has(key)) continue;
     endpointKeys.add(key);
-    const copy = { ...node, alpn: [...node.alpn], probeVerified: false };
+    const copy = { ...node, alpn: [...node.alpn] };
     const regionalCompatHost = Object.hasOwn(REGION_HOSTS, node.host);
     const boardCompatHost = node.host === BOARD_HOST;
     const eligible = (regionalCompatHost || boardCompatHost) && !node.informational &&
@@ -173,7 +173,6 @@ export function normalizeNodes(nodes, { mode = 'official', compatHost = 'xd-sh.m
       if (validProbeOverride(node, entry, compatHost, probeCache)) {
         copy.host = entry.best_host;
         copy.cipher = entry.cipher;
-        copy.probeVerified = true;
       }
     }
     let count = 2;

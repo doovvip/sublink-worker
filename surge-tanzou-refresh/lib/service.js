@@ -1,6 +1,5 @@
 import { sourceForToken } from './auth.js';
-import { convertSubscription, MAX_BYTES, renderNode } from './subscription.js';
-import { endpointKey, quickProbeNodes } from './quick-probe.js';
+import { convertSubscription, MAX_BYTES } from './subscription.js';
 import previewProbeCache from '../probe-cache.preview.json' with { type: 'json' };
 
 const HEADERS = Object.freeze({
@@ -14,11 +13,11 @@ const reply = (text, status, extraHeaders = {}) => new Response(text, {
   headers: { ...HEADERS, ...extraHeaders }
 });
 const compatMode = config => config?.TANZOU_COMPAT_MODE || 'verified-regions';
-const probeCacheInfo = probeCache => {
-  const nodes = probeCache?.nodes && typeof probeCache.nodes === 'object' && !Array.isArray(probeCache.nodes)
-    ? probeCache.nodes : {};
+const probeCacheInfo = () => {
+  const nodes = previewProbeCache?.nodes && typeof previewProbeCache.nodes === 'object' && !Array.isArray(previewProbeCache.nodes)
+    ? previewProbeCache.nodes : {};
   return {
-    generatedAt: probeCache?.generated_at || '',
+    generatedAt: previewProbeCache?.generated_at || '',
     nodeCount: Object.keys(nodes).length
   };
 };
@@ -49,15 +48,7 @@ async function readBounded(response) {
 }
 
 /** Dependency injection is for offline tests only; no user-controlled fetch URL. */
-export function createService({
-  env = () => process.env,
-  fetchImpl = globalThis.fetch,
-  timeoutMs = 15000,
-  probeCache = previewProbeCache,
-  quickProbeImpl = quickProbeNodes,
-  quickProbeTimeoutMs = 900,
-  quickProbeConcurrency = 16
-} = {}) {
+export function createService({ env = () => process.env, fetchImpl = globalThis.fetch, timeoutMs = 15000 } = {}) {
   return async function handle(request) {
     let url;
     try { url = new URL(request.url); } catch { return reply('Not Found', 404); }
@@ -65,13 +56,12 @@ export function createService({
       if (!['GET', 'HEAD'].includes(request.method)) return reply('Method Not Allowed', 405);
       let healthConfig = {};
       try { healthConfig = env() || {}; } catch {}
-      const cache = probeCacheInfo(probeCache);
+      const cache = probeCacheInfo();
       const mode = compatMode(healthConfig);
       return reply(request.method === 'HEAD' ? null : 'OK', 200, {
         'X-RC2-Compat-Mode': ['official', 'verified-regions'].includes(mode) ? mode : 'invalid',
         'X-RC2-Cache-Generated-At': cache.generatedAt,
-        'X-RC2-Cache-Nodes': String(cache.nodeCount),
-        'X-RC2-Refresh-Probe': 'enabled'
+        'X-RC2-Cache-Nodes': String(cache.nodeCount)
       });
     }
     if (url.pathname !== '/private/live-tanzou.list') return reply('Not Found', 404);
@@ -93,47 +83,15 @@ export function createService({
       const text = await readBounded(response);
       // RC2.2 branch-local Preview snapshot: no external HTTP dependency.
       // Production/main do not contain this branch-only reader.
-      const activeProbeCache = probeCache?.version === 1 &&
-        probeCache.nodes && typeof probeCache.nodes === 'object' && !Array.isArray(probeCache.nodes)
-        ? probeCache : null;
-      const mode = compatMode(config);
+      const probeCache = previewProbeCache?.version === 1 &&
+        previewProbeCache.nodes && typeof previewProbeCache.nodes === 'object' && !Array.isArray(previewProbeCache.nodes)
+        ? previewProbeCache : null;
       const converted = convertSubscription(text, {
-        mode,
+        mode: compatMode(config),
         compatHost: config.TANZOU_COMPAT_HOST || 'xd-sh.mimonode-client.com',
-        probeCache: activeProbeCache
+        probeCache
       });
-      if (mode !== 'verified-regions') {
-        return reply(converted.text, 200, { 'X-RC2-Refresh-Check': 'disabled' });
-      }
-
-      // Refresh-time safety gate:
-      // 1) publish only nodes already validated by the full VMess probe cache;
-      // 2) do a bounded TCP liveness check right now before returning them to Surge.
-      // The TCP check is intentionally only a freshness signal, not a VMess authentication substitute.
-      const verifiedCandidates = converted.nodes.filter(node => !node.informational && node.probeVerified);
-      if (!verifiedCandidates.length) throw new Error('No fresh verified candidates');
-
-      let reachable = null;
-      try {
-        reachable = await quickProbeImpl(verifiedCandidates, {
-          timeoutMs: quickProbeTimeoutMs,
-          concurrency: quickProbeConcurrency
-        });
-      } catch {
-        reachable = null;
-      }
-      const useLiveFilter = reachable instanceof Set && reachable.size > 0;
-      const finalNodes = converted.nodes.filter(node =>
-        node.informational ||
-        (node.probeVerified && (!useLiveFilter || reachable.has(endpointKey(node))))
-      );
-      if (!finalNodes.some(node => !node.informational)) throw new Error('No publishable proxy nodes');
-      const output = finalNodes.map(renderNode).join('\n') + '\n';
-      return reply(output, 200, {
-        'X-RC2-Refresh-Check': useLiveFilter ? 'tcp-live' : 'cache-fallback',
-        'X-RC2-Refresh-Candidates': String(verifiedCandidates.length),
-        'X-RC2-Refresh-Passed': String(finalNodes.filter(node => !node.informational).length)
-      });
+      return reply(converted.text, 200);
     } catch {
       // Never send exception text, URLs, UUIDs or configuration values to logs/responses.
       return reply('Subscription refresh failed', 502);
