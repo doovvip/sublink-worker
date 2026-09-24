@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { convertSubscription, parseSubscription, REGION_HOSTS, MAX_BYTES } from '../lib/subscription.js';
+import { convertSubscription, parseSubscription, REGION_HOSTS, BOARD_HOST, MAX_BYTES, probeNodeId } from '../lib/subscription.js';
 
 // Deliberately fictional UUID; never a working account credential.
 const UUID = '00000000-0000-4000-8000-000000000001';
@@ -29,14 +29,25 @@ test('compatibility is opt-in, official default is not silently rewritten', () =
   assert.match(result.text, /tanz-jp\.kunlun01dns\.com/);
   assert.doesNotMatch(result.text, /encrypt-method=/);
 });
-test('board sharing a regional port remains a distinct unmodified node', () => {
-  const board = { ...base, ps: 'VIP3 巴林01 倍率x2', add: 'tanz-board.kunlun01dns.com', port: '22007' };
+test('board sharing a regional port remains distinct and is rewritten without forcing a cipher', () => {
+  const board = { ...base, ps: 'VIP3 巴林01 倍率x2', add: BOARD_HOST, port: '22007' };
   const kr = { ...base, ps: 'VIP2 韩国01 倍率x1', add: 'tanz-kr.kunlun01dns.com', port: '22007' };
   const result = convertSubscription(feed([kr, board]), cfg);
   assert.equal(result.nodes.length, 2);
-  assert.equal(result.rewritten, 1);
-  assert.equal(result.nodes[1].host, board.add);
+  assert.equal(result.rewritten, 2);
+  assert.equal(result.nodes[0].cipher, 'chacha20-ietf-poly1305');
+  assert.equal(result.nodes[1].host, 'xd-sh.mimonode-client.com');
   assert.equal(result.nodes[1].cipher, 'auto');
+  assert.equal(result.nodes[1].port, 22007);
+  assert.equal(result.nodes[1].uuid, UUID);
+});
+test('board preserves an explicit provider cipher during endpoint compatibility rewrite', () => {
+  const board = { ...base, ps: 'VIP3 board AES', add: BOARD_HOST, port: '22140', scy: 'aes-128-gcm' };
+  const result = convertSubscription(feed([board]), cfg);
+  assert.equal(result.rewritten, 1);
+  assert.equal(result.nodes[0].host, 'xd-sh.mimonode-client.com');
+  assert.equal(result.nodes[0].cipher, 'aes-128-gcm');
+  assert.match(result.text, /encrypt-method=aes-128-gcm/);
 });
 test('access/traffic entry is preserved without compatibility changes', () => {
   const info = { ...base, add: 'access.tanzcloud.com', ps: '剩余流量：test', port: '10086' };
@@ -155,13 +166,41 @@ test('multiple ALPN protocols are quoted in Surge output', () => {
 test('full synthetic 83-record feed keeps all 80 real nodes, including all board nodes', () => {
   const regionRecords = Object.entries(REGION_HOSTS).flatMap(([host, region]) =>
     Array.from({ length: region === 'HK' ? 10 : 4 }, (_, i) => ({ ...base, ps: `Fixture ${region} ${i}`, add: host, port: 24000 + i })));
-  const boardRecords = Array.from({ length: 50 }, (_, i) => ({ ...base, ps: `Fixture board ${i}`, add: 'tanz-board.kunlun01dns.com', port: 26000 + i }));
+  const boardRecords = Array.from({ length: 50 }, (_, i) => ({ ...base, ps: `Fixture board ${i}`, add: BOARD_HOST, port: 26000 + i }));
   const info = { ...base, add: 'access.tanzcloud.com', ps: '剩余流量：fixture', port: 10086 };
   const records = [...regionRecords, ...boardRecords, info, info, { add: '127.0.0.1' }];
   assert.equal(records.length, 83);
   const result = convertSubscription(feed(records), cfg);
-  assert.equal(result.rewritten, 30);
+  assert.equal(result.rewritten, 80);
   assert.equal(result.nodes.filter(n => !n.informational).length, 80);
-  assert.equal(result.nodes.filter(n => n.host === 'tanz-board.kunlun01dns.com').length, 50);
+  assert.equal(result.nodes.filter(n => n.host === BOARD_HOST).length, 0);
   assert.equal(result.nodes.length, 81);
+});
+
+test('RC2.2 successful probe cache overrides only host/cipher by original identity', () => {
+  const parsed = parseSubscription(feed([base]))[0];
+  const id = probeNodeId(parsed);
+  const probeCache = { version: 1, nodes: { [id]: { name: parsed.name, original_host: parsed.host, best_host: parsed.host, port: parsed.port, cipher: 'aes-128-gcm', last_success: '2026-09-18T00:00:00Z', consecutive_failures: 0 } } };
+  const result = convertSubscription(feed([base]), { ...cfg, probeCache });
+  assert.equal(result.nodes.length, 1);
+  assert.equal(result.nodes[0].host, base.add);
+  assert.equal(result.nodes[0].cipher, 'aes-128-gcm');
+  assert.equal(result.nodes[0].port, Number(base.port));
+  assert.equal(result.nodes[0].uuid, UUID);
+});
+test('RC2.2 invalid, failed or absent cache preserves exact RC2.1 output and never deletes nodes', () => {
+  const baseline = convertSubscription(feed([base]), cfg);
+  const id = probeNodeId(parseSubscription(feed([base]))[0]);
+  const bad = [
+    null,
+    { version: 1, nodes: { [id]: { best_host: 'evil.example', port: Number(base.port), cipher: 'aes-128-gcm', last_success: 'x', consecutive_failures: 0 } } },
+    { version: 1, nodes: { [id]: { best_host: base.add, port: 9999, cipher: 'aes-128-gcm', last_success: 'x', consecutive_failures: 0 } } },
+    { version: 1, nodes: { [id]: { best_host: base.add, port: Number(base.port), cipher: 'auto', last_success: 'x', consecutive_failures: 0 } } },
+    { version: 1, nodes: { [id]: { best_host: base.add, port: Number(base.port), cipher: 'aes-128-gcm', last_success: 'x', consecutive_failures: 1 } } }
+  ];
+  for (const probeCache of bad) {
+    const result = convertSubscription(feed([base]), { ...cfg, probeCache });
+    assert.equal(result.text, baseline.text);
+    assert.equal(result.nodes.length, baseline.nodes.length);
+  }
 });
