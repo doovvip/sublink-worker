@@ -161,7 +161,12 @@ test('timeout covers body streaming, not just response headers', async () => {
 });
 test('environment is read at request time and compatibility can be turned off without rebuilding', async () => {
   let mode = 'official';
-  const run = createService({ env: () => ({ ...ENV, TANZOU_COMPAT_MODE: mode }), fetchImpl: success });
+  const run = createService({
+    env: () => ({ ...ENV, TANZOU_COMPAT_MODE: mode }),
+    fetchImpl: success,
+    probeCache: PROBE_CACHE,
+    quickProbeImpl: allReachable
+  });
   assert.match(await (await run(request())).text(), /tanz-jp\.kunlun01dns\.com/);
   mode = 'verified-regions';
   assert.match(await (await run(request())).text(), /xd-sh\.mimonode-client\.com/);
