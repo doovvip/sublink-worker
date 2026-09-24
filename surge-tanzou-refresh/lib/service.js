@@ -1,5 +1,6 @@
 import { sourceForToken } from './auth.js';
 import { convertSubscription, MAX_BYTES } from './subscription.js';
+import previewProbeCache from '../probe-cache.preview.json' with { type: 'json' };
 
 const HEADERS = Object.freeze({
   'Content-Type': 'text/plain; charset=utf-8',
@@ -59,9 +60,15 @@ export function createService({ env = () => process.env, fetchImpl = globalThis.
         headers: { 'User-Agent': 'Shadowrocket', 'Accept': 'text/plain,*/*', 'Cache-Control': 'no-cache' }
       });
       const text = await readBounded(response);
+      // RC2.2 bundled probe snapshot: no runtime HTTP dependency.
+      // Set TANZOU_COMPAT_MODE=official to disable compatibility rewriting for rollback.
+      const probeCache = previewProbeCache?.version === 1 &&
+        previewProbeCache.nodes && typeof previewProbeCache.nodes === 'object' && !Array.isArray(previewProbeCache.nodes)
+        ? previewProbeCache : null;
       const converted = convertSubscription(text, {
-        mode: config.TANZOU_COMPAT_MODE || 'official',
-        compatHost: config.TANZOU_COMPAT_HOST || 'xd-sh.mimonode-client.com'
+        mode: config.TANZOU_COMPAT_MODE || 'verified-regions',
+        compatHost: config.TANZOU_COMPAT_HOST || 'xd-sh.mimonode-client.com',
+        probeCache
       });
       return reply(converted.text, 200);
     } catch {
