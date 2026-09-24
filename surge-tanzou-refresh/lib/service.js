@@ -1,5 +1,5 @@
 import { sourceForToken } from './auth.js';
-import { convertSubscription, MAX_BYTES } from './subscription.js';
+import { convertSubscription, inspectRawVmessNode, MAX_BYTES } from './subscription.js';
 import previewProbeCache from '../probe-cache.preview.json' with { type: 'json' };
 
 const HEADERS = Object.freeze({
@@ -14,6 +14,7 @@ const reply = (text, status, extraHeaders = {}) => new Response(text, {
 });
 const LIVE_PATH = '/private/live-tanzou.list';
 const OFFICIAL_PATH = '/private/live-tanzou.official.list';
+const DIAG_PATH = '/private/diag-tanzou-node.json';
 const compatMode = config => config?.TANZOU_COMPAT_MODE || 'verified-regions';
 const probeCacheInfo = () => {
   const nodes = previewProbeCache?.nodes && typeof previewProbeCache.nodes === 'object' && !Array.isArray(previewProbeCache.nodes)
@@ -66,7 +67,7 @@ export function createService({ env = () => process.env, fetchImpl = globalThis.
         'X-RC2-Cache-Nodes': String(cache.nodeCount)
       });
     }
-    if (![LIVE_PATH, OFFICIAL_PATH].includes(url.pathname)) return reply('Not Found', 404);
+    if (![LIVE_PATH, OFFICIAL_PATH, DIAG_PATH].includes(url.pathname)) return reply('Not Found', 404);
     let source;
     let config;
     try {
@@ -88,6 +89,16 @@ export function createService({ env = () => process.env, fetchImpl = globalThis.
       const probeCache = previewProbeCache?.version === 1 &&
         previewProbeCache.nodes && typeof previewProbeCache.nodes === 'object' && !Array.isArray(previewProbeCache.nodes)
         ? previewProbeCache : null;
+      if (url.pathname === DIAG_PATH) {
+        const diag = inspectRawVmessNode(text, url.searchParams.get('name'));
+        return new Response(JSON.stringify(diag, null, 2) + '\n', {
+          status: 200,
+          headers: {
+            ...HEADERS,
+            'Content-Type': 'application/json; charset=utf-8'
+          }
+        });
+      }
       const mode = url.pathname === OFFICIAL_PATH ? 'official' : compatMode(config);
       const converted = convertSubscription(text, {
         mode,

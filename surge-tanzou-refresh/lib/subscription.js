@@ -204,3 +204,38 @@ export function convertSubscription(text, options = {}) {
   const result = normalizeNodes(parseSubscription(text), options);
   return { ...result, text: result.nodes.map(renderNode).join('\n') + '\n' };
 }
+
+
+export function inspectRawVmessNode(input, nameNeedle) {
+  if (typeof input !== 'string' || !input.trim() || Buffer.byteLength(input) > MAX_BYTES) {
+    throw new Error('Invalid subscription');
+  }
+  let text = input.trim();
+  if (!text.startsWith('vmess://')) text = decodeBase64(text);
+  const records = text.split(/\r?\n/).map(x => x.trim()).filter(Boolean);
+  const needle = String(nameNeedle || '').trim();
+  if (!needle || needle.length > 120) throw new Error('Invalid diagnostic name');
+  for (const record of records) {
+    if (!record.startsWith('vmess://')) continue;
+    const body = record.slice(8);
+    const hash = body.indexOf('#');
+    const encoded = hash < 0 ? body : body.slice(0, hash);
+    const raw = JSON.parse(decodeBase64(encoded));
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) continue;
+    const name = safeName((hash < 0 ? undefined : decodeURIComponent(body.slice(hash + 1))) || raw.ps);
+    if (!name.includes(needle)) continue;
+    const allowed = ['v','ps','add','port','aid','scy','net','type','host','path','tls','sni','alpn','fp','security','flow','headerType'];
+    const values = {};
+    for (const key of allowed) {
+      if (Object.hasOwn(raw, key)) values[key] = raw[key];
+    }
+    return {
+      name,
+      keys: Object.keys(raw).sort(),
+      id_present: typeof raw.id === 'string' && raw.id.length > 0,
+      id_length: typeof raw.id === 'string' ? raw.id.length : 0,
+      values
+    };
+  }
+  throw new Error('Diagnostic node not found');
+}
