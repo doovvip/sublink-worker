@@ -45,6 +45,7 @@ test('authenticated request converts a dynamically supplied subscription', async
   assert.equal(calls, 1);
   assert.match(await response.text(), /xd-sh\.mimonode-client\.com/);
   assert.equal(response.headers.get('cache-control'), 'private, no-store');
+  assert.equal(response.headers.get('x-rc2-subscription-mode'), 'verified-regions');
 });
 test('missing/short/wrong/duplicated token never triggers an upstream request', async () => {
   let calls = 0;
@@ -81,7 +82,7 @@ test('auth before method check, authenticated POST is 405', async () => {
 });
 test('unrecognized paths do not expose the subscription', async () => {
   const run = handler(success);
-  for (const path of ['/api/index', '/', '/tanzou', '/private/live-tanzou.list/']) {
+  for (const path of ['/api/index', '/', '/tanzou', '/private/live-tanzou.list/', '/private/live-tanzou.official.list/']) {
     assert.equal((await run(request(undefined, 'GET', path))).status, 404);
   }
 });
@@ -144,4 +145,22 @@ test('failure responses do not disclose UUID, source URL, sealed env or token', 
   const response = await handler(() => { throw new Error(SOURCE + TOKEN + uuid + encrypted); })(request());
   const text = await response.text();
   for (const value of [TOKEN, SOURCE, uuid, encrypted]) assert.equal(text.includes(value), false);
+});
+
+test('official endpoint preserves provider host and does not apply probe rewrites', async () => {
+  const response = await handler(success)(request(undefined, 'GET', '/private/live-tanzou.official.list'));
+  assert.equal(response.status, 200);
+  const output = await response.text();
+  assert.match(output, /tanz-jp\.kunlun01dns\.com/);
+  assert.doesNotMatch(output, /xd-sh\.mimonode-client\.com/);
+  assert.equal(response.headers.get('x-rc2-subscription-mode'), 'official');
+});
+
+test('official endpoint keeps the same private token requirement', async () => {
+  let calls = 0;
+  const run = handler(async () => { calls++; return success(); });
+  for (const suffix of ['', '?token=short', '?token=' + 'z'.repeat(64), '?token=' + TOKEN + '&token=' + TOKEN]) {
+    assert.equal((await run(request(suffix, 'GET', '/private/live-tanzou.official.list'))).status, 404);
+  }
+  assert.equal(calls, 0);
 });

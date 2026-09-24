@@ -12,6 +12,8 @@ const reply = (text, status, extraHeaders = {}) => new Response(text, {
   status,
   headers: { ...HEADERS, ...extraHeaders }
 });
+const LIVE_PATH = '/private/live-tanzou.list';
+const OFFICIAL_PATH = '/private/live-tanzou.official.list';
 const compatMode = config => config?.TANZOU_COMPAT_MODE || 'verified-regions';
 const probeCacheInfo = () => {
   const nodes = previewProbeCache?.nodes && typeof previewProbeCache.nodes === 'object' && !Array.isArray(previewProbeCache.nodes)
@@ -64,7 +66,7 @@ export function createService({ env = () => process.env, fetchImpl = globalThis.
         'X-RC2-Cache-Nodes': String(cache.nodeCount)
       });
     }
-    if (url.pathname !== '/private/live-tanzou.list') return reply('Not Found', 404);
+    if (![LIVE_PATH, OFFICIAL_PATH].includes(url.pathname)) return reply('Not Found', 404);
     let source;
     let config;
     try {
@@ -86,12 +88,15 @@ export function createService({ env = () => process.env, fetchImpl = globalThis.
       const probeCache = previewProbeCache?.version === 1 &&
         previewProbeCache.nodes && typeof previewProbeCache.nodes === 'object' && !Array.isArray(previewProbeCache.nodes)
         ? previewProbeCache : null;
+      const mode = url.pathname === OFFICIAL_PATH ? 'official' : compatMode(config);
       const converted = convertSubscription(text, {
-        mode: compatMode(config),
+        mode,
         compatHost: config.TANZOU_COMPAT_HOST || 'xd-sh.mimonode-client.com',
-        probeCache
+        probeCache: mode === 'official' ? null : probeCache
       });
-      return reply(converted.text, 200);
+      return reply(converted.text, 200, {
+        'X-RC2-Subscription-Mode': mode
+      });
     } catch {
       // Never send exception text, URLs, UUIDs or configuration values to logs/responses.
       return reply('Subscription refresh failed', 502);
