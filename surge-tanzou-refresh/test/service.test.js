@@ -91,7 +91,16 @@ test('health is not advertised as a node connectivity check and never fetches up
   const response = await run(request('', 'GET', '/health'));
   assert.equal(response.status, 200);
   assert.equal(await response.text(), 'OK');
+  assert.equal(response.headers.get('x-rc2-compat-mode'), 'verified-regions');
+  assert.ok(Number(response.headers.get('x-rc2-cache-nodes')) > 0);
+  assert.ok(response.headers.get('x-rc2-cache-generated-at'));
   assert.equal(calls, 0);
+});
+test('production-safe default enables verified-regions when mode is unset', async () => {
+  const run = createService({ env: () => ({}), fetchImpl: async () => { throw new Error('must not fetch'); } });
+  const response = await run(request('', 'GET', '/health'));
+  assert.equal(response.status, 200);
+  assert.equal(response.headers.get('x-rc2-compat-mode'), 'verified-regions');
 });
 test('upstream non-200, redirect, empty and malformed bodies fail without a 200 empty list', async () => {
   for (const mock of [

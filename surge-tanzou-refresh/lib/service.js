@@ -8,7 +8,19 @@ const HEADERS = Object.freeze({
   'X-Content-Type-Options': 'nosniff',
   'Referrer-Policy': 'no-referrer'
 });
-const reply = (text, status) => new Response(text, { status, headers: HEADERS });
+const reply = (text, status, extraHeaders = {}) => new Response(text, {
+  status,
+  headers: { ...HEADERS, ...extraHeaders }
+});
+const compatMode = config => config?.TANZOU_COMPAT_MODE || 'verified-regions';
+const probeCacheInfo = () => {
+  const nodes = previewProbeCache?.nodes && typeof previewProbeCache.nodes === 'object' && !Array.isArray(previewProbeCache.nodes)
+    ? previewProbeCache.nodes : {};
+  return {
+    generatedAt: previewProbeCache?.generated_at || '',
+    nodeCount: Object.keys(nodes).length
+  };
+};
 
 async function readBounded(response) {
   if (response.status !== 200 || !response.body) throw new Error('Upstream failure');
@@ -41,7 +53,16 @@ export function createService({ env = () => process.env, fetchImpl = globalThis.
     let url;
     try { url = new URL(request.url); } catch { return reply('Not Found', 404); }
     if (url.pathname === '/health') {
-      return ['GET', 'HEAD'].includes(request.method) ? reply(request.method === 'HEAD' ? null : 'OK', 200) : reply('Method Not Allowed', 405);
+      if (!['GET', 'HEAD'].includes(request.method)) return reply('Method Not Allowed', 405);
+      let healthConfig = {};
+      try { healthConfig = env() || {}; } catch {}
+      const cache = probeCacheInfo();
+      const mode = compatMode(healthConfig);
+      return reply(request.method === 'HEAD' ? null : 'OK', 200, {
+        'X-RC2-Compat-Mode': ['official', 'verified-regions'].includes(mode) ? mode : 'invalid',
+        'X-RC2-Cache-Generated-At': cache.generatedAt,
+        'X-RC2-Cache-Nodes': String(cache.nodeCount)
+      });
     }
     if (url.pathname !== '/private/live-tanzou.list') return reply('Not Found', 404);
     let source;
@@ -66,7 +87,7 @@ export function createService({ env = () => process.env, fetchImpl = globalThis.
         previewProbeCache.nodes && typeof previewProbeCache.nodes === 'object' && !Array.isArray(previewProbeCache.nodes)
         ? previewProbeCache : null;
       const converted = convertSubscription(text, {
-        mode: config.TANZOU_COMPAT_MODE || 'official',
+        mode: compatMode(config),
         compatHost: config.TANZOU_COMPAT_HOST || 'xd-sh.mimonode-client.com',
         probeCache
       });
