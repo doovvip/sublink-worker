@@ -219,36 +219,3 @@ test('RC2.2 invalid, stale or repeatedly failed cache preserves exact RC2.1 outp
     assert.equal(result.nodes.length, baseline.nodes.length);
   }
 });
-
-test('production dual-entry keeps RC2.2 primary and adds provider-original fallback', () => {
-  const parsed = parseSubscription(feed([base]))[0];
-  const id = probeNodeId(parsed);
-  const generatedAt = new Date().toISOString();
-  const probeCache = { version: 1, generated_at: generatedAt, ttl_seconds: 86400, nodes: {
-    [id]: { name: parsed.name, original_host: parsed.host, best_host: 'xd-sh.mimonode-client.com',
-      port: parsed.port, cipher: 'aes-128-gcm', last_success: generatedAt, consecutive_failures: 0 }
-  } };
-  const result = convertSubscription(feed([base]), { ...cfg, probeCache, dualEntry: true });
-  assert.equal(result.nodes.length, 2);
-  assert.equal(result.nodes[0].name, base.ps);
-  assert.equal(result.nodes[0].host, 'xd-sh.mimonode-client.com');
-  assert.equal(result.nodes[0].cipher, 'aes-128-gcm');
-  assert.equal(result.nodes[1].name, base.ps + ' 原站');
-  assert.equal(result.nodes[1].host, base.add);
-  assert.equal(result.nodes[1].cipher, 'auto');
-  assert.equal(result.nodes[1].port, Number(base.port));
-  assert.equal(result.nodes[1].uuid, UUID);
-});
-test('dual-entry does not duplicate a probe result identical to provider original', () => {
-  const n = { ...base, scy: 'aes-128-gcm' };
-  const parsed = parseSubscription(feed([n]))[0];
-  const id = probeNodeId(parsed);
-  const generatedAt = new Date().toISOString();
-  const probeCache = { version: 1, generated_at: generatedAt, ttl_seconds: 86400, nodes: {
-    [id]: { name: parsed.name, original_host: parsed.host, best_host: parsed.host,
-      port: parsed.port, cipher: 'aes-128-gcm', last_success: generatedAt, consecutive_failures: 0 }
-  } };
-  const result = convertSubscription(feed([n]), { ...cfg, probeCache, dualEntry: true });
-  assert.equal(result.nodes.length, 1);
-  assert.equal(result.nodes[0].name, n.ps);
-});

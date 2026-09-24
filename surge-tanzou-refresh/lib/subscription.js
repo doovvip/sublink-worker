@@ -143,7 +143,7 @@ function validProbeOverride(node, entry, compatHost, probeCache) {
   return true;
 }
 
-export function normalizeNodes(nodes, { mode = 'official', compatHost = 'xd-sh.mimonode-client.com', probeCache = null, dualEntry = false } = {}) {
+export function normalizeNodes(nodes, { mode = 'official', compatHost = 'xd-sh.mimonode-client.com', probeCache = null } = {}) {
   if (!['official', 'verified-regions'].includes(mode)) throw new Error('Invalid compatibility mode');
   compatHost = validateHost(compatHost);
   if (BLOCKED.has(compatHost) || /^\d+(?:\.\d+){3}$/.test(compatHost) || !compatHost.includes('.')) {
@@ -179,19 +179,6 @@ export function normalizeNodes(nodes, { mode = 'official', compatHost = 'xd-sh.m
     while (nameSet.has(copy.name)) copy.name = `${node.name} (${count++})`;
     nameSet.add(copy.name);
     output.push(copy);
-
-    // Production dual-entry safety: preserve the existing RC2.2 node name/behavior,
-    // and add the provider-original endpoint as an explicit fallback for mobile networks.
-    // This never replaces or mutates the upstream node; it only adds a second choice
-    // when compatibility rewriting changed host and/or cipher.
-    if (dualEntry && mode === 'verified-regions' && eligible &&
-        (copy.host !== node.host || copy.cipher !== node.cipher)) {
-      const original = { ...node, alpn: [...node.alpn], name: `${node.name} 原站` };
-      let originalCount = 2;
-      while (nameSet.has(original.name)) original.name = `${node.name} 原站 (${originalCount++})`;
-      nameSet.add(original.name);
-      output.push(original);
-    }
   }
   if (!output.some(n => !n.informational)) throw new Error('No actual proxy nodes');
   return { nodes: output, rewritten };
