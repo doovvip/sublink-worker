@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-09-23T19:42:10.755524+00:00",
+  "generated_at": "2026-09-24T20:00:22.392744+00:00",
   "ttl_seconds": 86400,
   "nodes": {
     "6d6e99197dff4a56dce2": {
@@ -12,7 +12,7 @@
       "cipher": "aes-128-gcm",
       "last_success": "2026-09-22T19:45:58.691736+00:00",
       "latency_ms": 543,
-      "consecutive_failures": 1
+      "consecutive_failures": 2
     },
     "c0149cdb2ea1416b93a1": {
       "node_id": "c0149cdb2ea1416b93a1",
@@ -23,7 +23,7 @@
       "cipher": "aes-128-gcm",
       "last_success": "2026-09-22T19:45:58.691736+00:00",
       "latency_ms": 543,
-      "consecutive_failures": 1
+      "consecutive_failures": 2
     },
     "81283d94b33e138a964d": {
       "node_id": "81283d94b33e138a964d",
@@ -34,326 +34,326 @@
       "cipher": "chacha20-ietf-poly1305",
       "last_success": "2026-09-22T19:45:58.691736+00:00",
       "latency_ms": 495,
-      "consecutive_failures": 1
+      "consecutive_failures": 2
     },
     "b069f649ad1f8247f73c": {
       "node_id": "b069f649ad1f8247f73c",
       "name": "VIP2 香港04 倍率x1",
       "original_host": "tanz-hk.kunlun01dns.com",
-      "best_host": "xd-sh.mimonode-client.com",
+      "best_host": "tanz-hk.kunlun01dns.com",
       "port": 22012,
       "cipher": "aes-128-gcm",
-      "last_success": "2026-09-22T19:45:58.691736+00:00",
-      "latency_ms": 503,
-      "consecutive_failures": 1
+      "last_success": "2026-09-24T20:00:22.392744+00:00",
+      "latency_ms": 770,
+      "consecutive_failures": 0
     },
     "5f0553259802bafe6987": {
       "node_id": "5f0553259802bafe6987",
       "name": "VIP2 香港05 倍率x1",
       "original_host": "tanz-hk.kunlun01dns.com",
-      "best_host": "xd-sh.mimonode-client.com",
+      "best_host": "tanz-hk.kunlun01dns.com",
       "port": 22044,
       "cipher": "aes-128-gcm",
-      "last_success": "2026-09-22T19:45:58.691736+00:00",
-      "latency_ms": 536,
-      "consecutive_failures": 1
+      "last_success": "2026-09-24T20:00:22.392744+00:00",
+      "latency_ms": 702,
+      "consecutive_failures": 0
     },
     "83f61219fe5ce0d4d419": {
       "node_id": "83f61219fe5ce0d4d419",
       "name": "VIP2 香港06 倍率x1",
       "original_host": "tanz-hk.kunlun01dns.com",
-      "best_host": "xd-sh.mimonode-client.com",
+      "best_host": "tanz-hk.kunlun01dns.com",
       "port": 22045,
       "cipher": "aes-128-gcm",
-      "last_success": "2026-09-22T19:45:58.691736+00:00",
-      "latency_ms": 513,
-      "consecutive_failures": 1
+      "last_success": "2026-09-24T20:00:22.392744+00:00",
+      "latency_ms": 657,
+      "consecutive_failures": 0
     },
     "093de11294d662ec4113": {
       "node_id": "093de11294d662ec4113",
       "name": "VIP2 香港07 倍率x1",
       "original_host": "tanz-hk.kunlun01dns.com",
-      "best_host": "xd-sh.mimonode-client.com",
+      "best_host": "tanz-hk.kunlun01dns.com",
       "port": 22001,
-      "cipher": "chacha20-ietf-poly1305",
-      "last_success": "2026-09-23T19:42:10.755524+00:00",
-      "latency_ms": 548,
+      "cipher": "aes-128-gcm",
+      "last_success": "2026-09-24T20:00:22.392744+00:00",
+      "latency_ms": 675,
       "consecutive_failures": 0
     },
     "b38eca870a632e4a1035": {
       "node_id": "b38eca870a632e4a1035",
       "name": "VIP2 香港08 倍率x1",
       "original_host": "tanz-hk.kunlun01dns.com",
-      "best_host": "xd-sh.mimonode-client.com",
+      "best_host": "tanz-hk.kunlun01dns.com",
       "port": 22002,
       "cipher": "aes-128-gcm",
-      "last_success": "2026-09-23T19:42:10.755524+00:00",
-      "latency_ms": 567,
+      "last_success": "2026-09-24T20:00:22.392744+00:00",
+      "latency_ms": 657,
       "consecutive_failures": 0
     },
     "605c5952c6ddcd61874c": {
       "node_id": "605c5952c6ddcd61874c",
       "name": "VIP2 香港09 倍率x1",
       "original_host": "tanz-hk.kunlun01dns.com",
-      "best_host": "xd-sh.mimonode-client.com",
+      "best_host": "tanz-hk.kunlun01dns.com",
       "port": 22003,
       "cipher": "aes-128-gcm",
-      "last_success": "2026-09-23T19:42:10.755524+00:00",
-      "latency_ms": 530,
+      "last_success": "2026-09-24T20:00:22.392744+00:00",
+      "latency_ms": 646,
       "consecutive_failures": 0
     },
     "5a2794b98c75876be5fe": {
       "node_id": "5a2794b98c75876be5fe",
       "name": "VIP2 香港10 倍率x1",
       "original_host": "tanz-hk.kunlun01dns.com",
-      "best_host": "xd-sh.mimonode-client.com",
+      "best_host": "tanz-hk.kunlun01dns.com",
       "port": 22004,
       "cipher": "aes-128-gcm",
-      "last_success": "2026-09-23T19:42:10.755524+00:00",
-      "latency_ms": 549,
+      "last_success": "2026-09-24T20:00:22.392744+00:00",
+      "latency_ms": 673,
       "consecutive_failures": 0
     },
     "e6ee19e8c210e4271278": {
       "node_id": "e6ee19e8c210e4271278",
       "name": "VIP2 日本01 倍率x1",
       "original_host": "tanz-jp.kunlun01dns.com",
-      "best_host": "xd-sh.mimonode-client.com",
+      "best_host": "tanz-jp.kunlun01dns.com",
       "port": 22005,
       "cipher": "aes-128-gcm",
-      "last_success": "2026-09-23T19:42:10.755524+00:00",
-      "latency_ms": 694,
+      "last_success": "2026-09-24T20:00:22.392744+00:00",
+      "latency_ms": 939,
       "consecutive_failures": 0
     },
     "ed21df54359cc9fa9515": {
       "node_id": "ed21df54359cc9fa9515",
       "name": "VIP2 日本02 倍率x1",
       "original_host": "tanz-jp.kunlun01dns.com",
-      "best_host": "xd-sh.mimonode-client.com",
+      "best_host": "tanz-jp.kunlun01dns.com",
       "port": 22006,
       "cipher": "aes-128-gcm",
-      "last_success": "2026-09-23T19:42:10.755524+00:00",
-      "latency_ms": 685,
+      "last_success": "2026-09-24T20:00:22.392744+00:00",
+      "latency_ms": 814,
       "consecutive_failures": 0
     },
     "9c1c8a3ced8417a3d86b": {
       "node_id": "9c1c8a3ced8417a3d86b",
       "name": "VIP2 日本03 倍率x1",
       "original_host": "tanz-jp.kunlun01dns.com",
-      "best_host": "xd-sh.mimonode-client.com",
+      "best_host": "tanz-jp.kunlun01dns.com",
       "port": 22040,
       "cipher": "aes-128-gcm",
-      "last_success": "2026-09-23T19:42:10.755524+00:00",
-      "latency_ms": 685,
+      "last_success": "2026-09-24T20:00:22.392744+00:00",
+      "latency_ms": 811,
       "consecutive_failures": 0
     },
     "33d329f93fcc575d9ef5": {
       "node_id": "33d329f93fcc575d9ef5",
       "name": "VIP2 日本04 倍率x1",
       "original_host": "tanz-jp.kunlun01dns.com",
-      "best_host": "xd-sh.mimonode-client.com",
+      "best_host": "tanz-jp.kunlun01dns.com",
       "port": 22041,
       "cipher": "aes-128-gcm",
-      "last_success": "2026-09-23T19:42:10.755524+00:00",
-      "latency_ms": 693,
+      "last_success": "2026-09-24T20:00:22.392744+00:00",
+      "latency_ms": 808,
       "consecutive_failures": 0
     },
     "9d5e45e13df34f53ed18": {
       "node_id": "9d5e45e13df34f53ed18",
       "name": "VIP2 美国01 倍率x1",
       "original_host": "tanz-us.kunlun01dns.com",
-      "best_host": "xd-sh.mimonode-client.com",
+      "best_host": "tanz-us.kunlun01dns.com",
       "port": 22019,
       "cipher": "aes-128-gcm",
-      "last_success": "2026-09-23T19:42:10.755524+00:00",
-      "latency_ms": 994,
+      "last_success": "2026-09-24T20:00:22.392744+00:00",
+      "latency_ms": 1236,
       "consecutive_failures": 0
     },
     "865b0af2a2c3593bcab8": {
       "node_id": "865b0af2a2c3593bcab8",
       "name": "VIP2 美国02 倍率x1",
       "original_host": "tanz-us.kunlun01dns.com",
-      "best_host": "xd-sh.mimonode-client.com",
+      "best_host": "tanz-us.kunlun01dns.com",
       "port": 22020,
       "cipher": "aes-128-gcm",
-      "last_success": "2026-09-23T19:42:10.755524+00:00",
-      "latency_ms": 995,
+      "last_success": "2026-09-24T20:00:22.392744+00:00",
+      "latency_ms": 1133,
       "consecutive_failures": 0
     },
     "e0f8a105217c5ea451b3": {
       "node_id": "e0f8a105217c5ea451b3",
       "name": "VIP2 美国03 倍率x1",
       "original_host": "tanz-us.kunlun01dns.com",
-      "best_host": "xd-sh.mimonode-client.com",
+      "best_host": "tanz-us.kunlun01dns.com",
       "port": 22029,
       "cipher": "aes-128-gcm",
-      "last_success": "2026-09-23T19:42:10.755524+00:00",
-      "latency_ms": 1014,
+      "last_success": "2026-09-24T20:00:22.392744+00:00",
+      "latency_ms": 1179,
       "consecutive_failures": 0
     },
     "141b5dc70abc01913381": {
       "node_id": "141b5dc70abc01913381",
       "name": "VIP2 美国04 倍率x1",
       "original_host": "tanz-us.kunlun01dns.com",
-      "best_host": "xd-sh.mimonode-client.com",
+      "best_host": "tanz-us.kunlun01dns.com",
       "port": 22030,
       "cipher": "aes-128-gcm",
-      "last_success": "2026-09-23T19:42:10.755524+00:00",
-      "latency_ms": 1032,
+      "last_success": "2026-09-24T20:00:22.392744+00:00",
+      "latency_ms": 1161,
       "consecutive_failures": 0
     },
     "7aa7bc1a688a09a0f700": {
       "node_id": "7aa7bc1a688a09a0f700",
       "name": "VIP2 台湾01 倍率x1",
       "original_host": "tanz-tw.kunlun01dns.com",
-      "best_host": "xd-sh.mimonode-client.com",
+      "best_host": "tanz-tw.kunlun01dns.com",
       "port": 22067,
       "cipher": "aes-128-gcm",
-      "last_success": "2026-09-23T19:42:10.755524+00:00",
-      "latency_ms": 591,
+      "last_success": "2026-09-24T20:00:22.392744+00:00",
+      "latency_ms": 803,
       "consecutive_failures": 0
     },
     "35e93052fd66f176f261": {
       "node_id": "35e93052fd66f176f261",
       "name": "VIP2 台湾02 倍率x1",
       "original_host": "tanz-tw.kunlun01dns.com",
-      "best_host": "xd-sh.mimonode-client.com",
+      "best_host": "tanz-tw.kunlun01dns.com",
       "port": 22068,
       "cipher": "aes-128-gcm",
-      "last_success": "2026-09-23T19:42:10.755524+00:00",
-      "latency_ms": 592,
+      "last_success": "2026-09-24T20:00:22.392744+00:00",
+      "latency_ms": 797,
       "consecutive_failures": 0
     },
     "bdfb882ad479817b99aa": {
       "node_id": "bdfb882ad479817b99aa",
       "name": "VIP2 台湾03 倍率x1",
       "original_host": "tanz-tw.kunlun01dns.com",
-      "best_host": "xd-sh.mimonode-client.com",
+      "best_host": "tanz-tw.kunlun01dns.com",
       "port": 22072,
       "cipher": "aes-128-gcm",
-      "last_success": "2026-09-23T19:42:10.755524+00:00",
-      "latency_ms": 588,
+      "last_success": "2026-09-24T20:00:22.392744+00:00",
+      "latency_ms": 824,
       "consecutive_failures": 0
     },
     "f3b32e212fd5120b27b2": {
       "node_id": "f3b32e212fd5120b27b2",
       "name": "VIP2 台湾04 倍率x1",
       "original_host": "tanz-tw.kunlun01dns.com",
-      "best_host": "xd-sh.mimonode-client.com",
+      "best_host": "tanz-tw.kunlun01dns.com",
       "port": 22073,
       "cipher": "aes-128-gcm",
-      "last_success": "2026-09-22T19:45:58.691736+00:00",
-      "latency_ms": 555,
-      "consecutive_failures": 1
+      "last_success": "2026-09-24T20:00:22.392744+00:00",
+      "latency_ms": 1047,
+      "consecutive_failures": 0
     },
     "62d6ac03a0ee8defc28c": {
       "node_id": "62d6ac03a0ee8defc28c",
       "name": "VIP2 韩国01 倍率x1",
       "original_host": "tanz-kr.kunlun01dns.com",
-      "best_host": "xd-sh.mimonode-client.com",
+      "best_host": "tanz-kr.kunlun01dns.com",
       "port": 22007,
       "cipher": "aes-128-gcm",
-      "last_success": "2026-09-22T19:45:58.691736+00:00",
-      "latency_ms": 677,
-      "consecutive_failures": 1
+      "last_success": "2026-09-24T20:00:22.392744+00:00",
+      "latency_ms": 1004,
+      "consecutive_failures": 0
     },
     "07c6fb57e7841aaf90d0": {
       "node_id": "07c6fb57e7841aaf90d0",
       "name": "VIP2 韩国02 倍率x1",
       "original_host": "tanz-kr.kunlun01dns.com",
-      "best_host": "xd-sh.mimonode-client.com",
+      "best_host": "tanz-kr.kunlun01dns.com",
       "port": 22008,
-      "cipher": "chacha20-ietf-poly1305",
-      "last_success": "2026-09-23T19:42:10.755524+00:00",
-      "latency_ms": 750,
+      "cipher": "aes-128-gcm",
+      "last_success": "2026-09-24T20:00:22.392744+00:00",
+      "latency_ms": 850,
       "consecutive_failures": 0
     },
     "5d61fc99478adcfb09fa": {
       "node_id": "5d61fc99478adcfb09fa",
       "name": "VIP2 韩国03 倍率x1",
       "original_host": "tanz-kr.kunlun01dns.com",
-      "best_host": "xd-sh.mimonode-client.com",
+      "best_host": "tanz-kr.kunlun01dns.com",
       "port": 22015,
       "cipher": "aes-128-gcm",
-      "last_success": "2026-09-23T19:42:10.755524+00:00",
-      "latency_ms": 704,
+      "last_success": "2026-09-24T20:00:22.392744+00:00",
+      "latency_ms": 816,
       "consecutive_failures": 0
     },
     "a37279fec3734bba8eac": {
       "node_id": "a37279fec3734bba8eac",
       "name": "VIP2 韩国04 倍率x1",
       "original_host": "tanz-kr.kunlun01dns.com",
-      "best_host": "xd-sh.mimonode-client.com",
+      "best_host": "tanz-kr.kunlun01dns.com",
       "port": 22016,
       "cipher": "aes-128-gcm",
-      "last_success": "2026-09-23T19:42:10.755524+00:00",
-      "latency_ms": 704,
+      "last_success": "2026-09-24T20:00:22.392744+00:00",
+      "latency_ms": 823,
       "consecutive_failures": 0
     },
     "ed4a63a989add78a88f6": {
       "node_id": "ed4a63a989add78a88f6",
       "name": "VIP2 新加坡01 倍率x1",
       "original_host": "tanz-sg.kunlun01dns.com",
-      "best_host": "xd-sh.mimonode-client.com",
+      "best_host": "tanz-sg.kunlun01dns.com",
       "port": 22013,
       "cipher": "aes-128-gcm",
-      "last_success": "2026-09-23T19:42:10.755524+00:00",
-      "latency_ms": 632,
+      "last_success": "2026-09-24T20:00:22.392744+00:00",
+      "latency_ms": 832,
       "consecutive_failures": 0
     },
     "9e0746bc2ef40475f3cf": {
       "node_id": "9e0746bc2ef40475f3cf",
       "name": "VIP2 新加坡02 倍率x1",
       "original_host": "tanz-sg.kunlun01dns.com",
-      "best_host": "xd-sh.mimonode-client.com",
+      "best_host": "tanz-sg.kunlun01dns.com",
       "port": 22014,
       "cipher": "aes-128-gcm",
-      "last_success": "2026-09-22T19:45:58.691736+00:00",
-      "latency_ms": 633,
-      "consecutive_failures": 1
+      "last_success": "2026-09-24T20:00:22.392744+00:00",
+      "latency_ms": 759,
+      "consecutive_failures": 0
     },
     "371a518f2855361c9f30": {
       "node_id": "371a518f2855361c9f30",
       "name": "VIP2 新加坡03 倍率x1",
       "original_host": "tanz-sg.kunlun01dns.com",
-      "best_host": "xd-sh.mimonode-client.com",
+      "best_host": "tanz-sg.kunlun01dns.com",
       "port": 22048,
       "cipher": "aes-128-gcm",
-      "last_success": "2026-09-22T19:45:58.691736+00:00",
-      "latency_ms": 615,
-      "consecutive_failures": 1
+      "last_success": "2026-09-24T20:00:22.392744+00:00",
+      "latency_ms": 769,
+      "consecutive_failures": 0
     },
     "95313a4880573bc6a6f6": {
       "node_id": "95313a4880573bc6a6f6",
       "name": "VIP2 新加坡04 倍率x1",
       "original_host": "tanz-sg.kunlun01dns.com",
-      "best_host": "xd-sh.mimonode-client.com",
+      "best_host": "tanz-sg.kunlun01dns.com",
       "port": 22049,
-      "cipher": "chacha20-ietf-poly1305",
-      "last_success": "2026-09-23T19:42:10.755524+00:00",
-      "latency_ms": 662,
+      "cipher": "aes-128-gcm",
+      "last_success": "2026-09-24T20:00:22.392744+00:00",
+      "latency_ms": 801,
       "consecutive_failures": 0
     },
     "f9c3a824f023df22828d": {
       "node_id": "f9c3a824f023df22828d",
       "name": "VIP3 丹麦01 倍率x2",
       "original_host": "tanz-board.kunlun01dns.com",
-      "best_host": "xd-sh.mimonode-client.com",
+      "best_host": "tanz-board.kunlun01dns.com",
       "port": 22140,
       "cipher": "aes-128-gcm",
-      "last_success": "2026-09-23T19:42:10.755524+00:00",
-      "latency_ms": 1106,
+      "last_success": "2026-09-24T20:00:22.392744+00:00",
+      "latency_ms": 1336,
       "consecutive_failures": 0
     },
     "49fc4ce2f44827622422": {
       "node_id": "49fc4ce2f44827622422",
       "name": "VIP3 南非01 倍率x2",
       "original_host": "tanz-board.kunlun01dns.com",
-      "best_host": "xd-sh.mimonode-client.com",
+      "best_host": "tanz-board.kunlun01dns.com",
       "port": 22087,
       "cipher": "aes-128-gcm",
-      "last_success": "2026-09-22T19:45:58.691736+00:00",
-      "latency_ms": 1321,
-      "consecutive_failures": 1
+      "last_success": "2026-09-24T20:00:22.392744+00:00",
+      "latency_ms": 1553,
+      "consecutive_failures": 0
     },
     "c32df82e0c2feae82e9d": {
       "node_id": "c32df82e0c2feae82e9d",
@@ -364,40 +364,40 @@
       "cipher": null,
       "last_success": null,
       "latency_ms": null,
-      "consecutive_failures": 6
+      "consecutive_failures": 7
     },
     "7a61fbd14d1a3a66a6bc": {
       "node_id": "7a61fbd14d1a3a66a6bc",
       "name": "VIP3 巴林01 倍率x2",
       "original_host": "tanz-board.kunlun01dns.com",
-      "best_host": "xd-sh.mimonode-client.com",
+      "best_host": "tanz-board.kunlun01dns.com",
       "port": 22007,
-      "cipher": "chacha20-ietf-poly1305",
-      "last_success": "2026-09-23T19:42:10.755524+00:00",
-      "latency_ms": 771,
+      "cipher": "aes-128-gcm",
+      "last_success": "2026-09-24T20:00:22.392744+00:00",
+      "latency_ms": 874,
       "consecutive_failures": 0
     },
     "d74831db9beb05087975": {
       "node_id": "d74831db9beb05087975",
       "name": "VIP3 巴西01 倍率x2",
       "original_host": "tanz-board.kunlun01dns.com",
-      "best_host": "xd-sh.mimonode-client.com",
+      "best_host": "tanz-board.kunlun01dns.com",
       "port": 22129,
       "cipher": "aes-128-gcm",
-      "last_success": "2026-09-22T19:45:58.691736+00:00",
-      "latency_ms": 1441,
-      "consecutive_failures": 1
+      "last_success": "2026-09-24T20:00:22.392744+00:00",
+      "latency_ms": 1681,
+      "consecutive_failures": 0
     },
     "1e728fdc584894d0d766": {
       "node_id": "1e728fdc584894d0d766",
       "name": "VIP3 希腊01 倍率x2",
       "original_host": "tanz-board.kunlun01dns.com",
-      "best_host": "xd-sh.mimonode-client.com",
+      "best_host": "tanz-board.kunlun01dns.com",
       "port": 22125,
       "cipher": "aes-128-gcm",
-      "last_success": "2026-09-22T19:45:58.691736+00:00",
-      "latency_ms": 1150,
-      "consecutive_failures": 1
+      "last_success": "2026-09-24T20:00:22.392744+00:00",
+      "latency_ms": 1314,
+      "consecutive_failures": 0
     },
     "82cd22aafc1001939b10": {
       "node_id": "82cd22aafc1001939b10",
@@ -408,28 +408,28 @@
       "cipher": null,
       "last_success": null,
       "latency_ms": null,
-      "consecutive_failures": 6
+      "consecutive_failures": 7
     },
     "8b872ffe6ec7727fd973": {
       "node_id": "8b872ffe6ec7727fd973",
       "name": "VIP3 挪威01 倍率x2",
       "original_host": "tanz-board.kunlun01dns.com",
-      "best_host": "xd-sh.mimonode-client.com",
+      "best_host": "tanz-board.kunlun01dns.com",
       "port": 22092,
       "cipher": "aes-128-gcm",
-      "last_success": "2026-09-23T19:42:10.755524+00:00",
-      "latency_ms": 1255,
+      "last_success": "2026-09-24T20:00:22.392744+00:00",
+      "latency_ms": 1312,
       "consecutive_failures": 0
     },
     "d703016982acf7241d68": {
       "node_id": "d703016982acf7241d68",
       "name": "VIP3 捷克01 倍率x2",
       "original_host": "tanz-board.kunlun01dns.com",
-      "best_host": "xd-sh.mimonode-client.com",
+      "best_host": "tanz-board.kunlun01dns.com",
       "port": 22101,
       "cipher": "aes-128-gcm",
-      "last_success": "2026-09-23T19:42:10.755524+00:00",
-      "latency_ms": 1340,
+      "last_success": "2026-09-24T20:00:22.392744+00:00",
+      "latency_ms": 1543,
       "consecutive_failures": 0
     },
     "3dccdfb37be7817fb036": {
@@ -439,8 +439,8 @@
       "best_host": "tanz-board.kunlun01dns.com",
       "port": 22138,
       "cipher": "aes-128-gcm",
-      "last_success": "2026-09-23T19:42:10.755524+00:00",
-      "latency_ms": 1635,
+      "last_success": "2026-09-24T20:00:22.392744+00:00",
+      "latency_ms": 1563,
       "consecutive_failures": 0
     },
     "073569bf53d3643aa2d1": {
@@ -450,8 +450,8 @@
       "best_host": "tanz-board.kunlun01dns.com",
       "port": 22096,
       "cipher": "aes-128-gcm",
-      "last_success": "2026-09-23T19:42:10.755524+00:00",
-      "latency_ms": 1272,
+      "last_success": "2026-09-24T20:00:22.392744+00:00",
+      "latency_ms": 1410,
       "consecutive_failures": 0
     },
     "e0cd989f69cfe2e1fa55": {
@@ -463,51 +463,51 @@
       "cipher": null,
       "last_success": null,
       "latency_ms": null,
-      "consecutive_failures": 6
+      "consecutive_failures": 7
     },
     "52c692b59369cbd49612": {
       "node_id": "52c692b59369cbd49612",
       "name": "VIP3 泰国01 倍率x2",
       "original_host": "tanz-board.kunlun01dns.com",
-      "best_host": "xd-sh.mimonode-client.com",
+      "best_host": "tanz-board.kunlun01dns.com",
       "port": 22109,
-      "cipher": "chacha20-ietf-poly1305",
-      "last_success": "2026-09-22T19:45:58.691736+00:00",
-      "latency_ms": 624,
-      "consecutive_failures": 1
+      "cipher": "aes-128-gcm",
+      "last_success": "2026-09-24T20:00:22.392744+00:00",
+      "latency_ms": 794,
+      "consecutive_failures": 0
     },
     "e49df10f5a4502d52fd6": {
       "node_id": "e49df10f5a4502d52fd6",
       "name": "VIP3 瑞典01 倍率x2",
       "original_host": "tanz-board.kunlun01dns.com",
-      "best_host": "xd-sh.mimonode-client.com",
+      "best_host": "tanz-board.kunlun01dns.com",
       "port": 22090,
       "cipher": "aes-128-gcm",
-      "last_success": "2026-09-22T19:45:58.691736+00:00",
-      "latency_ms": 1249,
-      "consecutive_failures": 1
+      "last_success": "2026-09-24T20:00:22.392744+00:00",
+      "latency_ms": 1314,
+      "consecutive_failures": 0
     },
     "5095d1b5fb19ac7ef7df": {
       "node_id": "5095d1b5fb19ac7ef7df",
       "name": "VIP3 瑞士01 倍率x2",
       "original_host": "tanz-board.kunlun01dns.com",
-      "best_host": "xd-sh.mimonode-client.com",
+      "best_host": "tanz-board.kunlun01dns.com",
       "port": 22105,
       "cipher": "aes-128-gcm",
-      "last_success": "2026-09-22T19:45:58.691736+00:00",
-      "latency_ms": 1163,
-      "consecutive_failures": 1
+      "last_success": "2026-09-24T20:00:22.392744+00:00",
+      "latency_ms": 1161,
+      "consecutive_failures": 0
     },
     "96571fb902381321512f": {
       "node_id": "96571fb902381321512f",
       "name": "VIP3 秘鲁01 倍率x2",
       "original_host": "tanz-board.kunlun01dns.com",
-      "best_host": "xd-sh.mimonode-client.com",
+      "best_host": "tanz-board.kunlun01dns.com",
       "port": 22146,
       "cipher": "aes-128-gcm",
-      "last_success": "2026-09-22T19:45:58.691736+00:00",
-      "latency_ms": 1408,
-      "consecutive_failures": 1
+      "last_success": "2026-09-24T20:00:22.392744+00:00",
+      "latency_ms": 1580,
+      "consecutive_failures": 0
     },
     "834cc75ad89b3c2e6659": {
       "node_id": "834cc75ad89b3c2e6659",
@@ -518,7 +518,7 @@
       "cipher": null,
       "last_success": null,
       "latency_ms": null,
-      "consecutive_failures": 6
+      "consecutive_failures": 7
     },
     "7bd391406ab8d302372e": {
       "node_id": "7bd391406ab8d302372e",
@@ -529,7 +529,7 @@
       "cipher": null,
       "last_success": null,
       "latency_ms": null,
-      "consecutive_failures": 6
+      "consecutive_failures": 7
     },
     "27f652c9afd31828482c": {
       "node_id": "27f652c9afd31828482c",
@@ -540,18 +540,18 @@
       "cipher": null,
       "last_success": null,
       "latency_ms": null,
-      "consecutive_failures": 6
+      "consecutive_failures": 7
     },
     "ef73eb0a73b4ec1cb658": {
       "node_id": "ef73eb0a73b4ec1cb658",
       "name": "VIP3 越南01 倍率x2",
       "original_host": "tanz-board.kunlun01dns.com",
-      "best_host": "xd-sh.mimonode-client.com",
+      "best_host": "tanz-board.kunlun01dns.com",
       "port": 22077,
       "cipher": "aes-128-gcm",
-      "last_success": "2026-09-22T19:45:58.691736+00:00",
-      "latency_ms": 730,
-      "consecutive_failures": 1
+      "last_success": "2026-09-24T20:00:22.392744+00:00",
+      "latency_ms": 779,
+      "consecutive_failures": 0
     },
     "d883e1013120603b8b58": {
       "node_id": "d883e1013120603b8b58",
@@ -562,7 +562,7 @@
       "cipher": "aes-128-gcm",
       "last_success": "2026-09-22T19:45:58.691736+00:00",
       "latency_ms": 1154,
-      "consecutive_failures": 1
+      "consecutive_failures": 2
     },
     "77f2b73b297a812c2365": {
       "node_id": "77f2b73b297a812c2365",
@@ -573,7 +573,7 @@
       "cipher": "aes-128-gcm",
       "last_success": "2026-09-23T19:42:10.755524+00:00",
       "latency_ms": 1549,
-      "consecutive_failures": 0
+      "consecutive_failures": 1
     },
     "49db19e96dc77b81de42": {
       "node_id": "49db19e96dc77b81de42",
@@ -584,7 +584,7 @@
       "cipher": null,
       "last_success": null,
       "latency_ms": null,
-      "consecutive_failures": 6
+      "consecutive_failures": 7
     },
     "a8051afb4f8fa2120d96": {
       "node_id": "a8051afb4f8fa2120d96",
@@ -595,7 +595,7 @@
       "cipher": null,
       "last_success": null,
       "latency_ms": null,
-      "consecutive_failures": 6
+      "consecutive_failures": 7
     },
     "eedb41ac29112463abce": {
       "node_id": "eedb41ac29112463abce",
@@ -606,7 +606,7 @@
       "cipher": "aes-128-gcm",
       "last_success": "2026-09-23T19:42:10.755524+00:00",
       "latency_ms": 1336,
-      "consecutive_failures": 0
+      "consecutive_failures": 1
     },
     "6ad4b1f52f2e7d939626": {
       "node_id": "6ad4b1f52f2e7d939626",
@@ -617,7 +617,7 @@
       "cipher": "aes-128-gcm",
       "last_success": "2026-09-23T19:42:10.755524+00:00",
       "latency_ms": 1151,
-      "consecutive_failures": 0
+      "consecutive_failures": 1
     },
     "647e182b9e55e65dc0b7": {
       "node_id": "647e182b9e55e65dc0b7",
@@ -628,7 +628,7 @@
       "cipher": "aes-128-gcm",
       "last_success": "2026-09-23T19:42:10.755524+00:00",
       "latency_ms": 1067,
-      "consecutive_failures": 0
+      "consecutive_failures": 1
     },
     "3bded811576050e4cde0": {
       "node_id": "3bded811576050e4cde0",
@@ -639,29 +639,29 @@
       "cipher": null,
       "last_success": null,
       "latency_ms": null,
-      "consecutive_failures": 6
+      "consecutive_failures": 7
     },
     "a80912ed1ba6e490d4ee": {
       "node_id": "a80912ed1ba6e490d4ee",
       "name": "VIP3 柬埔寨01 倍率x2",
       "original_host": "tanz-board.kunlun01dns.com",
-      "best_host": "xd-sh.mimonode-client.com",
+      "best_host": "tanz-board.kunlun01dns.com",
       "port": 22083,
-      "cipher": "aes-128-gcm",
-      "last_success": "2026-09-22T19:45:58.691736+00:00",
-      "latency_ms": 831,
-      "consecutive_failures": 1
+      "cipher": "chacha20-ietf-poly1305",
+      "last_success": "2026-09-24T20:00:22.392744+00:00",
+      "latency_ms": 1590,
+      "consecutive_failures": 0
     },
     "437dd3127593534cd65c": {
       "node_id": "437dd3127593534cd65c",
       "name": "VIP3 比利时01 倍率x2",
       "original_host": "tanz-board.kunlun01dns.com",
-      "best_host": "xd-sh.mimonode-client.com",
+      "best_host": "tanz-board.kunlun01dns.com",
       "port": 22141,
       "cipher": "aes-128-gcm",
-      "last_success": "2026-09-22T19:45:58.691736+00:00",
-      "latency_ms": 1049,
-      "consecutive_failures": 1
+      "last_success": "2026-09-24T20:00:22.392744+00:00",
+      "latency_ms": 1181,
+      "consecutive_failures": 0
     },
     "9a88b072cdbf5cf4c804": {
       "node_id": "9a88b072cdbf5cf4c804",
@@ -672,17 +672,17 @@
       "cipher": null,
       "last_success": null,
       "latency_ms": null,
-      "consecutive_failures": 6
+      "consecutive_failures": 7
     },
     "29558b0c002994cfb6c8": {
       "node_id": "29558b0c002994cfb6c8",
       "name": "VIP3 立陶宛01 倍率x2",
       "original_host": "tanz-board.kunlun01dns.com",
-      "best_host": "xd-sh.mimonode-client.com",
+      "best_host": "tanz-board.kunlun01dns.com",
       "port": 22144,
       "cipher": "aes-128-gcm",
-      "last_success": "2026-09-23T19:42:10.755524+00:00",
-      "latency_ms": 1135,
+      "last_success": "2026-09-24T20:00:22.392744+00:00",
+      "latency_ms": 1376,
       "consecutive_failures": 0
     },
     "8f2d17d62e855021c877": {
@@ -694,7 +694,7 @@
       "cipher": "aes-128-gcm",
       "last_success": "2026-09-21T20:27:06.414806+00:00",
       "latency_ms": 684,
-      "consecutive_failures": 2
+      "consecutive_failures": 3
     },
     "c6cafb220c473e131243": {
       "node_id": "c6cafb220c473e131243",
@@ -705,7 +705,7 @@
       "cipher": "aes-128-gcm",
       "last_success": "2026-09-23T19:42:10.755524+00:00",
       "latency_ms": 1146,
-      "consecutive_failures": 0
+      "consecutive_failures": 1
     },
     "8ab8a242ee551bc98c5e": {
       "node_id": "8ab8a242ee551bc98c5e",
@@ -716,7 +716,7 @@
       "cipher": "aes-128-gcm",
       "last_success": "2026-09-23T19:42:10.755524+00:00",
       "latency_ms": 1304,
-      "consecutive_failures": 0
+      "consecutive_failures": 1
     },
     "d76fdc2a5355b46df246": {
       "node_id": "d76fdc2a5355b46df246",
@@ -727,7 +727,7 @@
       "cipher": null,
       "last_success": null,
       "latency_ms": null,
-      "consecutive_failures": 6
+      "consecutive_failures": 7
     },
     "e25657ffe5569112accd": {
       "node_id": "e25657ffe5569112accd",
@@ -738,7 +738,7 @@
       "cipher": "aes-128-gcm",
       "last_success": "2026-09-23T19:42:10.755524+00:00",
       "latency_ms": 877,
-      "consecutive_failures": 0
+      "consecutive_failures": 1
     },
     "3e767880cb8af435c7e7": {
       "node_id": "3e767880cb8af435c7e7",
@@ -749,7 +749,7 @@
       "cipher": "aes-128-gcm",
       "last_success": "2026-09-23T19:42:10.755524+00:00",
       "latency_ms": 1104,
-      "consecutive_failures": 0
+      "consecutive_failures": 1
     },
     "1bcaa3aec3773fc6a074": {
       "node_id": "1bcaa3aec3773fc6a074",
@@ -760,7 +760,7 @@
       "cipher": null,
       "last_success": null,
       "latency_ms": null,
-      "consecutive_failures": 6
+      "consecutive_failures": 7
     },
     "4f46deb6d220c9cef1b6": {
       "node_id": "4f46deb6d220c9cef1b6",
@@ -771,7 +771,7 @@
       "cipher": "aes-128-gcm",
       "last_success": "2026-09-22T19:45:58.691736+00:00",
       "latency_ms": 888,
-      "consecutive_failures": 1
+      "consecutive_failures": 2
     },
     "114f76fcafe315624652": {
       "node_id": "114f76fcafe315624652",
@@ -782,7 +782,7 @@
       "cipher": null,
       "last_success": null,
       "latency_ms": null,
-      "consecutive_failures": 6
+      "consecutive_failures": 7
     },
     "36d8d65dd23946f761d9": {
       "node_id": "36d8d65dd23946f761d9",
@@ -793,7 +793,7 @@
       "cipher": "aes-128-gcm",
       "last_success": "2026-09-23T19:42:10.755524+00:00",
       "latency_ms": 1343,
-      "consecutive_failures": 0
+      "consecutive_failures": 1
     },
     "6fee966cc21beab69aa7": {
       "node_id": "6fee966cc21beab69aa7",
@@ -804,7 +804,7 @@
       "cipher": null,
       "last_success": null,
       "latency_ms": null,
-      "consecutive_failures": 6
+      "consecutive_failures": 7
     },
     "4589b3ad8050dd598c86": {
       "node_id": "4589b3ad8050dd598c86",
@@ -815,7 +815,7 @@
       "cipher": null,
       "last_success": null,
       "latency_ms": null,
-      "consecutive_failures": 6
+      "consecutive_failures": 7
     },
     "da144b85cf502b6945b1": {
       "node_id": "da144b85cf502b6945b1",
@@ -826,7 +826,7 @@
       "cipher": "aes-128-gcm",
       "last_success": "2026-09-22T19:45:58.691736+00:00",
       "latency_ms": 1304,
-      "consecutive_failures": 1
+      "consecutive_failures": 2
     },
     "70a995280d515bce3b25": {
       "node_id": "70a995280d515bce3b25",
@@ -837,7 +837,7 @@
       "cipher": "aes-128-gcm",
       "last_success": "2026-09-23T19:42:10.755524+00:00",
       "latency_ms": 1556,
-      "consecutive_failures": 0
+      "consecutive_failures": 1
     },
     "6186a38b2e20606601da": {
       "node_id": "6186a38b2e20606601da",
@@ -848,7 +848,7 @@
       "cipher": "aes-128-gcm",
       "last_success": "2026-09-23T19:42:10.755524+00:00",
       "latency_ms": 1913,
-      "consecutive_failures": 0
+      "consecutive_failures": 1
     },
     "78cf7933ba722f5648dd": {
       "node_id": "78cf7933ba722f5648dd",
@@ -859,7 +859,7 @@
       "cipher": "aes-128-gcm",
       "last_success": "2026-09-22T19:45:58.691736+00:00",
       "latency_ms": 635,
-      "consecutive_failures": 1
+      "consecutive_failures": 2
     },
     "01f9c048ad0015b1e8fd": {
       "node_id": "01f9c048ad0015b1e8fd",
@@ -870,7 +870,7 @@
       "cipher": "aes-128-gcm",
       "last_success": "2026-09-22T19:45:58.691736+00:00",
       "latency_ms": 639,
-      "consecutive_failures": 1
+      "consecutive_failures": 2
     },
     "5c35ee1e50439f34c65f": {
       "node_id": "5c35ee1e50439f34c65f",
@@ -881,7 +881,7 @@
       "cipher": "chacha20-ietf-poly1305",
       "last_success": "2026-09-23T19:42:10.755524+00:00",
       "latency_ms": 1414,
-      "consecutive_failures": 0
+      "consecutive_failures": 1
     }
   }
 }
