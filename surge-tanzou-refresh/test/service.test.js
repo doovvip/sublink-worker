@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import { webcrypto } from 'node:crypto';
 import { createService } from '../lib/service.js';
 import { sourceForToken } from '../lib/auth.js';
-import { MAX_BYTES } from '../lib/subscription.js';
+import { MAX_BYTES, parseSubscription, probeNodeId } from '../lib/subscription.js';
+import { endpointKey } from '../lib/quick-probe.js';
 
 const TOKEN = 'synthetic_test_token_'.repeat(3);
 const SOURCE = 'https://config.tanzcloud.com/link/SYNTHETIC_NOT_A_SUBSCRIPTION?sub=3';
@@ -23,7 +24,28 @@ const encrypted = await seal();
 const ENV = { TANZOU_ENCRYPTED_SOURCE: encrypted, TANZOU_COMPAT_MODE: 'verified-regions' };
 const request = (suffix = `?token=${TOKEN}`, method = 'GET', path = '/private/live-tanzou.list') =>
   new Request('https://service.example' + path + suffix, { method });
-const handler = fetchImpl => createService({ env: () => ENV, fetchImpl });
+const parsedNode = parseSubscription(body)[0];
+const CACHE_TIME = new Date().toISOString();
+const PROBE_CACHE = {
+  version: 1,
+  generated_at: CACHE_TIME,
+  ttl_seconds: 86400,
+  nodes: {
+    [probeNodeId(parsedNode)]: {
+      name: parsedNode.name,
+      original_host: parsedNode.host,
+      best_host: 'xd-sh.mimonode-client.com',
+      port: parsedNode.port,
+      cipher: 'aes-128-gcm',
+      last_success: CACHE_TIME,
+      consecutive_failures: 0
+    }
+  }
+};
+const allReachable = async nodes => new Set(nodes.map(endpointKey));
+const handler = (fetchImpl, quickProbeImpl = allReachable) => createService({
+  env: () => ENV, fetchImpl, probeCache: PROBE_CACHE, quickProbeImpl
+});
 
 const success = () => new Response(body, { status: 200 });
 test('preserves existing AES-GCM source/token contract with WebCrypto sealed fixture', () => {
@@ -45,6 +67,9 @@ test('authenticated request converts a dynamically supplied subscription', async
   assert.equal(calls, 1);
   assert.match(await response.text(), /xd-sh\.mimonode-client\.com/);
   assert.equal(response.headers.get('cache-control'), 'private, no-store');
+  assert.equal(response.headers.get('x-rc2-refresh-check'), 'tcp-live');
+  assert.equal(response.headers.get('x-rc2-refresh-candidates'), '1');
+  assert.equal(response.headers.get('x-rc2-refresh-passed'), '1');
 });
 test('missing/short/wrong/duplicated token never triggers an upstream request', async () => {
   let calls = 0;
@@ -94,6 +119,7 @@ test('health is not advertised as a node connectivity check and never fetches up
   assert.equal(response.headers.get('x-rc2-compat-mode'), 'verified-regions');
   assert.ok(Number(response.headers.get('x-rc2-cache-nodes')) > 0);
   assert.ok(response.headers.get('x-rc2-cache-generated-at'));
+  assert.equal(response.headers.get('x-rc2-refresh-probe'), 'enabled');
   assert.equal(calls, 0);
 });
 test('production-safe default enables verified-regions when mode is unset', async () => {
@@ -144,4 +170,56 @@ test('failure responses do not disclose UUID, source URL, sealed env or token', 
   const response = await handler(() => { throw new Error(SOURCE + TOKEN + uuid + encrypted); })(request());
   const text = await response.text();
   for (const value of [TOKEN, SOURCE, uuid, encrypted]) assert.equal(text.includes(value), false);
+});
+
+test('refresh-time quick probe removes a currently unreachable verified node', async () => {
+  const other = { ...node, ps: 'Fixture 日本05', port: 22042 };
+  const mixedBody = [node, other].map(n => 'vmess://' + Buffer.from(JSON.stringify(n)).toString('base64')).join('\n');
+  const parsed = parseSubscription(mixedBody);
+  const stamp = new Date().toISOString();
+  const cache = { version: 1, generated_at: stamp, ttl_seconds: 86400, nodes: {} };
+  for (const n of parsed) {
+    cache.nodes[probeNodeId(n)] = {
+      name: n.name, original_host: n.host, best_host: 'xd-sh.mimonode-client.com',
+      port: n.port, cipher: 'aes-128-gcm', last_success: stamp, consecutive_failures: 0
+    };
+  }
+  const run = createService({
+    env: () => ENV,
+    fetchImpl: async () => new Response(mixedBody, { status: 200 }),
+    probeCache: cache,
+    quickProbeImpl: async candidates => new Set([endpointKey(candidates[0])])
+  });
+  const response = await run(request());
+  const output = await response.text();
+  assert.equal(response.status, 200);
+  assert.match(output, /Fixture 日本04/);
+  assert.doesNotMatch(output, /Fixture 日本05/);
+  assert.equal(response.headers.get('x-rc2-refresh-check'), 'tcp-live');
+  assert.equal(response.headers.get('x-rc2-refresh-candidates'), '2');
+  assert.equal(response.headers.get('x-rc2-refresh-passed'), '1');
+});
+
+test('zero quick-probe successes safely falls back to the full-probe verified set', async () => {
+  const response = await handler(success, async () => new Set())(request());
+  assert.equal(response.status, 200);
+  assert.match(await response.text(), /Fixture 日本04/);
+  assert.equal(response.headers.get('x-rc2-refresh-check'), 'cache-fallback');
+  assert.equal(response.headers.get('x-rc2-refresh-passed'), '1');
+});
+
+test('fresh upstream nodes absent from the full VMess probe cache are not published yet', async () => {
+  const unseen = { ...node, ps: 'Fixture unseen', port: 29999 };
+  const mixedBody = [node, unseen].map(n => 'vmess://' + Buffer.from(JSON.stringify(n)).toString('base64')).join('\n');
+  const run = createService({
+    env: () => ENV,
+    fetchImpl: async () => new Response(mixedBody, { status: 200 }),
+    probeCache: PROBE_CACHE,
+    quickProbeImpl: allReachable
+  });
+  const response = await run(request());
+  const output = await response.text();
+  assert.equal(response.status, 200);
+  assert.match(output, /Fixture 日本04/);
+  assert.doesNotMatch(output, /Fixture unseen/);
 });
