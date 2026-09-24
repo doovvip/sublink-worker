@@ -7,6 +7,7 @@ export const REGION_HOSTS = Object.freeze({
   'tanz-us.kunlun01dns.com': 'US', 'tanz-tw.kunlun01dns.com': 'TW',
   'tanz-kr.kunlun01dns.com': 'KR', 'tanz-sg.kunlun01dns.com': 'SG'
 });
+export const BOARD_HOST = 'tanz-board.kunlun01dns.com';
 const UUID = /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i;
 const BLOCKED = new Set(['localhost', '::', '::1', '0.0.0.0']);
 const INFO = /(?:剩余|流量|到期|过期|有效期|官网|公告|套餐|traffic|expire)/i;
@@ -116,7 +117,18 @@ export function parseSubscription(input) {
   return nodes;
 }
 
-export function normalizeNodes(nodes, { mode = 'official', compatHost = 'xd-sh.mimonode-client.com' } = {}) {
+import { createHash } from 'node:crypto';
+
+export function probeNodeId(node) {
+  return createHash('sha256').update(`${node.name}\0${node.host}\0${node.port}`).digest('hex').slice(0, 20);
+}
+function validProbeOverride(node, entry, compatHost) {
+  if (!entry || entry.consecutive_failures !== 0 || !entry.last_success) return false;
+  if (entry.port !== node.port || ![node.host, compatHost].includes(entry.best_host)) return false;
+  return ['aes-128-gcm', 'chacha20-ietf-poly1305'].includes(entry.cipher);
+}
+
+export function normalizeNodes(nodes, { mode = 'official', compatHost = 'xd-sh.mimonode-client.com', probeCache = null } = {}) {
   if (!['official', 'verified-regions'].includes(mode)) throw new Error('Invalid compatibility mode');
   compatHost = validateHost(compatHost);
   if (BLOCKED.has(compatHost) || /^\d+(?:\.\d+){3}$/.test(compatHost) || !compatHost.includes('.')) {
@@ -133,12 +145,20 @@ export function normalizeNodes(nodes, { mode = 'official', compatHost = 'xd-sh.m
     if (endpointKeys.has(key)) continue;
     endpointKeys.add(key);
     const copy = { ...node, alpn: [...node.alpn] };
-    const eligible = Object.hasOwn(REGION_HOSTS, node.host) && !node.informational &&
+    const regionalCompatHost = Object.hasOwn(REGION_HOSTS, node.host);
+    const boardCompatHost = node.host === BOARD_HOST;
+    const eligible = (regionalCompatHost || boardCompatHost) && !node.informational &&
       node.network === 'tcp' && ['none', 'tcp'].includes(node.type) && !node.tls && node.aid === 0;
     if (mode === 'verified-regions' && eligible) {
       copy.host = compatHost;
-      copy.cipher = 'chacha20-ietf-poly1305';
+      // RC2.1 fallback remains authoritative unless a strictly validated successful probe exists.
+      if (regionalCompatHost) copy.cipher = 'chacha20-ietf-poly1305';
       rewritten++;
+      const entry = probeCache?.nodes?.[probeNodeId(node)];
+      if (validProbeOverride(node, entry, compatHost)) {
+        copy.host = entry.best_host;
+        copy.cipher = entry.cipher;
+      }
     }
     let count = 2;
     while (nameSet.has(copy.name)) copy.name = `${node.name} (${count++})`;
