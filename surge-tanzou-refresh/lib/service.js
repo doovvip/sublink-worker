@@ -61,7 +61,8 @@ export function createService({ env = () => process.env, fetchImpl = globalThis.
       return reply(request.method === 'HEAD' ? null : 'OK', 200, {
         'X-RC2-Compat-Mode': ['official', 'verified-regions'].includes(mode) ? mode : 'invalid',
         'X-RC2-Cache-Generated-At': cache.generatedAt,
-        'X-RC2-Cache-Nodes': String(cache.nodeCount)
+        'X-RC2-Cache-Nodes': String(cache.nodeCount),
+        'X-RC2-Dual-Entry': mode === 'verified-regions' ? 'enabled' : 'disabled'
       });
     }
     if (url.pathname !== '/private/live-tanzou.list') return reply('Not Found', 404);
@@ -89,7 +90,8 @@ export function createService({ env = () => process.env, fetchImpl = globalThis.
       const converted = convertSubscription(text, {
         mode: compatMode(config),
         compatHost: config.TANZOU_COMPAT_HOST || 'xd-sh.mimonode-client.com',
-        probeCache
+        probeCache,
+        dualEntry: compatMode(config) === 'verified-regions'
       });
       return reply(converted.text, 200);
     } catch {

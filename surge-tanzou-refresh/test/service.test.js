@@ -94,6 +94,7 @@ test('health is not advertised as a node connectivity check and never fetches up
   assert.equal(response.headers.get('x-rc2-compat-mode'), 'verified-regions');
   assert.ok(Number(response.headers.get('x-rc2-cache-nodes')) > 0);
   assert.ok(response.headers.get('x-rc2-cache-generated-at'));
+  assert.equal(response.headers.get('x-rc2-dual-entry'), 'enabled');
   assert.equal(calls, 0);
 });
 test('production-safe default enables verified-regions when mode is unset', async () => {
@@ -144,4 +145,11 @@ test('failure responses do not disclose UUID, source URL, sealed env or token', 
   const response = await handler(() => { throw new Error(SOURCE + TOKEN + uuid + encrypted); })(request());
   const text = await response.text();
   for (const value of [TOKEN, SOURCE, uuid, encrypted]) assert.equal(text.includes(value), false);
+});
+
+test('verified production conversion exposes an original fallback alongside rewritten endpoint', async () => {
+  const response = await handler(success)(request());
+  const text = await response.text();
+  assert.match(text, /Fixture 日本04 = vmess, xd-sh\.mimonode-client\.com/);
+  assert.match(text, /Fixture 日本04 原站 = vmess, tanz-jp\.kunlun01dns\.com/);
 });
