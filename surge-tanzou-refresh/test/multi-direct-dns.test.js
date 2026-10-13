@@ -61,7 +61,7 @@ test('new opt-in endpoint preserves original two nodes and publishes three label
     for (const [suffix, host] of [['D1', '13.115.40.158'], ['D2', '35.74.65.255'], ['D3', '18.162.213.136']]) {
       const line = lines.find(x => x.startsWith(original + ' [' + suffix + '] = vmess, '));
       assert.ok(line, original + ': missing variant ' + suffix);
-      assert.ok(line.includes(', ' + original.slice(-2) + '')); // names are stable
+      assert.ok(line.includes(', ' + (original.endsWith('01') ? '22005' : '22006') + ', '));
       assert.ok(line.includes('= vmess, ' + host + ', '));
       assert.ok(line.includes('username=' + UUID));
       assert.ok(line.includes('vmess-aead=true'));
