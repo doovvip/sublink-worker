@@ -1,6 +1,6 @@
 import { sourceForToken } from './auth.js';
 import { convertSubscription, inspectRawVmessNode, renderNode, MAX_BYTES } from './subscription.js';
-import { makeDirectNodes } from './direct-dns.js';
+import { makeDirectNodes, makeMultiDirectNodes } from './direct-dns.js';
 import previewProbeCache from '../probe-cache.preview.json' with { type: 'json' };
 
 const HEADERS = Object.freeze({
@@ -16,6 +16,7 @@ const reply = (text, status, extraHeaders = {}) => new Response(text, {
 const LIVE_PATH = '/private/live-tanzou.list';
 const OFFICIAL_PATH = '/private/live-tanzou.official.list';
 const DIRECT_PATH = '/private/live-tanzou.direct.list';
+const MULTI_PATH = '/private/live-tanzou.multi.list';
 const DIAG_PATH = '/private/diag-tanzou-node.json';
 const compatMode = config => config?.TANZOU_COMPAT_MODE || 'verified-regions';
 const probeCacheInfo = () => {
@@ -69,7 +70,7 @@ export function createService({ env = () => process.env, fetchImpl = globalThis.
         'X-RC2-Cache-Nodes': String(cache.nodeCount)
       });
     }
-    if (![LIVE_PATH, OFFICIAL_PATH, DIRECT_PATH, DIAG_PATH].includes(url.pathname)) return reply('Not Found', 404);
+    if (![LIVE_PATH, OFFICIAL_PATH, DIRECT_PATH, MULTI_PATH, DIAG_PATH].includes(url.pathname)) return reply('Not Found', 404);
     let source;
     let config;
     try {
@@ -99,6 +100,17 @@ export function createService({ env = () => process.env, fetchImpl = globalThis.
             ...HEADERS,
             'Content-Type': 'application/json; charset=utf-8'
           }
+        });
+      }
+      if (url.pathname === MULTI_PATH) {
+        // Additive, authenticated candidate feed for Surge's client-side URL tests.
+        // DoH TCP reachability alone cannot certify VMess; never mark variants healthy here.
+        const official = convertSubscription(text, { mode: 'official' });
+        const candidates = await makeMultiDirectNodes(official.nodes, { fetchImpl, signal: controller.signal });
+        return reply(candidates.map(renderNode).join('\n') + '\n', 200, {
+          'X-RC2-Subscription-Mode': 'multi-doh',
+          'X-RC2-Logical-Node-Count': String(official.nodes.filter(n => !n.informational).length),
+          'X-RC2-Candidate-Count': String(candidates.length)
         });
       }
       if (url.pathname === DIRECT_PATH) {
