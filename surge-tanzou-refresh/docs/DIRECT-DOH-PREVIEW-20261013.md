@@ -79,3 +79,40 @@ New source and tests exist on the isolated feature branch, and Vercel preview
 deployment has reached READY, **but authenticated live preview and Mac/iPhone
 end-to-end acceptance are still pending**. Do not switch production or advertise the
 client solution as complete yet.
+
+
+## 2026-10-13 continuation: authenticated preview and Surge integration
+
+- Vercel preview `surge-tanzou-refresh-jtremnmdi-lee-36d9.vercel.app`
+  responded 200 to `/health`, 404 without a token for `/private/live-tanzou.direct.list`,
+  and 200 using the existing private token read only into Mac process memory.
+  The authenticated response had **80 VMess lines with 80 numeric IP servers, zero original
+  airport hostnames, zero Oracle references and zero informational nodes**.
+  The token/UUID/source was not printed by the diagnostic script.
+- Isolated Mac test profile `R2-TanZou-预览动态DoH直连-每日更新.conf`
+  was created by changing the single remote `policy-path` in the frozen daily
+  direct candidate, preserving `update-interval=86400` and no Oracle
+  `underlying-proxy`. Surge syntax check returned OK; profile switch succeeded;
+  `surge-cli external-resource update` returned `success`. However,
+  `policy-group get "✈️ 我的节点"` **immediately showed 0 imported policies**.
+  That is **not a working dynamic Surge feed**. Next examine delayed resource loading,
+  actual resource status, parse errors and preview-host accessibility.
+- The first failed test script executed a guarded restore and confirmed
+  `Current Profile: R2-TanZou-每日自动更新` plus unchanged protected hashes.
+  A later diagnostic attempted to switch temporarily again but the SentinelX
+  agent disconnected. **Current Mac profile after the later interruption is not
+  independently rechecked.** First check `surge-cli profile current` and `status`
+  on reconnect, restore the working profile if needed.
+- Repeated remote-control disconnects around profile switching warrant a bounded
+  independent on-device rollback watchdog for any further trial.
+- Preview deployment READY = build success, **not** unit-test PASS or Mac/phone
+  usability. `npm run verify`, Mac import of all 80, actual direct HTTPS 204,
+  repeated force refresh and iPhone separate validation remain mandatory.
+- Protected hashes at last confirmed checkpoint:
+  `R2.conf`: `f9ec137b93d1bfe92833dd60c44074ddfc7e4d83d997c84e4ed9dcd7c84fd04a`;
+  `R2-TanZou-每日自动更新.conf`:
+  `9320988d356add5d732255a6efe609809b13ab00f7298535feb169ed2e387494`;
+  `R2-TanZou-每日更新-无中转直连测试.conf`:
+  `afad2375a63ad54720271f7a887c38282d6a0ac6cdcd0243c37d86fb513ff811`.
+- **Do not merge, promote or switch production until Surge imports 80 direct remote
+  policies and passes actual representative HTTPS probes after a refresh.**
