@@ -1,5 +1,6 @@
 import { sourceForToken } from './auth.js';
-import { convertSubscription, inspectRawVmessNode, MAX_BYTES } from './subscription.js';
+import { convertSubscription, inspectRawVmessNode, renderNode, MAX_BYTES } from './subscription.js';
+import { makeDirectNodes } from './direct-dns.js';
 import previewProbeCache from '../probe-cache.preview.json' with { type: 'json' };
 
 const HEADERS = Object.freeze({
@@ -14,6 +15,7 @@ const reply = (text, status, extraHeaders = {}) => new Response(text, {
 });
 const LIVE_PATH = '/private/live-tanzou.list';
 const OFFICIAL_PATH = '/private/live-tanzou.official.list';
+const DIRECT_PATH = '/private/live-tanzou.direct.list';
 const DIAG_PATH = '/private/diag-tanzou-node.json';
 const compatMode = config => config?.TANZOU_COMPAT_MODE || 'verified-regions';
 const probeCacheInfo = () => {
@@ -67,7 +69,7 @@ export function createService({ env = () => process.env, fetchImpl = globalThis.
         'X-RC2-Cache-Nodes': String(cache.nodeCount)
       });
     }
-    if (![LIVE_PATH, OFFICIAL_PATH, DIAG_PATH].includes(url.pathname)) return reply('Not Found', 404);
+    if (![LIVE_PATH, OFFICIAL_PATH, DIRECT_PATH, DIAG_PATH].includes(url.pathname)) return reply('Not Found', 404);
     let source;
     let config;
     try {
@@ -97,6 +99,14 @@ export function createService({ env = () => process.env, fetchImpl = globalThis.
             ...HEADERS,
             'Content-Type': 'application/json; charset=utf-8'
           }
+        });
+      }
+      if (url.pathname === DIRECT_PATH) {
+        // Opt-in only: never alter the existing official or compatibility endpoints.
+        const official = convertSubscription(text, { mode: 'official' });
+        const directNodes = await makeDirectNodes(official.nodes, { fetchImpl, signal: controller.signal });
+        return reply(directNodes.map(renderNode).join('\n') + '\n', 200, {
+          'X-RC2-Subscription-Mode': 'direct-doh'
         });
       }
       const mode = url.pathname === OFFICIAL_PATH ? 'official' : compatMode(config);

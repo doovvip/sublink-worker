@@ -1,0 +1,39 @@
+name: TanZou Direct DoH Verification
+
+on:
+  push:
+    branches: [feature/tanzou-doh-direct-daily-20261013]
+    paths:
+      - 'surge-tanzou-refresh/**'
+      - '.github/workflows/tanzou-direct-doh-verify.yml'
+  pull_request:
+    branches: [rc2-2-auto-probe]
+    paths:
+      - 'surge-tanzou-refresh/**'
+      - '.github/workflows/tanzou-direct-doh-verify.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tanzou-direct-verify-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Standalone TanZou Converter Tests (Node 22)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: surge-tanzou-refresh
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify offline converter and guarded DoH tests
+        run: npm run verify
