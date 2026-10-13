@@ -133,3 +133,43 @@ export async function makeDirectNodes(nodes, { fetchImpl = globalThis.fetch, sig
   const mapping = new Map(records);
   return realNodes.map(node => ({ ...node, host: mapping.get(node.host), alpn: [...node.alpn] }));
 }
+
+
+/** Optional multi-entry representation for local, client-side Surge health checks.
+ * This does NOT validate a VMess handshake on Vercel. It publishes each unique
+ * provider-DoH answer as a separately selectable endpoint, so Surge can
+ * independently measure real VMess reachability from the client's network.
+ * Existing makeDirectNodes and all legacy routes remain unchanged.
+ */
+export async function makeMultiDirectNodes(nodes, { fetchImpl = globalThis.fetch, signal } = {}) {
+  const real = nodes.filter(node => !node.informational);
+  if (!real.length || real.length > 10000) throw new Error('No real proxy nodes');
+  const hosts = [...new Set(real.map(node => node.host))];
+  if (hosts.length > ACCEPTED_HOSTS.size || hosts.some(host => !ACCEPTED_HOSTS.has(host))) {
+    throw new Error('Unexpected original proxy hostname');
+  }
+  for (const node of real) {
+    if (node.aid !== 0 || node.tls || node.network !== 'tcp' ||
+        !['none', 'tcp'].includes(node.type)) throw new Error('Unsupported multi-DNS node');
+  }
+  const pairs = await Promise.all(hosts.map(async host => {
+    const settled = await Promise.allSettled(DOH_ENDPOINTS.map(endpoint =>
+      queryProviderDoH(host, endpoint, { fetchImpl, signal })));
+    if (signal?.aborted) throw new Error('Subscription refresh canceled');
+    const unique = new Set();
+    const answers = [];
+    for (let i = 0; i < settled.length; i++) {
+      const result = settled[i];
+      if (result.status !== 'fulfilled' || unique.has(result.value)) continue;
+      unique.add(result.value);
+      answers.push({ host: result.value, label: 'D' + (i + 1) });
+    }
+    if (!answers.length) throw new Error('All provider DNS endpoints unavailable');
+    return [host, answers];
+  }));
+  const optionsByHost = new Map(pairs);
+  return real.flatMap(node => optionsByHost.get(node.host).map(option => ({
+    ...node, alpn: [...node.alpn], host: option.host,
+    name: node.name + ' [' + option.label + ']'
+  })));
+}
