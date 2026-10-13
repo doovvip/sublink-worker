@@ -69,7 +69,7 @@ test('all-placeholder or only informational responses fail instead of returning 
   assert.throws(() => convertSubscription(feed([{ ...base, add: 'access.tanzcloud.com' }])));
 });
 test('unknown domain and hostname lookalikes are not rewritten', () => {
-  for (const add of ['new-entry.example.net', 'tanz-jp.kunlun01dns.com.example.net', 'tanz-board.kunlun01dns.com']) {
+  for (const add of ['new-entry.example.net', 'tanz-jp.kunlun01dns.com.example.net', 'tanz-board.kunlun01dns.com.example.net']) {
     assert.equal(convertSubscription(feed([{ ...base, add }]), cfg).nodes[0].host, add);
   }
 });
