@@ -1,6 +1,11 @@
 name: TanZou Direct DoH Verification
 
 on:
+  push:
+    branches: [feature/tanzou-doh-direct-daily-20261013]
+    paths:
+      - 'surge-tanzou-refresh/**'
+      - '.github/workflows/tanzou-direct-doh-verify.yml'
   pull_request:
     branches: [rc2-2-auto-probe]
     paths:
