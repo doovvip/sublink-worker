@@ -1,7 +1,8 @@
-import { sourceForToken } from './auth.js';
+import { sourceForToken, decryptSealedText } from './auth.js';
 import { convertSubscription, inspectRawVmessNode, renderNode, MAX_BYTES } from './subscription.js';
-import { makeDirectNodes } from './direct-dns.js';
+import { makeDirectNodes, rewriteSurgeFallbackText } from './direct-dns.js';
 import previewProbeCache from '../probe-cache.preview.json' with { type: 'json' };
+import fallbackSnapshot from '../fallback.snapshot.json' with { type: 'json' };
 
 const HEADERS = Object.freeze({
   'Content-Type': 'text/plain; charset=utf-8',
@@ -18,6 +19,7 @@ const OFFICIAL_PATH = '/private/live-tanzou.official.list';
 const DIRECT_PATH = '/private/live-tanzou.direct.list';
 const DIAG_PATH = '/private/diag-tanzou-node.json';
 const compatMode = config => config?.TANZOU_COMPAT_MODE || 'verified-regions';
+
 const probeCacheInfo = () => {
   const nodes = previewProbeCache?.nodes && typeof previewProbeCache.nodes === 'object' && !Array.isArray(previewProbeCache.nodes)
     ? previewProbeCache.nodes : {};
@@ -52,11 +54,64 @@ async function readBounded(response) {
   return new TextDecoder('utf-8', { fatal: true }).decode(Buffer.concat(chunks));
 }
 
+async function withTimeout(timeoutMs, fn) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fn(controller.signal);
+  } finally {
+    clearTimeout(timeout);
+    controller.abort();
+  }
+}
+
+function fallbackTextForToken(token) {
+  if (fallbackSnapshot?.version !== 1 ||
+      typeof fallbackSnapshot?.payload !== 'string' ||
+      typeof fallbackSnapshot?.generated_at !== 'string' ||
+      !Number.isInteger(fallbackSnapshot?.node_count) ||
+      fallbackSnapshot.node_count < 1 || fallbackSnapshot.node_count > 10000) {
+    throw new Error('Invalid fallback metadata');
+  }
+  const text = decryptSealedText(token, fallbackSnapshot.payload);
+  if (!text.trim() || Buffer.byteLength(text) > MAX_BYTES) throw new Error('Invalid fallback snapshot');
+  const count = text.split(/\r?\n/).filter(Boolean).length;
+  if (count !== fallbackSnapshot.node_count) throw new Error('Fallback count mismatch');
+  return text;
+}
+
+async function serveFallback({ token, path, fetchImpl, timeoutMs }) {
+  if (path === DIAG_PATH) throw new Error('No diagnostic fallback');
+  const snapshot = fallbackTextForToken(token);
+  if (path === OFFICIAL_PATH) {
+    return reply(snapshot, 200, {
+      'X-RC2-Subscription-Mode': 'fallback-official',
+      'X-RC2-Source': 'sealed-snapshot',
+      'X-RC2-Fallback-Generated-At': fallbackSnapshot.generated_at,
+      'X-RC2-Fallback-Nodes': String(fallbackSnapshot.node_count)
+    });
+  }
+  const direct = await withTimeout(Math.min(timeoutMs, 10000), signal =>
+    rewriteSurgeFallbackText(snapshot, { fetchImpl, signal })
+  );
+  return reply(direct, 200, {
+    'X-RC2-Subscription-Mode': 'fallback-direct-doh',
+    'X-RC2-Source': 'sealed-snapshot',
+    'X-RC2-Fallback-Generated-At': fallbackSnapshot.generated_at,
+    'X-RC2-Fallback-Nodes': String(fallbackSnapshot.node_count)
+  });
+}
+
 /** Dependency injection is for offline tests only; no user-controlled fetch URL. */
-export function createService({ env = () => process.env, fetchImpl = globalThis.fetch, timeoutMs = 15000 } = {}) {
+export function createService({
+  env = () => process.env,
+  fetchImpl = globalThis.fetch,
+  timeoutMs = 15000
+} = {}) {
   return async function handle(request) {
     let url;
     try { url = new URL(request.url); } catch { return reply('Not Found', 404); }
+
     if (url.pathname === '/health') {
       if (!['GET', 'HEAD'].includes(request.method)) return reply('Method Not Allowed', 405);
       let healthConfig = {};
@@ -66,31 +121,58 @@ export function createService({ env = () => process.env, fetchImpl = globalThis.
       return reply(request.method === 'HEAD' ? null : 'OK', 200, {
         'X-RC2-Compat-Mode': ['official', 'verified-regions'].includes(mode) ? mode : 'invalid',
         'X-RC2-Cache-Generated-At': cache.generatedAt,
-        'X-RC2-Cache-Nodes': String(cache.nodeCount)
+        'X-RC2-Cache-Nodes': String(cache.nodeCount),
+        'X-RC2-Fallback-Generated-At': fallbackSnapshot?.generated_at || '',
+        'X-RC2-Fallback-Nodes': String(fallbackSnapshot?.node_count || 0)
       });
     }
-    if (![LIVE_PATH, OFFICIAL_PATH, DIRECT_PATH, DIAG_PATH].includes(url.pathname)) return reply('Not Found', 404);
+
+    if (![LIVE_PATH, OFFICIAL_PATH, DIRECT_PATH, DIAG_PATH].includes(url.pathname)) {
+      return reply('Not Found', 404);
+    }
+
     let source;
     let config;
+    let token;
     try {
       config = env();
       if (url.searchParams.getAll('token').length !== 1) throw new Error('Unauthorized');
-      source = sourceForToken(url.searchParams.get('token'), config.TANZOU_ENCRYPTED_SOURCE);
-    } catch { return reply('Not Found', 404); }
+      token = url.searchParams.get('token');
+      source = sourceForToken(token, config.TANZOU_ENCRYPTED_SOURCE);
+    } catch {
+      return reply('Not Found', 404);
+    }
     if (request.method !== 'GET') return reply('Method Not Allowed', 405);
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), timeoutMs);
+
+    let text;
     try {
-      const response = await fetchImpl(source, {
-        method: 'GET', redirect: 'error', cache: 'no-store', signal: controller.signal,
-        headers: { 'User-Agent': 'Shadowrocket', 'Accept': 'text/plain,*/*', 'Cache-Control': 'no-cache' }
+      text = await withTimeout(Math.min(timeoutMs, 10000), async signal => {
+        const response = await fetchImpl(source, {
+          method: 'GET',
+          redirect: 'error',
+          cache: 'no-store',
+          signal,
+          headers: {
+            'User-Agent': 'Shadowrocket',
+            'Accept': 'text/plain,*/*',
+            'Cache-Control': 'no-cache'
+          }
+        });
+        return readBounded(response);
       });
-      const text = await readBounded(response);
-      // RC2.2 branch-local Preview snapshot: no external HTTP dependency.
-      // Production/main do not contain this branch-only reader.
+    } catch {
+      try {
+        return await serveFallback({ token, path: url.pathname, fetchImpl, timeoutMs });
+      } catch {
+        return reply('Subscription refresh failed', 502);
+      }
+    }
+
+    try {
       const probeCache = previewProbeCache?.version === 1 &&
         previewProbeCache.nodes && typeof previewProbeCache.nodes === 'object' && !Array.isArray(previewProbeCache.nodes)
         ? previewProbeCache : null;
+
       if (url.pathname === DIAG_PATH) {
         const diag = inspectRawVmessNode(text, url.searchParams.get('name'));
         return new Response(JSON.stringify(diag, null, 2) + '\n', {
@@ -101,14 +183,18 @@ export function createService({ env = () => process.env, fetchImpl = globalThis.
           }
         });
       }
+
       if (url.pathname === DIRECT_PATH) {
-        // Opt-in only: never alter the existing official or compatibility endpoints.
         const official = convertSubscription(text, { mode: 'official' });
-        const directNodes = await makeDirectNodes(official.nodes, { fetchImpl, signal: controller.signal });
+        const directNodes = await withTimeout(Math.min(timeoutMs, 10000), signal =>
+          makeDirectNodes(official.nodes, { fetchImpl, signal })
+        );
         return reply(directNodes.map(renderNode).join('\n') + '\n', 200, {
-          'X-RC2-Subscription-Mode': 'direct-doh'
+          'X-RC2-Subscription-Mode': 'direct-doh',
+          'X-RC2-Source': 'live'
         });
       }
+
       const mode = url.pathname === OFFICIAL_PATH ? 'official' : compatMode(config);
       const converted = convertSubscription(text, {
         mode,
@@ -116,11 +202,15 @@ export function createService({ env = () => process.env, fetchImpl = globalThis.
         probeCache: mode === 'official' ? null : probeCache
       });
       return reply(converted.text, 200, {
-        'X-RC2-Subscription-Mode': mode
+        'X-RC2-Subscription-Mode': mode,
+        'X-RC2-Source': 'live'
       });
     } catch {
-      // Never send exception text, URLs, UUIDs or configuration values to logs/responses.
-      return reply('Subscription refresh failed', 502);
-    } finally { clearTimeout(timeout); controller.abort(); }
+      try {
+        return await serveFallback({ token, path: url.pathname, fetchImpl, timeoutMs });
+      } catch {
+        return reply('Subscription refresh failed', 502);
+      }
+    }
   };
 }

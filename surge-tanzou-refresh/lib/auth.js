@@ -1,14 +1,13 @@
 import { createHash, createDecipheriv } from 'node:crypto';
 
-/** Preserves the reviewed 2026-09-16 service's encrypted-source contract.
- * The GCM authentication tag validates the supplied token without publishing it.
- * This is compatibility with an existing format, not a new password KDF.
+/** Decrypt a sealed value using the existing private URL token.
+ * Generic primitive used only after the same strict token shape validation.
  */
-export function sourceForToken(token, encryptedSource) {
+export function decryptSealedText(token, sealedValue) {
   if (typeof token !== 'string' || token.length < 32 || token.length > 512 ||
-      !/^[A-Za-z0-9_-]+$/.test(token) || typeof encryptedSource !== 'string' ||
-      encryptedSource.length > 12000) throw new Error('Unauthorized');
-  const parts = encryptedSource.split('.');
+      !/^[A-Za-z0-9_-]+$/.test(token) || typeof sealedValue !== 'string' ||
+      sealedValue.length > 100000) throw new Error('Unauthorized');
+  const parts = sealedValue.split('.');
   if (parts.length !== 2 || parts.some(x => !/^[A-Za-z0-9_-]+$/.test(x))) {
     throw new Error('Unauthorized');
   }
@@ -20,11 +19,18 @@ export function sourceForToken(token, encryptedSource) {
     const decipher = createDecipheriv('aes-256-gcm', key, iv);
     decipher.setAuthTag(sealed.subarray(-16));
     const bytes = Buffer.concat([decipher.update(sealed.subarray(0, -16)), decipher.final()]);
-    const value = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
-    return validateSource(value);
+    return new TextDecoder('utf-8', { fatal: true }).decode(bytes);
   } finally {
     key.fill(0);
   }
+}
+
+/** Preserves the reviewed 2026-09-16 service's encrypted-source contract.
+ * The GCM authentication tag validates the supplied token without publishing it.
+ * This is compatibility with an existing format, not a new password KDF.
+ */
+export function sourceForToken(token, encryptedSource) {
+  return validateSource(decryptSealedText(token, encryptedSource));
 }
 
 export function validateSource(value) {

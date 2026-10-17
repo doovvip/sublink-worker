@@ -133,3 +133,38 @@ export async function makeDirectNodes(nodes, { fetchImpl = globalThis.fetch, sig
   const mapping = new Map(records);
   return realNodes.map(node => ({ ...node, host: mapping.get(node.host), alpn: [...node.alpn] }));
 }
+
+
+/** Rewrite a sealed last-known Surge VMess list to fresh provider-DoH IPs.
+ * Credentials/options remain opaque: only the exact provider hostname field changes.
+ */
+export async function rewriteSurgeFallbackText(text, { fetchImpl = globalThis.fetch, signal } = {}) {
+  if (typeof text !== 'string' || !text.trim() || Buffer.byteLength(text) > 2_000_000) {
+    throw new Error('Invalid fallback snapshot');
+  }
+  const lines = text.split(/\r?\n/).map(x => x.trim()).filter(Boolean);
+  if (!lines.length || lines.length > 10000) throw new Error('Invalid fallback record count');
+
+  const parsed = [];
+  const hosts = new Set();
+  for (const line of lines) {
+    const match = line.match(/^([^=,\r\n]+)\s*=\s*vmess,\s*([a-z0-9.-]+),\s*(\d+),/i);
+    if (!match) throw new Error('Invalid fallback record');
+    const host = match[2].toLowerCase().replace(/\.$/, '');
+    if (!ACCEPTED_HOSTS.has(host)) throw new Error('Unexpected fallback hostname');
+    const port = Number(match[3]);
+    if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error('Invalid fallback port');
+    parsed.push({ line, host });
+    hosts.add(host);
+  }
+
+  const records = await Promise.all([...hosts].map(async host =>
+    [host, await resolveProviderHost(host, { fetchImpl, signal })]
+  ));
+  const mapping = new Map(records);
+  return parsed.map(({ line, host }) => {
+    const marker = `, ${host},`;
+    if (!line.includes(marker)) throw new Error('Fallback hostname mismatch');
+    return line.replace(marker, `, ${mapping.get(host)},`);
+  }).join('\n') + '\n';
+}
