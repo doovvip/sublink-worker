@@ -105,14 +105,35 @@ async function queryProviderDoH(domain, endpoint, { fetchImpl, signal }) {
   }
 }
 
-async function resolveProviderHost(host, options) {
-  for (const endpoint of DOH_ENDPOINTS) {
-    try { return await queryProviderDoH(host, endpoint, options); }
-    catch (error) {
-      if (options.signal?.aborted) throw error;
+const DNS_CACHE_TTL_MS = 300000;
+const dnsCache = new Map();
+
+async function resolveProviderHost(host, { fetchImpl, signal } = {}) {
+  const cached = dnsCache.get(host);
+  if (cached && cached.expiresAt > Date.now()) return cached.ip;
+
+  const raceAbort = new AbortController();
+  const forwardAbort = () => raceAbort.abort();
+  if (signal?.aborted) throw new Error('Subscription refresh canceled');
+  signal?.addEventListener('abort', forwardAbort, { once: true });
+  try {
+    const attempts = DOH_ENDPOINTS.map(endpoint =>
+      queryProviderDoH(host, endpoint, { fetchImpl, signal: raceAbort.signal }).then(ip => {
+        dnsCache.set(host, { ip, expiresAt: Date.now() + DNS_CACHE_TTL_MS });
+        raceAbort.abort();
+        return ip;
+      })
+    );
+    try {
+      return await Promise.any(attempts);
+    } catch (error) {
+      if (signal?.aborted) throw new Error('Subscription refresh canceled');
+      throw new Error('Provider DNS lookup failed');
     }
+  } finally {
+    raceAbort.abort();
+    signal?.removeEventListener('abort', forwardAbort);
   }
-  throw new Error('Provider DNS lookup failed');
 }
 
 /** Resolve each ORIGINAL hostname once per refresh. Unknown real hosts fail
